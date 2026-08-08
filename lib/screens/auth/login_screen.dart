@@ -175,6 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             backgroundColor: AppColors.success,
                           ),
                         );
+                        context.go('/home');
                       }
                     }
                   },
