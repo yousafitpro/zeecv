@@ -22,6 +22,7 @@ dependencies:
   
   # Navigation
   go_router: ^13.0.1
+  flutter_app_config: ^1.0.3
 
 dev_dependencies:
   flutter_test:
@@ -40,3 +41,7 @@ flutter_launcher_icons:
   
   assets:
     - assets/icon/
+flutter_app_config:
+  app_name: "ZeeCV"
+  package_id: "com.example.zeecv"  # Your package ID
+  custom_icon_path: "assets/icon/icon.png"
