@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zeecv/models/user_model.dart';
 import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
+import 'package:go_router/go_router.dart'; // 👈 ADD THIS
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,7 +17,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.user;
+    final user = authProvider.user ?? UserModel(
+      name: 'Guest',
+      id: 'N/A',
+      email: 'No email',
+    );
+    
+    if (user == null ) {
+      print(user);
+      
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -23,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             onPressed: () async {
-              await authProvider.signOut();
+              // await authProvider.signOut();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -31,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundColor: AppColors.success,
                   ),
                 );
+                context.go('/login');
               }
             },
             icon: const Icon(Icons.logout),

@@ -6,11 +6,12 @@ import '../screens/auth/signup_screen.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/home_screen.dart';
 import '../providers/auth_provider.dart';
-
+import '../core/constants/app_colors.dart';
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
+      return null;
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final isAuthenticated = authProvider.isAuthenticated;
       final isSplash = state.matchedLocation == '/splash';
