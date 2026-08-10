@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -86,6 +88,7 @@ class AuthProvider extends ChangeNotifier {
           
           _setLoading(false);
           notifyListeners();
+          
           return true;
         }
         
@@ -103,7 +106,21 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+ // redirect to web zeecv v
+Future<void> openZeecvAndCloseApp() async {
+  print(user);
+final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user?.loginToken}');
 
+  if (await canLaunchUrl(url)) {
+    await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+
+    // Close Android app
+    await SystemNavigator.pop();
+  }
+}
   // Sign In
   Future<bool> signIn({
     required String email,

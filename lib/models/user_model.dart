@@ -3,6 +3,7 @@ class UserModel {
   final String email;
   final String? name;
   final String? token;
+  final String? loginToken;
   final DateTime? createdAt;
 
   UserModel({
@@ -10,6 +11,7 @@ class UserModel {
     required this.email,
     this.name,
     this.token,
+    this.loginToken,
     this.createdAt,
   });
 
@@ -22,6 +24,7 @@ class UserModel {
       createdAt: json['createdAt'] != null 
           ? DateTime.tryParse(json['createdAt']) 
           : null,
+      loginToken: json['loginToken'] ?? json['access_token'],
     );
   }
 
@@ -32,6 +35,7 @@ class UserModel {
       'name': name,
       'token': token,
       'createdAt': createdAt?.toIso8601String(),
+      'loginToken': loginToken,
     };
   }
 
@@ -41,6 +45,7 @@ class UserModel {
     String? name,
     String? token,
     DateTime? createdAt,
+    String? loginToken,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -48,6 +53,7 @@ class UserModel {
       name: name ?? this.name,
       token: token ?? this.token,
       createdAt: createdAt ?? this.createdAt,
+      loginToken: loginToken ?? this.loginToken,
     );
   }
 }

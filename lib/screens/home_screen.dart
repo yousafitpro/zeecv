@@ -14,6 +14,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+    @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final authProvider = context.read<AuthProvider>();
+
+      await authProvider.openZeecvAndCloseApp();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -106,47 +119,47 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 48),
               
               // Resume Builder Coming Soon
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBackground,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.build_circle_outlined,
-                      size: 64,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Resume Builder Coming Soon!',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'We\'re building the best resume maker for you. Stay tuned!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    LinearProgressIndicator(
-                      value: 0.3,
-                      backgroundColor: AppColors.background,
-                      color: AppColors.primary,
-                    ),
-                  ],
-                ),
-              ),
+              // Container(
+              //   padding: const EdgeInsets.all(24),
+              //   decoration: BoxDecoration(
+              //     color: AppColors.primaryBackground,
+              //     borderRadius: BorderRadius.circular(16),
+              //     border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              //   ),
+              //   child: Column(
+              //     children: [
+              //       Icon(
+              //         Icons.build_circle_outlined,
+              //         size: 64,
+              //         color: AppColors.primary,
+              //       ),
+              //       const SizedBox(height: 16),
+              //       const Text(
+              //         'Resume Builder Coming Soon!',
+              //         style: TextStyle(
+              //           fontSize: 20,
+              //           fontWeight: FontWeight.bold,
+              //           color: AppColors.primary,
+              //         ),
+              //       ),
+              //       const SizedBox(height: 8),
+              //       const Text(
+              //         'We\'re building the best resume maker for you. Stay tuned!',
+              //         textAlign: TextAlign.center,
+              //         style: TextStyle(
+              //           fontSize: 14,
+              //           color: AppColors.textSecondary,
+              //         ),
+              //       ),
+              //       const SizedBox(height: 16),
+              //       LinearProgressIndicator(
+              //         value: 0.3,
+              //         backgroundColor: AppColors.background,
+              //         color: AppColors.primary,
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),
