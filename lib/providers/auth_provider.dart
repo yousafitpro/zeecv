@@ -5,6 +5,7 @@ import '../models/user_model.dart';
 import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
 
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -108,7 +109,6 @@ class AuthProvider extends ChangeNotifier {
   }
  // redirect to web zeecv v
 Future<void> openZeecvAndCloseApp() async {
-  print(user);
 final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user?.loginToken}');
 
   if (await canLaunchUrl(url)) {
@@ -116,9 +116,19 @@ final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user
       url,
       mode: LaunchMode.externalApplication,
     );
-
-    // Close Android app
-    await SystemNavigator.pop();
+        // Wait a moment for the browser to open
+    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+        exit(0);
+      } catch (e) {
+        print('exit failed: $e');
+      }
+    // Close the app
+    if (Platform.isAndroid) {
+      SystemNavigator.pop();
+    } else if (Platform.isIOS) {
+      exit(0);
+    }
   }
 }
   // Sign In
