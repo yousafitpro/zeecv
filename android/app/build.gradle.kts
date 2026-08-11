@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.zeecv.app"
+    namespace = "com.zeecv"
     compileSdk = 36
 
     compileOptions {
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.zeecv.app"
+        applicationId = "com.zeecv"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
         versionCode = 1
