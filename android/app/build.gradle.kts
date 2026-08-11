@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.zeecv.app"
-    compileSdk = 34
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.zeecv.app"
         minSdk = flutter.minSdkVersion
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
     }
