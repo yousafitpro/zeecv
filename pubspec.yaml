@@ -46,5 +46,5 @@ flutter_launcher_icons:
     - assets/icon/icon.png
 flutter_app_config:
   app_name: "ZeeCV"
-  package_id: "com.example.zeecv"  # Your package ID
+  package_id: "com.zeecv"  # Your package ID
   custom_icon_path: "assets/icon/icon.png"

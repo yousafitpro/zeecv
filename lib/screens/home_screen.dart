@@ -17,39 +17,56 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _showWebView = false;
   WebViewController? _webViewController;
-  String _webUrl = '';
 
   @override
   void initState() {
     super.initState();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+  void _openWebView(UserModel user) {
+    if (user.loginToken == null || user.loginToken!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login token is not available'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
-      final authProvider = context.read<AuthProvider>();
-      final user = authProvider.user;
-      
-      if (user?.loginToken != null) {
-        final controller = WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..setBackgroundColor(const Color(0x00000000))
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onPageFinished: (String url) {
-                // Page loaded
-              },
-            ),
-          );
-        
-        _webViewController = controller;
-        _webUrl = 'https://zeecv.com/mobile-app/login-using-token/${user!.loginToken}';
-        
-        setState(() {
-          _showWebView = true;
-        });
-        
-        controller.loadRequest(Uri.parse(_webUrl));
-      }
+    final url =
+        'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
+
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            debugPrint('WebView started: $url');
+          },
+          onPageFinished: (String url) {
+            debugPrint('WebView finished: $url');
+          },
+          onWebResourceError: (WebResourceError error) {
+            debugPrint(
+              'WebView error: ${error.description}',
+            );
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(url));
+
+    setState(() {
+      _webViewController = controller;
+      _showWebView = true;
+    });
+  }
+
+  void _closeWebView() {
+    setState(() {
+      _showWebView = false;
+      _webViewController = null;
     });
   }
 
@@ -58,17 +75,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
 
+    // =========================
+    // WEBVIEW SCREEN
+    // =========================
     if (_showWebView && _webViewController != null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('ZEECV Web'),
+          title: const Text('ZEECV'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              setState(() {
-                _showWebView = false;
-              });
-            },
+            onPressed: _closeWebView,
           ),
           actions: [
             IconButton(
@@ -85,21 +101,23 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    // =========================
+    // NORMAL HOME SCREEN
+    // =========================
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.appName),
         actions: [
           IconButton(
-            onPressed: () async {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(AppStrings.logoutSuccess),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-                context.go('/login');
-              }
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(AppStrings.logoutSuccess),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+
+              context.go('/login');
             },
             icon: const Icon(Icons.logout),
           ),
@@ -115,8 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 radius: 60,
                 backgroundColor: AppColors.primaryBackground,
                 child: Text(
-                  user?.name?.substring(0, 1).toUpperCase() ?? 
-                  user?.email?.substring(0, 1).toUpperCase() ?? 'U',
+                  _getInitial(user),
                   style: const TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -124,26 +141,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 24),
-              
+
               Text(
                 'Welcome, ${user?.name ?? 'User'}!',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
+                textAlign: TextAlign.center,
               ),
+
               const SizedBox(height: 8),
+
               Text(
                 user?.email ?? '',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 16,
                 ),
               ),
+
               const SizedBox(height: 16),
-              
+
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryBackground,
                   borderRadius: BorderRadius.circular(20),
@@ -156,10 +184,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 32),
+
+              // Open ZEECV Website
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: user == null
+                      ? null
+                      : () => _openWebView(user),
+                  icon: const Icon(Icons.language),
+                  label: const Text('Open ZEECV'),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
   }
+
+  String _getInitial(UserModel? user) {
+    if (user?.name != null && user!.name!.isNotEmpty) {
+      return user.name!.substring(0, 1).toUpperCase();
+    }
+
+    if (user?.email != null && user!.email!.isNotEmpty) {
+      return user.email!.substring(0, 1).toUpperCase();
+    }
+
+    return 'U';
+  }
 }
+

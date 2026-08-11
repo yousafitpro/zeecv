@@ -1,4 +1,4 @@
-package com.example.zeecv
+package com.zeecv
 
 import io.flutter.embedding.android.FlutterActivity
 
