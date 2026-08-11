@@ -16,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _showWebView = false;
-  late final WebViewController _webViewController;
+  WebViewController? _webViewController;
   String _webUrl = '';
 
   @override
@@ -30,22 +30,25 @@ class _HomeScreenState extends State<HomeScreen> {
       final user = authProvider.user;
       
       if (user?.loginToken != null) {
+        final controller = WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setBackgroundColor(const Color(0x00000000))
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageFinished: (String url) {
+                // Page loaded
+              },
+            ),
+          );
+        
+        _webViewController = controller;
+        _webUrl = 'https://zeecv.com/mobile-app/login-using-token/${user!.loginToken}';
+        
         setState(() {
-          _webUrl = 'https://zeecv.com/mobile-app/login-using-token/${user!.loginToken}';
           _showWebView = true;
         });
         
-        // _webViewController = WebViewController()
-        //   ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        //   ..setBackgroundColor(const Color(0x00000000))
-        //   ..setNavigationDelegate(
-        //     NavigationDelegate(
-        //       onPageFinished: (String url) {
-        //         // Page loaded
-        //       },
-        //     ),
-        //   )
-        //   ..loadRequest(Uri.parse(_webUrl));
+        controller.loadRequest(Uri.parse(_webUrl));
       }
     });
   }
@@ -55,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
 
-    if (_showWebView && _webUrl.isNotEmpty) {
+    if (_showWebView && _webViewController != null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('ZEECV Web'),
@@ -71,13 +74,13 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: () {
-                _webViewController.reload();
+                _webViewController?.reload();
               },
             ),
           ],
         ),
         body: WebViewWidget(
-          controller: _webViewController,
+          controller: _webViewController!,
         ),
       );
     }
