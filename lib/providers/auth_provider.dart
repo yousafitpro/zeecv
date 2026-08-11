@@ -1,4 +1,4 @@
-import 'dart:convert'; // ← Add this import
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -25,7 +26,6 @@ class AuthProvider extends ChangeNotifier {
     _init();
   }
 
-  // Initialize - Check for saved token
   Future<void> _init() async {
     _isLoading = true;
     notifyListeners();
@@ -41,24 +41,17 @@ class AuthProvider extends ChangeNotifier {
               Map<String, dynamic>.from(jsonDecode(userData));
           _user = UserModel.fromJson(userMap);
           _apiService.setAuthToken(token);
-          
-          // Optional: Verify token with backend
-          // await _verifyToken();
         } catch (e) {
-          // Invalid stored data
           await _clearStorage();
         }
       }
-    } catch (e) {
-      // Error loading from storage
-    }
+    } catch (e) {}
 
     _isInitialized = true;
     _isLoading = false;
     notifyListeners();
   }
 
-  // Sign Up
   Future<bool> signUp({
     required String name,
     required String email,
@@ -77,7 +70,6 @@ class AuthProvider extends ChangeNotifier {
       if (result['success']) {
         final data = result['data'];
         
-        // If API returns token and user data
         if (data['token'] != null) {
           final user = UserModel.fromJson(data);
           _user = user;
@@ -89,13 +81,11 @@ class AuthProvider extends ChangeNotifier {
           
           _setLoading(false);
           notifyListeners();
-          
           return true;
         }
         
-        // If signup doesn't auto-login, user needs to login separately
         _setLoading(false);
-        return true; // Account created successfully
+        return true;
       } else {
         _setError(result['message'] ?? 'Signup failed');
         _setLoading(false);
@@ -107,31 +97,9 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
- // redirect to web zeecv v
-Future<void> openZeecvAndCloseApp() async {
-final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user?.loginToken}');
 
-  if (await canLaunchUrl(url)) {
-    await launchUrl(
-      url,
-      mode: LaunchMode.externalApplication,
-    );
-        // Wait a moment for the browser to open
-    await Future.delayed(const Duration(milliseconds: 500));
-    try {
-        exit(0);
-      } catch (e) {
-        print('exit failed: $e');
-      }
-    // Close the app
-    if (Platform.isAndroid) {
-      SystemNavigator.pop();
-    } else if (Platform.isIOS) {
-      exit(0);
-    }
-  }
-}
-  // Sign In
+  // REMOVED openZeecvAndCloseApp - Now handled in HomeScreen with WebView
+
   Future<bool> signIn({
     required String email,
     required String password,
@@ -148,7 +116,6 @@ final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user
       if (result['success']) {
         final data = result['data'];
         
-        // Extract user from response
         final user = UserModel.fromJson(data);
         _user = user;
         
@@ -172,7 +139,6 @@ final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user
     }
   }
 
-  // Sign Out
   Future<void> signOut() async {
     _setLoading(true);
     
@@ -182,7 +148,6 @@ final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user
       _user = null;
       notifyListeners();
     } catch (e) {
-      // Even if API fails, clear local
       await _clearStorage();
       _user = null;
       notifyListeners();
@@ -191,14 +156,12 @@ final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user
     _setLoading(false);
   }
 
-  // Save to SharedPreferences
   Future<void> _saveToStorage(String token, UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
     await prefs.setString('user_data', jsonEncode(user.toJson()));
   }
 
-  // Clear storage
   Future<void> _clearStorage() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
@@ -206,7 +169,6 @@ final Uri url = Uri.parse('https://zeecv.com/mobile-app/login-using-token/${user
     _apiService.clearAuthToken();
   }
 
-  // Helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();

@@ -4,7 +4,8 @@ import 'package:zeecv/models/user_model.dart';
 import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
-import 'package:go_router/go_router.dart'; // 👈 ADD THIS
+import 'package:go_router/go_router.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,7 +15,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-    @override
+  bool _showWebView = false;
+  late final WebViewController _webViewController;
+  String _webUrl = '';
+
+  @override
   void initState() {
     super.initState();
 
@@ -22,23 +27,59 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
 
       final authProvider = context.read<AuthProvider>();
-
-      await authProvider.openZeecvAndCloseApp();
+      final user = authProvider.user;
+      
+      if (user?.loginToken != null) {
+        setState(() {
+          _webUrl = 'https://zeecv.com/mobile-app/login-using-token/${user!.loginToken}';
+          _showWebView = true;
+        });
+        
+        // _webViewController = WebViewController()
+        //   ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        //   ..setBackgroundColor(const Color(0x00000000))
+        //   ..setNavigationDelegate(
+        //     NavigationDelegate(
+        //       onPageFinished: (String url) {
+        //         // Page loaded
+        //       },
+        //     ),
+        //   )
+        //   ..loadRequest(Uri.parse(_webUrl));
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.user ?? UserModel(
-      name: 'Guest',
-      id: 'N/A',
-      email: 'No email',
-    );
-    
-    if (user == null ) {
-      print(user);
-      
+    final user = authProvider.user;
+
+    if (_showWebView && _webUrl.isNotEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('ZEECV Web'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              setState(() {
+                _showWebView = false;
+              });
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                _webViewController.reload();
+              },
+            ),
+          ],
+        ),
+        body: WebViewWidget(
+          controller: _webViewController,
+        ),
+      );
     }
 
     return Scaffold(
@@ -47,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             onPressed: () async {
-              // await authProvider.signOut();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -68,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Profile Avatar
               CircleAvatar(
                 radius: 60,
                 backgroundColor: AppColors.primaryBackground,
@@ -100,7 +139,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16),
               
-              // User ID (optional)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
@@ -115,51 +153,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              
-              const SizedBox(height: 48),
-              
-              // Resume Builder Coming Soon
-              // Container(
-              //   padding: const EdgeInsets.all(24),
-              //   decoration: BoxDecoration(
-              //     color: AppColors.primaryBackground,
-              //     borderRadius: BorderRadius.circular(16),
-              //     border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-              //   ),
-              //   child: Column(
-              //     children: [
-              //       Icon(
-              //         Icons.build_circle_outlined,
-              //         size: 64,
-              //         color: AppColors.primary,
-              //       ),
-              //       const SizedBox(height: 16),
-              //       const Text(
-              //         'Resume Builder Coming Soon!',
-              //         style: TextStyle(
-              //           fontSize: 20,
-              //           fontWeight: FontWeight.bold,
-              //           color: AppColors.primary,
-              //         ),
-              //       ),
-              //       const SizedBox(height: 8),
-              //       const Text(
-              //         'We\'re building the best resume maker for you. Stay tuned!',
-              //         textAlign: TextAlign.center,
-              //         style: TextStyle(
-              //           fontSize: 14,
-              //           color: AppColors.textSecondary,
-              //         ),
-              //       ),
-              //       const SizedBox(height: 16),
-              //       LinearProgressIndicator(
-              //         value: 0.3,
-              //         backgroundColor: AppColors.background,
-              //         color: AppColors.primary,
-              //       ),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
         ),
