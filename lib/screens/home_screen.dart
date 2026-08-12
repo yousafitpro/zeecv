@@ -1,14 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:zeecv/models/user_model.dart';
 import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
-import 'package:go_router/go_router.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'dart:io';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -24,6 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Timer? _openWebViewTimer;
 
+  // ============================================================
+  // INIT
+  // ============================================================
+
   @override
   void initState() {
     super.initState();
@@ -33,100 +40,317 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // ============================================================
+  // CREATE WEBVIEW CONTROLLER
+  // ============================================================
+
+  WebViewController _createWebViewController() {
+    final controller = WebViewController();
+
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.white)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          // ----------------------------------------------------
+          // PAGE STARTED
+          // ----------------------------------------------------
+
+          onPageStarted: (String url) {
+            debugPrint('WEBVIEW STARTED: $url');
+          },
+
+          // ----------------------------------------------------
+          // PAGE FINISHED
+          // ----------------------------------------------------
+
+          onPageFinished: (String url) {
+            debugPrint('WEBVIEW FINISHED: $url');
+          },
+
+          // ----------------------------------------------------
+          // ERROR
+          // ----------------------------------------------------
+
+          onWebResourceError: (WebResourceError error) {
+            debugPrint(
+              'WEBVIEW ERROR: '
+              '${error.errorCode} - '
+              '${error.description}',
+            );
+
+            debugPrint(
+              'ERROR URL: ${error.url}',
+            );
+          },
+
+          // ----------------------------------------------------
+          // NAVIGATION
+          // ----------------------------------------------------
+
+          onNavigationRequest:
+              (NavigationRequest request) async {
+            final url = request.url;
+
+            debugPrint(
+              'NAVIGATION REQUEST: $url',
+            );
+
+            // --------------------------------------------------
+            // PDF / DOWNLOAD
+            // --------------------------------------------------
+
+            if (_isPdfOrDownloadUrl(url)) {
+              debugPrint(
+                'PDF/DOWNLOAD URL DETECTED',
+              );
+
+              await _openExternalUrl(url);
+
+              return NavigationDecision.prevent;
+            }
+
+            // --------------------------------------------------
+            // NORMAL WEB PAGE
+            // --------------------------------------------------
+
+            return NavigationDecision.navigate;
+          },
+        ),
+      );
+
+    return controller;
+  }
+
+  // ============================================================
+  // CHECK PDF / DOWNLOAD URL
+  // ============================================================
+
+  bool _isPdfOrDownloadUrl(String url) {
+    final lowerUrl = url.toLowerCase();
+
+    debugPrint(
+      'CHECKING URL: $lowerUrl',
+    );
+
+    // Direct PDF
+    if (lowerUrl.endsWith('.pdf')) {
+      return true;
+    }
+
+    // PDF with query parameters
+    if (lowerUrl.contains('.pdf?')) {
+      return true;
+    }
+
+    // Your actual ZeeCV URL:
+    //
+    // /resume/download-pdf/preview/3200912
+    //
+    // /resume/download-pdf/3200912
+    //
+
+    if (lowerUrl.contains('/resume/download-pdf/')) {
+      return true;
+    }
+
+    // Generic download URL
+    if (lowerUrl.contains('/download/')) {
+      return true;
+    }
+
+    if (lowerUrl.contains('/download?')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // ============================================================
+  // OPEN EXTERNAL URL
+  // ============================================================
+
+  Future<void> _openExternalUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+
+      debugPrint(
+        'OPENING EXTERNAL URL: $uri',
+      );
+
+      // --------------------------------------------------------
+      // IMPORTANT
+      //
+      // First try external browser/application.
+      // --------------------------------------------------------
+
+      final bool launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      debugPrint(
+        'LAUNCH RESULT: $launched',
+      );
+
+      if (launched) {
+        return;
+      }
+
+      // --------------------------------------------------------
+      // If launchUrl fails
+        // --------------------------------------------------------
+
+      debugPrint(
+        'External browser could not be opened.',
+      );
+
+      if (!mounted) return;
+
+      _showBrowserError();
+
+    } catch (e, stackTrace) {
+      debugPrint(
+        'OPEN EXTERNAL URL ERROR: $e',
+      );
+
+      debugPrint(
+        stackTrace.toString(),
+      );
+
+      if (!mounted) return;
+
+      _showBrowserError();
+    }
+  }
+
+  // ============================================================
+  // SHOW BROWSER ERROR
+  // ============================================================
+
+  void _showBrowserError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Unable to open the PDF. Please make sure a browser is installed.',
+        ),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 4),
+      ),
+    );
+  }
+
+  // ============================================================
+  // PREPARE WEBVIEW
+  // ============================================================
+
   Future<void> _prepareAndOpenWebView() async {
     if (!mounted) return;
 
     final authProvider = context.read<AuthProvider>();
+
     final user = authProvider.user;
+
+    // ----------------------------------------------------------
+    // CHECK USER
+    // ----------------------------------------------------------
 
     if (user == null ||
         user.loginToken == null ||
         user.loginToken!.isEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    final url =
-        'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-
-    // Initialize WebView immediately.
-    // This allows the website to start loading during the 2 second delay.
-    final controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.white)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            debugPrint('WebView started: $url');
-          },
-          onPageFinished: (String url) {
-            debugPrint('WebView finished: $url');
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint(
-              'WebView error: ${error.description}',
-            );
-          },
-        ),
-      );
-
-    _webViewController = controller;
-
-    // Start loading the website immediately.
-    await controller.loadRequest(Uri.parse(url));
-
-    // Wait 2 seconds before showing the WebView.
-    _openWebViewTimer = Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
 
       setState(() {
         _isLoading = false;
-        _showWebView = true;
       });
-    });
+
+      return;
+    }
+
+    // ----------------------------------------------------------
+    // LOGIN URL
+    // ----------------------------------------------------------
+
+    final url =
+        'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
+
+    debugPrint(
+      'LOGIN URL: $url',
+    );
+
+    // ----------------------------------------------------------
+    // CREATE CONTROLLER
+    // ----------------------------------------------------------
+
+    final controller =
+        _createWebViewController();
+
+    _webViewController = controller;
+
+    // ----------------------------------------------------------
+    // LOAD WEBSITE
+    // ----------------------------------------------------------
+
+    await controller.loadRequest(
+      Uri.parse(url),
+    );
+
+    // ----------------------------------------------------------
+    // SHOW WEBVIEW AFTER 2 SECONDS
+    // ----------------------------------------------------------
+
+    _openWebViewTimer = Timer(
+      const Duration(seconds: 2),
+      () {
+        if (!mounted) return;
+
+        setState(() {
+          _isLoading = false;
+          _showWebView = true;
+        });
+      },
+    );
   }
 
+  // ============================================================
+  // OPEN WEBVIEW MANUALLY
+  // ============================================================
+
   void _openWebView(UserModel user) {
-    if (user.loginToken == null || user.loginToken!.isEmpty) {
+    if (user.loginToken == null ||
+        user.loginToken!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Login token is not available'),
+          content: Text(
+            'Login token is not available',
+          ),
           backgroundColor: Colors.red,
         ),
       );
+
       return;
     }
 
     final url =
         'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
 
-    final controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.white)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            debugPrint('WebView started: $url');
-          },
-          onPageFinished: (String url) {
-            debugPrint('WebView finished: $url');
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint(
-              'WebView error: ${error.description}',
-            );
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(url));
+    final controller =
+        _createWebViewController();
+
+    _webViewController = controller;
+
+    controller.loadRequest(
+      Uri.parse(url),
+    );
 
     setState(() {
-      _webViewController = controller;
       _showWebView = true;
     });
   }
+
+  // ============================================================
+  // CLOSE WEBVIEW
+  // ============================================================
 
   void _closeWebView() {
     setState(() {
@@ -135,37 +359,62 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // ============================================================
+  // DISPOSE
+  // ============================================================
+
   @override
   void dispose() {
     _openWebViewTimer?.cancel();
+
     super.dispose();
   }
 
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider =
+        Provider.of<AuthProvider>(context);
+
     final user = authProvider.user;
 
-    // ==========================================
+    // ==========================================================
     // LOADING SCREEN
-    // ==========================================
+    // ==========================================================
+
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.white,
+
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32,
+            ),
+
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+
               children: [
-                // App Logo / Icon
+                // ------------------------------------------------
+                // LOGO
+                // ------------------------------------------------
+
                 Container(
                   width: 90,
                   height: 90,
+
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBackground,
-                    borderRadius: BorderRadius.circular(24),
+                    color:
+                        AppColors.primaryBackground,
+                    borderRadius:
+                        BorderRadius.circular(24),
                   ),
+
                   child: const Icon(
                     Icons.description_outlined,
                     size: 48,
@@ -175,8 +424,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 28),
 
+                // ------------------------------------------------
+                // TITLE
+                // ------------------------------------------------
+
                 const Text(
                   'Welcome to ZeeCV',
+
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -186,9 +440,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 10),
 
+                // ------------------------------------------------
+                // DESCRIPTION
+                // ------------------------------------------------
+
                 Text(
                   'Preparing your ZeeCV account...',
+
                   textAlign: TextAlign.center,
+
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.grey.shade600,
@@ -197,10 +457,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 28),
 
+                // ------------------------------------------------
+                // LOADER
+                // ------------------------------------------------
+
                 const SizedBox(
                   width: 35,
                   height: 35,
-                  child: CircularProgressIndicator(
+
+                  child:
+                      CircularProgressIndicator(
                     strokeWidth: 3,
                   ),
                 ),
@@ -209,6 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 Text(
                   'Please wait...',
+
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade500,
@@ -221,68 +488,106 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // ==========================================
-    // WEBVIEW SCREEN
-    // ==========================================
-    if (_showWebView && _webViewController != null) {
+    // ==========================================================
+    // WEBVIEW
+    // ==========================================================
+
+    if (_showWebView &&
+        _webViewController != null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('ZEECV'),
+
+          // ----------------------------------------------------
+          // CLOSE APPLICATION
+          // ----------------------------------------------------
+
           leading: IconButton(
             icon: const Icon(Icons.close),
-              onPressed: () {
+
+            onPressed: () {
               exit(0);
             },
-            // onPressed: _closeWebView,
           ),
+
+          // ----------------------------------------------------
+          // REFRESH
+          // ----------------------------------------------------
+
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
+
               onPressed: () {
                 _webViewController?.reload();
               },
             ),
           ],
         ),
+
         body: WebViewWidget(
-          controller: _webViewController!,
+          controller:
+              _webViewController!,
         ),
       );
     }
 
-    // ==========================================
+    // ==========================================================
     // NORMAL HOME SCREEN
-    // ==========================================
+    // ==========================================================
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.appName),
+        title: const Text(
+          AppStrings.appName,
+        ),
+
         actions: [
           IconButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(
                 const SnackBar(
-                  content: Text(AppStrings.logoutSuccess),
-                  backgroundColor: AppColors.success,
+                  content: Text(
+                    AppStrings.logoutSuccess,
+                  ),
+                  backgroundColor:
+                      AppColors.success,
                 ),
               );
 
               context.go('/login');
             },
-            icon: const Icon(Icons.logout),
+
+            icon: const Icon(
+              Icons.logout,
+            ),
           ),
         ],
       ),
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
+
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+
             children: [
+              // ------------------------------------------------
+              // USER AVATAR
+              // ------------------------------------------------
+
               CircleAvatar(
                 radius: 60,
-                backgroundColor: AppColors.primaryBackground,
+
+                backgroundColor:
+                    AppColors.primaryBackground,
+
                 child: Text(
                   _getInitial(user),
+
                   style: const TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -293,57 +598,95 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 24),
 
+              // ------------------------------------------------
+              // NAME
+              // ------------------------------------------------
+
               Text(
                 'Welcome, ${user?.name ?? 'User'}!',
+
                 style: Theme.of(context)
                     .textTheme
                     .headlineMedium
                     ?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
+
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 8),
 
+              // ------------------------------------------------
+              // EMAIL
+              // ------------------------------------------------
+
               Text(
                 user?.email ?? '',
+
                 style: const TextStyle(
-                  color: AppColors.textSecondary,
+                  color:
+                      AppColors.textSecondary,
                   fontSize: 16,
                 ),
               ),
 
               const SizedBox(height: 16),
 
+              // ------------------------------------------------
+              // USER ID
+              // ------------------------------------------------
+
               Container(
-                padding: const EdgeInsets.symmetric(
+                padding:
+                    const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,
                 ),
+
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBackground,
-                  borderRadius: BorderRadius.circular(20),
+                  color:
+                      AppColors.primaryBackground,
+
+                  borderRadius:
+                      BorderRadius.circular(20),
                 ),
+
                 child: Text(
                   'ID: ${user?.id ?? 'N/A'}',
+
                   style: const TextStyle(
                     fontSize: 12,
-                    color: AppColors.textLight,
+                    color:
+                        AppColors.textLight,
                   ),
                 ),
               ),
 
               const SizedBox(height: 32),
 
+              // ------------------------------------------------
+              // OPEN ZEECV
+              // ------------------------------------------------
+
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
+
+                child:
+                    ElevatedButton.icon(
                   onPressed: user == null
                       ? null
-                      : () => _openWebView(user),
-                  icon: const Icon(Icons.language),
-                  label: const Text('Open ZEECV'),
+                      : () =>
+                          _openWebView(user),
+
+                  icon: const Icon(
+                    Icons.language,
+                  ),
+
+                  label: const Text(
+                    'Open ZEECV',
+                  ),
                 ),
               ),
             ],
@@ -353,13 +696,23 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ============================================================
+  // USER INITIAL
+  // ============================================================
+
   String _getInitial(UserModel? user) {
-    if (user?.name != null && user!.name!.isNotEmpty) {
-      return user.name!.substring(0, 1).toUpperCase();
+    if (user?.name != null &&
+        user!.name!.isNotEmpty) {
+      return user.name!
+          .substring(0, 1)
+          .toUpperCase();
     }
 
-    if (user?.email != null && user!.email!.isNotEmpty) {
-      return user.email!.substring(0, 1).toUpperCase();
+    if (user?.email != null &&
+        user!.email!.isNotEmpty) {
+      return user.email!
+          .substring(0, 1)
+          .toUpperCase();
     }
 
     return 'U';
