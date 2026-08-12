@@ -78,6 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
               '${error.errorCode} - '
               '${error.description}',
             );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Load Error: ${error.description}")),
+              );
+            }
 
             debugPrint(
               'ERROR URL: ${error.url}',
