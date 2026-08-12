@@ -9,22 +9,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  # UI
   google_fonts: ^6.1.0
-  
-  # State Management
   provider: ^6.0.5
-  
-  # API & Storage
   http: ^1.1.0
   shared_preferences: ^2.5.0
-  
-  # Navigation
   go_router: ^13.0.1
   flutter_app_config: ^1.0.3
   url_launcher: ^6.3.2
   webview_flutter: ^4.4.2
+  dio: ^5.4.0
 
 dev_dependencies:
   flutter_test:
@@ -34,17 +27,18 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon/
+    - assets/icon/icon.png
+    - assets/certs/root_ca.pem
+
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon.png"
   adaptive_icon_background: "#ffffff"
-  # adaptive_icon_foreground: "assets/icon/icon_foreground.png"
-  
-  assets:
-    - assets/icon/
-    - assets/icon/icon.png
+
 flutter_app_config:
   app_name: "ZeeCV"
-  package_id: "com.zeecv"  # Your package ID
+  package_id: "com.zeecv"
   custom_icon_path: "assets/icon/icon.png"

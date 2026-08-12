@@ -1,168 +1,163 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart'; // Required for IOHttpClientAdapter
+import 'package:flutter/services.dart';
 import '../core/constants/api_constants.dart';
-import '../models/user_model.dart';
 
 class ApiService {
+  // Singleton setup
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
-  ApiService._internal();
-
-  // Store token for authenticated requests
-  String? _authToken;
   
+  late Dio _dio;
+  String? _authToken;
+
+  ApiService._internal() {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: ApiConstants.baseUrl, // Assuming you have a baseUrl in constants
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+        headers: {
+          'Content-Type': ApiConstants.contentType,
+          'Accept': ApiConstants.contentType,
+        },
+      ),
+    );
+  }
+
+  /// IMPORTANT: Call this in your main.dart or before first API call
+  /// to initialize the SSL certificate fix.
+  Future<void> init() async {
+    try {
+      // 1. Load the SSL.com Root CA 2022 from assets
+      final sslCert = await rootBundle.load('assets/certs/root_ca.pem');
+      
+      // 2. Configure SecurityContext to trust this certificate
+      SecurityContext context = SecurityContext(withTrustedRoots: true);
+      context.setTrustedCertificatesBytes(sslCert.buffer.asUint8List());
+
+      // 3. Apply the custom HttpClient to Dio
+      _dio.httpClientAdapter = IOHttpClientAdapter(
+        createHttpClient: () {
+          final client = HttpClient(context: context);
+          // Optional: You can still add a fail-safe (not recommended for strict production)
+          // client.badCertificateCallback = (cert, host, port) => false; 
+          return client;
+        },
+      );
+      print("Network: SSL Certificate initialized successfully.");
+    } catch (e) {
+      print("Network: Failed to initialize SSL certificate: $e");
+    }
+  }
+
   void setAuthToken(String token) {
     _authToken = token;
+    // Add to default headers for all future requests
+    _dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
   void clearAuthToken() {
     _authToken = null;
+    _dio.options.headers.remove('Authorization');
   }
 
-  // Headers for API requests
-  Map<String, String> _getHeaders({bool isAuth = false}) {
-    final headers = {
-      'Content-Type': ApiConstants.contentType,
-      'Accept': ApiConstants.contentType,
-    };
-    
-    if (!isAuth && _authToken != null) {
-      headers['Authorization'] = 'Bearer $_authToken';
+  // Helper to handle Dio errors consistently
+  Map<String, dynamic> _handleError(dynamic e) {
+    String message = "An unexpected error occurred";
+    if (e is DioException) {
+      if (e.type == DioExceptionType.connectionError && e.error.toString().contains('CERTIFICATE_VERIFY_FAILED')) {
+        message = "SSL Certificate Error: Please ensure the app is up to date.";
+      } else {
+        message = e.response?.data['message'] ?? e.response?.data['error'] ?? e.message;
+      }
     }
-    
-    return headers;
+    return {'success': false, 'message': message};
   }
 
-  // Sign Up
+  // --- API Methods ---
+
   Future<Map<String, dynamic>> signUp({
     required String name,
     required String email,
     required String password,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse(ApiConstants.signup),
-        headers: _getHeaders(isAuth: true),
-        body: jsonEncode({
+      // Dio automatically encodes Map to JSON
+      final response = await _dio.post(
+        ApiConstants.signup,
+        data: {
           'name': name,
           'email': email,
           'password': password,
-        }),
+        },
       );
 
-      final data = jsonDecode(response.body);
-      
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return {
-          'success': true,
-          'data': data,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? data['error'] ?? 'Signup failed',
-        };
-      }
-    } catch (e) {
       return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
+        'success': true,
+        'data': response.data,
       };
+    } catch (e) {
+      return _handleError(e);
     }
   }
 
-  // Sign In
   Future<Map<String, dynamic>> signIn({
     required String email,
     required String password,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse(ApiConstants.signin),
-        headers: _getHeaders(isAuth: true),
-        body: jsonEncode({
+      final response = await _dio.post(
+        ApiConstants.signin,
+        data: {
           'email': email,
           'password': password,
-        }),
+        },
       );
 
-      final data = jsonDecode(response.body);
-      
-      if (response.statusCode == 200) {
-        // Store token if present
-        if (data['token'] != null) {
-          _authToken = data['token'];
-        }
-        
-        return {
-          'success': true,
-          'data': data,
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? data['error'] ?? 'Invalid credentials',
-        };
+      final data = response.data;
+      if (data['token'] != null) {
+        setAuthToken(data['token']);
       }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
-  }
 
-  // Sign Out
-  Future<Map<String, dynamic>> signOut() async {
-    try {
-      final response = await http.post(
-        Uri.parse(ApiConstants.signout),
-        headers: _getHeaders(),
-      );
-
-      final data = jsonDecode(response.body);
-      _authToken = null;
-      
       return {
-        'success': response.statusCode == 200,
+        'success': true,
         'data': data,
       };
     } catch (e) {
-      // Even if API fails, clear local token
-      _authToken = null;
+      return _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> signOut() async {
+    try {
+      final response = await _dio.post(ApiConstants.signout);
+      clearAuthToken();
       return {
         'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      clearAuthToken();
+      return {
+        'success': true, 
         'message': 'Logged out locally',
       };
     }
   }
 
-  // Verify Token (optional - for checking if token is still valid)
   Future<Map<String, dynamic>> verifyToken() async {
-    if (_authToken == null) {
-      return {
-        'success': false,
-        'message': 'No token found',
-      };
-    }
+    if (_authToken == null) return {'success': false, 'message': 'No token found'};
 
     try {
-      final response = await http.post(
-        Uri.parse(ApiConstants.verifyToken),
-        headers: _getHeaders(),
-      );
-
-      final data = jsonDecode(response.body);
-      
+      final response = await _dio.post(ApiConstants.verifyToken);
       return {
-        'success': response.statusCode == 200,
-        'data': data,
+        'success': true,
+        'data': response.data,
       };
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Token verification failed',
-      };
+      return _handleError(e);
     }
   }
 }
