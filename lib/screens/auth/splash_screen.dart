@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (mounted) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         if (authProvider.isAuthenticated) {
-          context.go('/home');
+           context.go('/login');
         } else {
           context.go('/login');
         }
