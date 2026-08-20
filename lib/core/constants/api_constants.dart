@@ -3,6 +3,7 @@ class ApiConstants {
   
   // Auth endpoints
   static const String signup = '$baseUrl/auth/register';
+  static const String signupwithgoogle = '$baseUrl/google/register';
   static const String signin = '$baseUrl/auth/login';
   static const String signout = '$baseUrl/logout';
   static const String verifyToken = '$baseUrl/verify-token';

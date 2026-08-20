@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-
+import 'package:go_router/go_router.dart';
 class GoogleSignInButton extends StatelessWidget {
   const GoogleSignInButton({super.key});
 
@@ -23,7 +23,7 @@ class GoogleSignInButton extends StatelessWidget {
                 backgroundColor: Colors.green,
               ),
             );
-            // context.go('/home'); // Navigate to home
+            context.go('/home'); // Navigate to home
           } else if (!success && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

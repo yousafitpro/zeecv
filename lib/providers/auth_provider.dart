@@ -11,9 +11,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../core/constants/app_strings.dart';
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-                                      clientId: AppStrings.googleClientID,
-                                      scopes: ['email', 'profile']);
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
   UserModel? _user;
   bool _isLoading = false;
@@ -55,67 +53,81 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
-  Future<bool> signInWithGoogle() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+Future<bool> signInWithGoogle() async {
+  print('🟡 Google Sign-In started');
+  _isLoading = true;
+  _error = null;
+  notifyListeners();
 
+  try {
+    // 1. Sign in with Google
+    print('🟡 Attempting Google sign-in...');
+    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+    if (googleUser == null) {
+      print('🔴 User canceled sign-in');
+      _isLoading = false;
+      notifyListeners();
+      return false; // User canceled
+    }
+
+    print('🟢 User signed in: ${googleUser.email}');
+    
+    // 2. Get authentication tokens
+    final GoogleSignInAuthentication googleAuth = 
+        await googleUser.authentication;
+    
+    print('🟢 Got authentication tokens');
+
+    // 3. Send to your backend API
     try {
-      // 1. Sign in with Google
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final result = await _apiService.signUpWithGoogle(
+        name: googleUser.displayName ?? googleUser.email?.split('@').first ?? 'User',
+        email: googleUser.email ?? '',  // FIXED: was using displayName instead of email
+        idtoken: googleAuth.idToken ?? '',
+        accesstoken: googleAuth.accessToken ?? '',
+      );
 
-      if (googleUser == null) {
+      if (result['success']) {
+        final data = result['data'];
+        
+        if (data['token'] != null) {
+          final user = UserModel.fromJson(data);
+          _user = user;
+          
+          if (user.token != null) {
+            _apiService.setAuthToken(user.token!);
+            await _saveToStorage(user.token!, user);
+          }
+        }
+        
         _isLoading = false;
         notifyListeners();
-        return false; // User canceled
+        print('✅ Google Sign-In successful!');
+        return true;
+      } else {
+        _error = result['message'] ?? 'Signup failed';
+        _isLoading = false;
+        notifyListeners();
+        print('🔴 Backend error: ${_error}');
+        return false;
       }
-      
-
-    //   // 2. Get Google authentication details
-      final GoogleSignInAuthentication googleAuth = 
-          await googleUser.authentication;
-          print(googleUser.email);
-    return true;
-
-    //   // 3. Send Google token to your backend API
-    //   final response = await http.post(
-    //     Uri.parse('https://your-api.com/auth/google'), // Your API endpoint
-    //     headers: {'Content-Type': 'application/json'},
-    //     body: json.encode({
-    //       'idToken': googleAuth.idToken,
-    //       'accessToken': googleAuth.accessToken,
-    //       'email': googleUser.email,
-    //       'name': googleUser.displayName,
-    //       'photoUrl': googleUser.photoUrl,
-    //     }),
-    //   );
-
-    //   if (response.statusCode == 200) {
-    //     // 4. Success - parse response
-    //     final data = json.decode(response.body);
-        
-    //     // Store user data and token from your API
-    //     // Example: _saveUserData(data['user'], data['token']);
-        
-    //     _isLoading = false;
-    //     notifyListeners();
-    //     return true;
-    //   } else {
-    //     // API error
-    //     _error = 'Google sign-in failed: ${response.body}';
-    //     _isLoading = false;
-    //     notifyListeners();
-    //     return false;
-    //   }
-
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
+      print('🔴 API Error: $e');
       return false;
     }
-  }
 
+  } catch (e) {
+    print('🔴 Error during Google Sign-In: $e');
+    _error = e.toString();
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+}
   Future<bool> signUp({
     required String name,
     required String email,

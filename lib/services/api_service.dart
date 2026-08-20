@@ -78,6 +78,35 @@ class ApiService {
 
   // --- API Methods ---
 
+  Future<Map<String, dynamic>> signUpWithGoogle({
+    required String name,
+    required String email,
+    required String idtoken,
+    required String accesstoken,
+  }) async {
+    try {
+      // Dio automatically encodes Map to JSON
+      final response = await _dio.post(
+        ApiConstants.signupwithgoogle,
+        data: {
+          'name': name,
+          'email': email,
+          'idtoken':idtoken,
+          'accesstoken':accesstoken
+        },
+      );
+       final data = response.data;
+      if (data['token'] != null) {
+        setAuthToken(data['token']);
+      }
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      return _handleError(e);
+    }
+  }
   Future<Map<String, dynamic>> signUp({
     required String name,
     required String email,

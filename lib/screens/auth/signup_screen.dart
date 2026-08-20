@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zeecv/widgets/google_sign_in_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
@@ -238,7 +239,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                   isLoading: authProvider.isLoading,
                 ),
-                
+                const SizedBox(height: 16),
+                const GoogleSignInButton(),
                 const SizedBox(height: 24),
                 
                 // Sign In Link
