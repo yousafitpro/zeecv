@@ -13,12 +13,15 @@ class AppStrings {
   static const String signOut = 'Sign Out';
   static const String continueWithGoogle = 'Continue with Google';
   static const String or = 'Or continue with';
+  static const String orO = 'Or';
   
   // Form labels
   static const String email = 'Email Address';
   static const String password = 'Password';
   static const String confirmPassword = 'Confirm Password';
   static const String fullName = 'Full Name';
+  static const String forgotPassword ='Forgot Password';
+  static const String submit ='Submit';
   
   // Placeholders
   static const String emailHint = 'Enter your email';

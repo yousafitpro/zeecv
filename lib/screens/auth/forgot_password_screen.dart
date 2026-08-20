@@ -8,23 +8,21 @@ import '../../core/utils/validators.dart';
 import '../../widgets/auth_text_field.dart';
 import '../../widgets/auth_button.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ForgotPasswordState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -62,14 +60,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 // Title
                 Text(
-                  'Welcome Back!',
+                  'Forgot Password!',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to continue building your resume',
+                  'Enter your email to reset password',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -85,42 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   validator: Validators.validateEmail,
                 ),
                 const SizedBox(height: 16),
-                
-                // Password Field
-                AuthTextField(
-                  controller: _passwordController,
-                  label: AppStrings.password,
-                  hint: AppStrings.passwordHint,
-                  obscureText: _obscurePassword,
-                  validator: Validators.validatePassword,
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                    icon: Icon(
-                      _obscurePassword 
-                          ? Icons.visibility_off 
-                          : Icons.visibility,
-                      color: AppColors.textLight,
-                    ),
-                  ),
-                ),
-                
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      context.go('/forgot-paasword');
-                    },
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-                
-                const SizedBox(height: 24),
-                
                 // Error Message
                 if (authProvider.error != null) ...[
                   Container(
@@ -156,12 +118,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 
                 // Sign In Button
                 AuthButton(
-                  text: AppStrings.signIn,
+                  text: AppStrings.submit,
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      final success = await authProvider.signIn(
+                      final success = await authProvider.forgotPassword(
                         email: _emailController.text.trim(),
-                        password: _passwordController.text,
                       );
                       if (success && mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -170,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             backgroundColor: AppColors.success,
                           ),
                         );
-                        context.go('/home');
+                        context.go('/login');
                       }
                     }
                   },
@@ -186,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        AppStrings.or,
+                        AppStrings.orO,
                         style: TextStyle(color: AppColors.textLight),
                       ),
                     ),
@@ -206,9 +167,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        context.go('/signup');
+                        context.go('/login');
                       },
-                      child: const Text(AppStrings.signUp),
+                      child: const Text(AppStrings.signIn),
                     ),
                   ],
                 ),

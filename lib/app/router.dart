@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:zeecv/screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
 import '../screens/auth/splash_screen.dart';
@@ -46,6 +47,11 @@ class AppRouter {
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-paasword',
+        name: 'forgot-paasword',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         path: '/signup',

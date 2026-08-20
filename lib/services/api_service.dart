@@ -129,6 +129,30 @@ class ApiService {
       return _handleError(e);
     }
   }
+  Future<Map<String, dynamic>> forgotPassword({
+    required String email
+  }) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.forgotPassword,
+        data: {
+          'email': email
+        },
+      );
+
+      final data = response.data;
+      if (data['token'] != null) {
+        
+      }
+
+      return {
+        'success': true,
+        'data': data,
+      };
+    } catch (e) {
+      return _handleError(e);
+    }
+  }
 
   Future<Map<String, dynamic>> signOut() async {
     try {

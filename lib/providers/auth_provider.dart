@@ -138,6 +138,32 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+  Future<bool> forgotPassword({
+    required String email
+  }) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final result = await _apiService.forgotPassword(
+        email: email,
+      );
+
+      if (result['success']) {
+        _setLoading(false);
+        notifyListeners();
+        return true;
+      } else {
+        _setError(result['message'] ?? 'Invalid credentials');
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
 
   Future<void> signOut() async {
     _setLoading(true);
