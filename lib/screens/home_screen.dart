@@ -21,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _showWebView = false;
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   WebViewController? _webViewController;
 
@@ -34,10 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _prepareAndOpenWebView();
-    });
   }
 
   // ============================================================
@@ -52,26 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(
         NavigationDelegate(
-          // ----------------------------------------------------
-          // PAGE STARTED
-          // ----------------------------------------------------
-
           onPageStarted: (String url) {
             debugPrint('WEBVIEW STARTED: $url');
           },
-
-          // ----------------------------------------------------
-          // PAGE FINISHED
-          // ----------------------------------------------------
-
           onPageFinished: (String url) {
             debugPrint('WEBVIEW FINISHED: $url');
           },
-
-          // ----------------------------------------------------
-          // ERROR
-          // ----------------------------------------------------
-
           onWebResourceError: (WebResourceError error) {
             debugPrint(
               'WEBVIEW ERROR: '
@@ -83,41 +65,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 SnackBar(content: Text("Load Error: ${error.description}")),
               );
             }
-
-            debugPrint(
-              'ERROR URL: ${error.url}',
-            );
+            debugPrint('ERROR URL: ${error.url}');
           },
-
-          // ----------------------------------------------------
-          // NAVIGATION
-          // ----------------------------------------------------
-
-          onNavigationRequest:
-              (NavigationRequest request) async {
+          onNavigationRequest: (NavigationRequest request) async {
             final url = request.url;
-
-            debugPrint(
-              'NAVIGATION REQUEST: $url',
-            );
-
-            // --------------------------------------------------
-            // PDF / DOWNLOAD
-            // --------------------------------------------------
+            debugPrint('NAVIGATION REQUEST: $url');
 
             if (_isPdfOrDownloadUrl(url)) {
-              debugPrint(
-                'PDF/DOWNLOAD URL DETECTED',
-              );
-
+              debugPrint('PDF/DOWNLOAD URL DETECTED');
               await _openExternalUrl(url);
-
               return NavigationDecision.prevent;
             }
-
-            // --------------------------------------------------
-            // NORMAL WEB PAGE
-            // --------------------------------------------------
 
             return NavigationDecision.navigate;
           },
@@ -133,37 +91,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isPdfOrDownloadUrl(String url) {
     final lowerUrl = url.toLowerCase();
+    debugPrint('CHECKING URL: $lowerUrl');
 
-    debugPrint(
-      'CHECKING URL: $lowerUrl',
-    );
-
-    // Direct PDF
     if (lowerUrl.endsWith('.pdf')) {
       return true;
     }
-
-    // PDF with query parameters
     if (lowerUrl.contains('.pdf?')) {
       return true;
     }
-
-    // Your actual ZeeCV URL:
-    //
-    // /resume/download-pdf/preview/3200912
-    //
-    // /resume/download-pdf/3200912
-    //
-
     if (lowerUrl.contains('/resume/download-pdf/')) {
       return true;
     }
-
-    // Generic download URL
     if (lowerUrl.contains('/download/')) {
       return true;
     }
-
     if (lowerUrl.contains('/download?')) {
       return true;
     }
@@ -178,53 +119,26 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openExternalUrl(String url) async {
     try {
       final uri = Uri.parse(url);
-
-      debugPrint(
-        'OPENING EXTERNAL URL: $uri',
-      );
-
-      // --------------------------------------------------------
-      // IMPORTANT
-      //
-      // First try external browser/application.
-      // --------------------------------------------------------
+      debugPrint('OPENING EXTERNAL URL: $uri');
 
       final bool launched = await launchUrl(
         uri,
         mode: LaunchMode.externalApplication,
       );
 
-      debugPrint(
-        'LAUNCH RESULT: $launched',
-      );
+      debugPrint('LAUNCH RESULT: $launched');
 
       if (launched) {
         return;
       }
 
-      // --------------------------------------------------------
-      // If launchUrl fails
-        // --------------------------------------------------------
-
-      debugPrint(
-        'External browser could not be opened.',
-      );
-
+      debugPrint('External browser could not be opened.');
       if (!mounted) return;
-
       _showBrowserError();
-
     } catch (e, stackTrace) {
-      debugPrint(
-        'OPEN EXTERNAL URL ERROR: $e',
-      );
-
-      debugPrint(
-        stackTrace.toString(),
-      );
-
+      debugPrint('OPEN EXTERNAL URL ERROR: $e');
+      debugPrint(stackTrace.toString());
       if (!mounted) return;
-
       _showBrowserError();
     }
   }
@@ -246,110 +160,48 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============================================================
-  // PREPARE WEBVIEW
+  // OPEN WEBVIEW
   // ============================================================
 
-  Future<void> _prepareAndOpenWebView() async {
-    if (!mounted) return;
-
-    final authProvider = context.read<AuthProvider>();
-
-    final user = authProvider.user;
-
-    // ----------------------------------------------------------
-    // CHECK USER
-    // ----------------------------------------------------------
-
-    if (user == null ||
-        user.loginToken == null ||
-        user.loginToken!.isEmpty) {
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
-
+  void _openWebView(UserModel user) {
+    if (user.loginToken == null || user.loginToken!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login token is not available'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
-    // ----------------------------------------------------------
-    // LOGIN URL
-    // ----------------------------------------------------------
+    final url = 'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
+    
+    setState(() {
+      _isLoading = true;
+    });
 
-    final url =
-        'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-
-    debugPrint(
-      'LOGIN URL: $url',
-    );
-
-    // ----------------------------------------------------------
-    // CREATE CONTROLLER
-    // ----------------------------------------------------------
-
-    final controller =
-        _createWebViewController();
-
+    final controller = _createWebViewController();
     _webViewController = controller;
 
-    // ----------------------------------------------------------
-    // LOAD WEBSITE
-    // ----------------------------------------------------------
-
-    await controller.loadRequest(
-      Uri.parse(url),
-    );
-
-    // ----------------------------------------------------------
-    // SHOW WEBVIEW AFTER 2 SECONDS
-    // ----------------------------------------------------------
-
-    _openWebViewTimer = Timer(
-      const Duration(seconds: 2),
-      () {
-        if (!mounted) return;
-
+    controller.loadRequest(Uri.parse(url)).then((_) {
+      if (mounted) {
         setState(() {
           _isLoading = false;
           _showWebView = true;
         });
-      },
-    );
-  }
-
-  // ============================================================
-  // OPEN WEBVIEW MANUALLY
-  // ============================================================
-
-  void _openWebView(UserModel user) {
-    if (user.loginToken == null ||
-        user.loginToken!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Login token is not available',
+      }
+    }).catchError((error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load: $error'),
+            backgroundColor: Colors.red,
           ),
-          backgroundColor: Colors.red,
-        ),
-      );
-
-      return;
-    }
-
-    final url =
-        'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-
-    final controller =
-        _createWebViewController();
-
-    _webViewController = controller;
-
-    controller.loadRequest(
-      Uri.parse(url),
-    );
-
-    setState(() {
-      _showWebView = true;
+        );
+      }
     });
   }
 
@@ -361,7 +213,105 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _showWebView = false;
       _webViewController = null;
+      _isLoading = false;
     });
+  }
+
+  // ============================================================
+  // LOGOUT
+  // ============================================================
+
+  void _logout(BuildContext context) {
+    // Show confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(AppStrings.logoutSuccess),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+                
+                // Close drawer
+                Navigator.of(context).pop();
+                
+                // Navigate to login
+                context.go('/login');
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // OPEN TERMS & CONDITIONS
+  // ============================================================
+
+  void _openTermsAndConditions() {
+    _launchURL('https://zeecv.com/terms-and-conditions');
+  }
+
+  // ============================================================
+  // OPEN PRIVACY POLICY
+  // ============================================================
+
+  void _openPrivacyPolicy() {
+    _launchURL('https://zeecv.com/privacy-policy');
+  }
+
+  // ============================================================
+  // LAUNCH URL
+  // ============================================================
+
+  Future<void> _launchURL(String url) async {
+    try {
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not open link'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error opening URL: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   // ============================================================
@@ -371,7 +321,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _openWebViewTimer?.cancel();
-
     super.dispose();
   }
 
@@ -381,159 +330,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider =
-        Provider.of<AuthProvider>(context);
-
+    final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
-
-    // ==========================================================
-    // LOADING SCREEN
-    // ==========================================================
-
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 32,
-            ),
-
-            child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-
-              children: [
-                // ------------------------------------------------
-                // LOGO
-                // ------------------------------------------------
-
-                Container(
-                  width: 90,
-                  height: 90,
-
-                  decoration: BoxDecoration(
-                    color:
-                        AppColors.primaryBackground,
-                    borderRadius:
-                        BorderRadius.circular(24),
-                  ),
-
-                  child: const Icon(
-                    Icons.description_outlined,
-                    size: 48,
-                    color: AppColors.primary,
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // ------------------------------------------------
-                // TITLE
-                // ------------------------------------------------
-
-                const Text(
-                  'Welcome to ZeeCV',
-
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                // ------------------------------------------------
-                // DESCRIPTION
-                // ------------------------------------------------
-
-                Text(
-                  'Preparing your ZeeCV account...',
-
-                  textAlign: TextAlign.center,
-
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // ------------------------------------------------
-                // LOADER
-                // ------------------------------------------------
-
-                const SizedBox(
-                  width: 35,
-                  height: 35,
-
-                  child:
-                      CircularProgressIndicator(
-                    strokeWidth: 3,
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                Text(
-                  'Please wait...',
-
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
 
     // ==========================================================
     // WEBVIEW
     // ==========================================================
 
-    if (_showWebView &&
-        _webViewController != null) {
+    if (_showWebView && _webViewController != null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('ZEECV'),
-
-          // ----------------------------------------------------
-          // CLOSE APPLICATION
-          // ----------------------------------------------------
-
           leading: IconButton(
-            icon: const Icon(Icons.close),
-
-            onPressed: () {
-             _showExitConfirmationDialog(context);
-            },
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _closeWebView,
           ),
-
-          // ----------------------------------------------------
-          // REFRESH
-          // ----------------------------------------------------
-
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
-
               onPressed: () {
                 _webViewController?.reload();
               },
             ),
           ],
         ),
-
-        body: WebViewWidget(
-          controller:
-              _webViewController!,
-        ),
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : WebViewWidget(
+                controller: _webViewController!,
+              ),
       );
     }
 
@@ -543,42 +370,159 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          AppStrings.appName,
-        ),
-
+        title: const Text(AppStrings.appName),
         actions: [
           IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    AppStrings.logoutSuccess,
-                  ),
-                  backgroundColor:
-                      AppColors.success,
-                ),
-              );
-
-              context.go('/login');
-            },
-
-            icon: const Icon(
-              Icons.logout,
-            ),
+            onPressed: () => _logout(context),
+            icon: const Icon(Icons.logout),
           ),
         ],
       ),
-
+      // ==========================================================
+      // DRAWER
+      // ==========================================================
+      drawer: Drawer(
+        child: Column(
+          children: [
+            // ------------------------------------------------
+            // DRAWER HEADER
+            // ------------------------------------------------
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      _getInitial(user),
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    user?.name ?? 'User',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    user?.email ?? '',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            
+            // ------------------------------------------------
+            // DRAWER ITEMS
+            // ------------------------------------------------
+            
+            // Profile Item
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.of(context).pop(); // Close drawer
+                // You can navigate to profile or show user info
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Profile section coming soon!'),
+                  ),
+                );
+              },
+            ),
+            
+            const Divider(),
+            
+            // Edit Resume
+            ListTile(
+              leading: const Icon(Icons.edit_document),
+              title: const Text('Edit Resume'),
+              onTap: () {
+                Navigator.of(context).pop(); // Close drawer
+                if (user != null) {
+                  _openWebView(user);
+                }
+              },
+            ),
+            
+            const Divider(),
+            
+            // Terms & Conditions
+            ListTile(
+              leading: const Icon(Icons.description),
+              title: const Text('Terms & Conditions'),
+              onTap: () {
+                Navigator.of(context).pop(); // Close drawer
+                _openTermsAndConditions();
+              },
+            ),
+            
+            // Privacy Policy
+            ListTile(
+              leading: const Icon(Icons.privacy_tip),
+              title: const Text('Privacy Policy'),
+              onTap: () {
+                Navigator.of(context).pop(); // Close drawer
+                _openPrivacyPolicy();
+              },
+            ),
+            
+            const Spacer(),
+            
+            const Divider(),
+            
+            // Logout
+            ListTile(
+              leading: const Icon(
+                Icons.logout,
+                color: Colors.red,
+              ),
+              title: const Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+              onTap: () => _logout(context),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Version info
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Version 1.0.0',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-
           child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
-
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // ------------------------------------------------
               // USER AVATAR
@@ -586,13 +530,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
               CircleAvatar(
                 radius: 60,
-
-                backgroundColor:
-                    AppColors.primaryBackground,
-
+                backgroundColor: AppColors.primaryBackground,
                 child: Text(
                   _getInitial(user),
-
                   style: const TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -609,15 +549,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
               Text(
                 'Welcome, ${user?.name ?? 'User'}!',
-
                 style: Theme.of(context)
                     .textTheme
                     .headlineMedium
                     ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
-
                 textAlign: TextAlign.center,
               ),
 
@@ -629,10 +566,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
               Text(
                 user?.email ?? '',
-
                 style: const TextStyle(
-                  color:
-                      AppColors.textSecondary,
+                  color: AppColors.textSecondary,
                   fontSize: 16,
                 ),
               ),
@@ -644,27 +579,19 @@ class _HomeScreenState extends State<HomeScreen> {
               // ------------------------------------------------
 
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,
                 ),
-
                 decoration: BoxDecoration(
-                  color:
-                      AppColors.primaryBackground,
-
-                  borderRadius:
-                      BorderRadius.circular(20),
+                  color: AppColors.primaryBackground,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-
                 child: Text(
                   'ID: ${user?.id ?? 'N/A'}',
-
                   style: const TextStyle(
                     fontSize: 12,
-                    color:
-                        AppColors.textLight,
+                    color: AppColors.textLight,
                   ),
                 ),
               ),
@@ -672,25 +599,46 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 32),
 
               // ------------------------------------------------
-              // OPEN ZEECV
+              // EDIT RESUME BUTTON
               // ------------------------------------------------
 
               SizedBox(
                 width: double.infinity,
-
-                child:
-                    ElevatedButton.icon(
-                  onPressed: user == null
-                      ? null
-                      : () =>
-                          _openWebView(user),
-
-                  icon: const Icon(
-                    Icons.language,
-                  ),
-
+                child: ElevatedButton.icon(
+                  onPressed: user == null ? null : () => _openWebView(user),
+                  icon: const Icon(Icons.edit_document),
                   label: const Text(
-                    'Open ZEECV',
+                    'Edit Resume',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ------------------------------------------------
+              // OPEN ZEECV (Optional additional button)
+              // ------------------------------------------------
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: user == null ? null : () => _openWebView(user),
+                  icon: const Icon(Icons.language),
+                  label: const Text('Open ZEECV'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -706,49 +654,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================================================
 
   String _getInitial(UserModel? user) {
-    if (user?.name != null &&
-        user!.name!.isNotEmpty) {
-      return user.name!
-          .substring(0, 1)
-          .toUpperCase();
+    if (user?.name != null && user!.name!.isNotEmpty) {
+      return user.name!.substring(0, 1).toUpperCase();
     }
-
-    if (user?.email != null &&
-        user!.email!.isNotEmpty) {
-      return user.email!
-          .substring(0, 1)
-          .toUpperCase();
+    if (user?.email != null && user!.email!.isNotEmpty) {
+      return user.email!.substring(0, 1).toUpperCase();
     }
-
     return 'U';
   }
-}
-void _showExitConfirmationDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Exit App'),
-        content: const Text('Are you sure you want to exit?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
-              exit(0); // Exit app
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('Exit'),
-          ),
-        ],
-      );
-    },
-  );
 }
