@@ -14,6 +14,7 @@ class AppStrings {
   static const String continueWithGoogle = 'Continue with Google';
   static const String or = 'Or continue with';
   static const String orO = 'Or';
+  static const String googleClientID = '422107728130-lfocbn4r7atglvhdd4rhehi63517uo19.apps.googleusercontent.com';
   
   // Form labels
   static const String email = 'Email Address';

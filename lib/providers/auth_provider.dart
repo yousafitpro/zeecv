@@ -7,10 +7,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:webview_flutter/webview_flutter.dart';
-
+import 'package:google_sign_in/google_sign_in.dart';
+import '../core/constants/app_strings.dart';
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
-  
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+                                      clientId: AppStrings.googleClientID,
+                                      scopes: ['email', 'profile']);
+
   UserModel? _user;
   bool _isLoading = false;
   String? _error;
@@ -50,6 +54,66 @@ class AuthProvider extends ChangeNotifier {
     _isInitialized = true;
     _isLoading = false;
     notifyListeners();
+  }
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // 1. Sign in with Google
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        _isLoading = false;
+        notifyListeners();
+        return false; // User canceled
+      }
+      
+
+    //   // 2. Get Google authentication details
+      final GoogleSignInAuthentication googleAuth = 
+          await googleUser.authentication;
+          print(googleUser.email);
+    return true;
+
+    //   // 3. Send Google token to your backend API
+    //   final response = await http.post(
+    //     Uri.parse('https://your-api.com/auth/google'), // Your API endpoint
+    //     headers: {'Content-Type': 'application/json'},
+    //     body: json.encode({
+    //       'idToken': googleAuth.idToken,
+    //       'accessToken': googleAuth.accessToken,
+    //       'email': googleUser.email,
+    //       'name': googleUser.displayName,
+    //       'photoUrl': googleUser.photoUrl,
+    //     }),
+    //   );
+
+    //   if (response.statusCode == 200) {
+    //     // 4. Success - parse response
+    //     final data = json.decode(response.body);
+        
+    //     // Store user data and token from your API
+    //     // Example: _saveUserData(data['user'], data['token']);
+        
+    //     _isLoading = false;
+    //     notifyListeners();
+    //     return true;
+    //   } else {
+    //     // API error
+    //     _error = 'Google sign-in failed: ${response.body}';
+    //     _isLoading = false;
+    //     notifyListeners();
+    //     return false;
+    //   }
+
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<bool> signUp({
