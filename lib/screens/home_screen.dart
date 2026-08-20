@@ -22,8 +22,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _showWebView = false;
   bool _isLoading = false;
-  String _webViewTitle = 'ZEECV';
-  String _webViewUrl = '';
 
   WebViewController? _webViewController;
 
@@ -42,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // CREATE WEBVIEW CONTROLLER
   // ============================================================
 
-  WebViewController _createWebViewController(String url) {
+  WebViewController _createWebViewController() {
     final controller = WebViewController();
 
     controller
@@ -52,15 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
         NavigationDelegate(
           onPageStarted: (String url) {
             debugPrint('WEBVIEW STARTED: $url');
-            setState(() {
-              _isLoading = true;
-            });
           },
           onPageFinished: (String url) {
             debugPrint('WEBVIEW FINISHED: $url');
-            setState(() {
-              _isLoading = false;
-            });
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint(
@@ -68,9 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
               '${error.errorCode} - '
               '${error.description}',
             );
-            setState(() {
-              _isLoading = false;
-            });
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Load Error: ${error.description}")),
@@ -171,10 +160,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============================================================
-  // OPEN WEBVIEW - Edit Resume
+  // OPEN WEBVIEW
   // ============================================================
 
-  void _openEditResumeWebView(UserModel user) {
+  void _openWebView(UserModel user) {
     if (user.loginToken == null || user.loginToken!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -186,39 +175,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final url = 'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-    _openWebView(url, 'Edit Resume');
-  }
-
-  // ============================================================
-  // OPEN WEBVIEW - Terms & Conditions
-  // ============================================================
-
-  void _openTermsWebView() {
-    const url = 'https://zeecv.com/terms?app=yes';
-    _openWebView(url, 'Terms & Conditions');
-  }
-
-  // ============================================================
-  // OPEN WEBVIEW - Privacy Policy
-  // ============================================================
-
-  void _openPrivacyWebView() {
-    const url = 'https://zeecv.com/page-view/privacy-policy?app=yes';
-    _openWebView(url, 'Privacy Policy');
-  }
-
-  // ============================================================
-  // OPEN WEBVIEW - Generic
-  // ============================================================
-
-  void _openWebView(String url, String title) {
+    
     setState(() {
       _isLoading = true;
-      _webViewTitle = title;
-      _webViewUrl = url;
     });
 
-    final controller = _createWebViewController(url);
+    final controller = _createWebViewController();
     _webViewController = controller;
 
     controller.loadRequest(Uri.parse(url)).then((_) {
@@ -252,8 +214,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _showWebView = false;
       _webViewController = null;
       _isLoading = false;
-      _webViewTitle = 'ZEECV';
-      _webViewUrl = '';
     });
   }
 
@@ -262,6 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================================================
 
   void _logout(BuildContext context) {
+    // Show confirmation dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -275,14 +236,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close dialog
+                
+                // Show success message
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(AppStrings.logoutSuccess),
                     backgroundColor: AppColors.success,
                   ),
                 );
+                
+                // Close drawer
                 Navigator.of(context).pop();
+                
+                // Navigate to login
                 context.go('/login');
               },
               style: TextButton.styleFrom(
@@ -297,37 +264,34 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============================================================
-  // LAUNCH URL (Fallback)
+  // OPEN TERMS & CONDITIONS
+  // ============================================================
+
+  void _openTermsAndConditions() {
+    _launchURL('https://zeecv.com/terms-and-conditions');
+  }
+
+  // ============================================================
+  // OPEN PRIVACY POLICY
+  // ============================================================
+
+  void _openPrivacyPolicy() {
+    _launchURL('https://zeecv.com/privacy-policy');
+  }
+
+  // ============================================================
+  // LAUNCH URL
   // ============================================================
 
   Future<void> _launchURL(String url) async {
-    if (url.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid URL'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return;
-    }
-
-    String finalUrl = url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      finalUrl = 'https://$url';
-    }
-
     try {
-      final Uri uri = Uri.parse(finalUrl);
-      
+      final Uri uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
           mode: LaunchMode.externalApplication,
         );
       } else {
-        debugPrint('Cannot launch URL: $finalUrl');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -342,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error opening link: $e'),
+            content: Text('Error: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -376,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_showWebView && _webViewController != null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text(_webViewTitle),
+          title: const Text('ZEECV'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: _closeWebView,
@@ -390,17 +354,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: Stack(
-          children: [
-            WebViewWidget(
-              controller: _webViewController!,
-            ),
-            if (_isLoading)
-              const Center(
+        body: _isLoading
+            ? const Center(
                 child: CircularProgressIndicator(),
+              )
+            : WebViewWidget(
+                controller: _webViewController!,
               ),
-          ],
-        ),
       );
     }
 
@@ -425,46 +385,80 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             // ------------------------------------------------
-            // DRAWER HEADER
+            // DRAWER HEADER - FULL WIDTH WITH GRADIENT
             // ------------------------------------------------
-            DrawerHeader(
+            Container(
+              width: double.infinity, // Full width
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF4A00E0), // Purple
+                    Color(0xFF8E2DE2), // Light Purple
+                  ],
+                ),
+                // You can also use these gradient combinations:
+                // 1. Blue to Purple:
+                // colors: [Color(0xFF0066FF), Color(0xFF6C3CE1)],
+                // 2. Teal to Blue:
+                // colors: [Color(0xFF00B4DB), Color(0xFF0083B0)],
+                // 3. Orange to Red:
+                // colors: [Color(0xFFFF6B6B), Color(0xFFEE5A24)],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Text(
-                      _getInitial(user),
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // User Avatar with border
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 3,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 35,
+                          backgroundColor: Colors.white,
+                          child: Text(
+                            _getInitial(user),
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF4A00E0),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      // User Name
+                      Text(
+                        user?.name ?? 'User',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      // User Email
+                      Text(
+                        user?.email ?? '',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    user?.name ?? 'User',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    user?.email ?? '',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                ),
               ),
             ),
             
@@ -475,40 +469,51 @@ class _HomeScreenState extends State<HomeScreen> {
             // Edit Resume
             ListTile(
               leading: const Icon(Icons.edit_document),
-              title: const Text('Edit Resume'),
+              title: const Text(
+                'Edit Resume',
+                style: TextStyle(fontSize: 16),
+              ),
               onTap: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close drawer
                 if (user != null) {
-                  _openEditResumeWebView(user);
+                  _openWebView(user);
                 }
               },
             ),
             
-            const Divider(),
+            const Divider(height: 1),
             
-            // Terms & Conditions - NOW OPENS IN WEBVIEW
+            // Terms & Conditions
             ListTile(
               leading: const Icon(Icons.description),
-              title: const Text('Terms & Conditions'),
+              title: const Text(
+                'Terms & Conditions',
+                style: TextStyle(fontSize: 16),
+              ),
               onTap: () {
-                Navigator.of(context).pop();
-                _openTermsWebView();  // ← Changed to WebView
+                Navigator.of(context).pop(); // Close drawer
+                _openTermsAndConditions();
               },
             ),
             
-            // Privacy Policy - NOW OPENS IN WEBVIEW
+            const Divider(height: 1),
+            
+            // Privacy Policy
             ListTile(
               leading: const Icon(Icons.privacy_tip),
-              title: const Text('Privacy Policy'),
+              title: const Text(
+                'Privacy Policy',
+                style: TextStyle(fontSize: 16),
+              ),
               onTap: () {
-                Navigator.of(context).pop();
-                _openPrivacyWebView();  // ← Changed to WebView
+                Navigator.of(context).pop(); // Close drawer
+                _openPrivacyPolicy();
               },
             ),
             
             const Spacer(),
             
-            const Divider(),
+            const Divider(height: 1),
             
             // Logout
             ListTile(
@@ -520,24 +525,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Logout',
                 style: TextStyle(
                   color: Colors.red,
+                  fontSize: 16,
                 ),
               ),
               onTap: () => _logout(context),
             ),
             
-            const SizedBox(height: 16),
-            
-            // Version info
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Version 1.0.0',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -628,7 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: user == null ? null : () => _openEditResumeWebView(user),
+                  onPressed: user == null ? null : () => _openWebView(user),
                   icon: const Icon(Icons.edit_document),
                   label: const Text(
                     'Edit Resume',
@@ -648,44 +642,10 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
 
               // ------------------------------------------------
-              // TERMS & CONDITIONS BUTTON
+              // OPEN ZEECV (Optional additional button)
               // ------------------------------------------------
 
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _openTermsWebView,
-                  icon: const Icon(Icons.description),
-                  label: const Text('Terms & Conditions'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // ------------------------------------------------
-              // PRIVACY POLICY BUTTON
-              // ------------------------------------------------
-
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _openPrivacyWebView,
-                  icon: const Icon(Icons.privacy_tip),
-                  label: const Text('Privacy Policy'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
+            
             ],
           ),
         ),
