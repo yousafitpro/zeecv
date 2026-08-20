@@ -511,7 +511,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.close),
 
             onPressed: () {
-              exit(0);
+             _showExitConfirmationDialog(context);
             },
           ),
 
@@ -722,4 +722,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return 'U';
   }
+}
+void _showExitConfirmationDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Exit App'),
+        content: const Text('Are you sure you want to exit?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close dialog
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close dialog
+              exit(0); // Exit app
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Exit'),
+          ),
+        ],
+      );
+    },
+  );
 }
