@@ -22,6 +22,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _showWebView = false;
   bool _isLoading = false;
+  String _webViewTitle = 'ZEECV';
+  String _webViewUrl = '';
 
   WebViewController? _webViewController;
 
@@ -160,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============================================================
-  // OPEN WEBVIEW
+  // OPEN WEBVIEW FOR RESUME
   // ============================================================
 
   void _openWebView(UserModel user) {
@@ -178,6 +180,66 @@ class _HomeScreenState extends State<HomeScreen> {
     
     setState(() {
       _isLoading = true;
+      _webViewTitle = 'ZEECV';
+      _webViewUrl = url;
+    });
+
+    final controller = _createWebViewController();
+    _webViewController = controller;
+
+    controller.loadRequest(Uri.parse(url)).then((_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _showWebView = true;
+        });
+      }
+    }).catchError((error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+  }
+
+  // ============================================================
+  // OPEN WEBVIEW FOR TERMS & CONDITIONS
+  // ============================================================
+
+  void _openTermsAndConditions() {
+    _openWebViewForUrl(
+      'https://zeecv.com/terms?app=yes',
+      'Terms & Conditions',
+    );
+  }
+
+  // ============================================================
+  // OPEN WEBVIEW FOR PRIVACY POLICY
+  // ============================================================
+
+  void _openPrivacyPolicy() {
+    _openWebViewForUrl(
+      'https://zeecv.com/privacy-policy?app=yes',
+      'Privacy Policy',
+    );
+  }
+
+  // ============================================================
+  // OPEN WEBVIEW FOR ANY URL
+  // ============================================================
+
+  void _openWebViewForUrl(String url, String title) {
+    setState(() {
+      _isLoading = true;
+      _webViewTitle = title;
+      _webViewUrl = url;
     });
 
     final controller = _createWebViewController();
@@ -214,6 +276,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _showWebView = false;
       _webViewController = null;
       _isLoading = false;
+      _webViewTitle = 'ZEECV';
+      _webViewUrl = '';
     });
   }
 
@@ -222,7 +286,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================================================
 
   void _logout(BuildContext context) {
-    // Show confirmation dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -236,9 +299,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop();
                 
-                // Show success message
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(AppStrings.logoutSuccess),
@@ -246,10 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
                 
-                // Close drawer
                 Navigator.of(context).pop();
-                
-                // Navigate to login
                 context.go('/login');
               },
               style: TextButton.styleFrom(
@@ -264,23 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============================================================
-  // OPEN TERMS & CONDITIONS
-  // ============================================================
-
-  void _openTermsAndConditions() {
-    _launchURL('https://zeecv.com/terms-and-conditions');
-  }
-
-  // ============================================================
-  // OPEN PRIVACY POLICY
-  // ============================================================
-
-  void _openPrivacyPolicy() {
-    _launchURL('https://zeecv.com/privacy-policy');
-  }
-
-  // ============================================================
-  // LAUNCH URL
+  // LAUNCH URL (For PDFs and external links)
   // ============================================================
 
   Future<void> _launchURL(String url) async {
@@ -340,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_showWebView && _webViewController != null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('ZEECV'),
+          title: Text(_webViewTitle),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: _closeWebView,
@@ -378,9 +421,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      // ==========================================================
-      // DRAWER
-      // ==========================================================
       drawer: Drawer(
         child: Column(
           children: [
@@ -388,23 +428,16 @@ class _HomeScreenState extends State<HomeScreen> {
             // DRAWER HEADER - FULL WIDTH WITH GRADIENT
             // ------------------------------------------------
             Container(
-              width: double.infinity, // Full width
+              width: double.infinity,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF4A00E0), // Purple
-                    Color(0xFF8E2DE2), // Light Purple
+                    AppColors.primary,
+                    AppColors.primaryDark,
                   ],
                 ),
-                // You can also use these gradient combinations:
-                // 1. Blue to Purple:
-                // colors: [Color(0xFF0066FF), Color(0xFF6C3CE1)],
-                // 2. Teal to Blue:
-                // colors: [Color(0xFF00B4DB), Color(0xFF0083B0)],
-                // 3. Orange to Red:
-                // colors: [Color(0xFFFF6B6B), Color(0xFFEE5A24)],
               ),
               child: SafeArea(
                 child: Padding(
@@ -413,7 +446,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // User Avatar with border
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -427,16 +459,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           backgroundColor: Colors.white,
                           child: Text(
                             _getInitial(user),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF4A00E0),
+                              color: AppColors.primary,
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // User Name
                       Text(
                         user?.name ?? 'User',
                         style: const TextStyle(
@@ -447,7 +478,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      // User Email
                       Text(
                         user?.email ?? '',
                         style: const TextStyle(
@@ -466,15 +496,14 @@ class _HomeScreenState extends State<HomeScreen> {
             // DRAWER ITEMS
             // ------------------------------------------------
             
-            // Edit Resume
             ListTile(
-              leading: const Icon(Icons.edit_document),
+              leading: Icon(Icons.edit_document, color: AppColors.primary),
               title: const Text(
                 'Edit Resume',
                 style: TextStyle(fontSize: 16),
               ),
               onTap: () {
-                Navigator.of(context).pop(); // Close drawer
+                Navigator.of(context).pop();
                 if (user != null) {
                   _openWebView(user);
                 }
@@ -483,30 +512,28 @@ class _HomeScreenState extends State<HomeScreen> {
             
             const Divider(height: 1),
             
-            // Terms & Conditions
             ListTile(
-              leading: const Icon(Icons.description),
+              leading: Icon(Icons.description, color: AppColors.primary),
               title: const Text(
                 'Terms & Conditions',
                 style: TextStyle(fontSize: 16),
               ),
               onTap: () {
-                Navigator.of(context).pop(); // Close drawer
+                Navigator.of(context).pop();
                 _openTermsAndConditions();
               },
             ),
             
             const Divider(height: 1),
             
-            // Privacy Policy
             ListTile(
-              leading: const Icon(Icons.privacy_tip),
+              leading: Icon(Icons.privacy_tip, color: AppColors.primary),
               title: const Text(
                 'Privacy Policy',
                 style: TextStyle(fontSize: 16),
               ),
               onTap: () {
-                Navigator.of(context).pop(); // Close drawer
+                Navigator.of(context).pop();
                 _openPrivacyPolicy();
               },
             ),
@@ -515,7 +542,6 @@ class _HomeScreenState extends State<HomeScreen> {
             
             const Divider(height: 1),
             
-            // Logout
             ListTile(
               leading: const Icon(
                 Icons.logout,
@@ -541,29 +567,19 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // ------------------------------------------------
-              // USER AVATAR
-              // ------------------------------------------------
-
               CircleAvatar(
                 radius: 60,
                 backgroundColor: AppColors.primaryBackground,
                 child: Text(
                   _getInitial(user),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
                 ),
               ),
-
               const SizedBox(height: 24),
-
-              // ------------------------------------------------
-              // NAME
-              // ------------------------------------------------
-
               Text(
                 'Welcome, ${user?.name ?? 'User'}!',
                 style: Theme.of(context)
@@ -574,13 +590,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                 textAlign: TextAlign.center,
               ),
-
               const SizedBox(height: 8),
-
-              // ------------------------------------------------
-              // EMAIL
-              // ------------------------------------------------
-
               Text(
                 user?.email ?? '',
                 style: const TextStyle(
@@ -588,13 +598,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 16,
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // ------------------------------------------------
-              // USER ID
-              // ------------------------------------------------
-
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -612,13 +616,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 32),
-
-              // ------------------------------------------------
-              // EDIT RESUME BUTTON
-              // ------------------------------------------------
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -638,14 +636,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-
-              const SizedBox(height: 12),
-
-              // ------------------------------------------------
-              // OPEN ZEECV (Optional additional button)
-              // ------------------------------------------------
-
-            
             ],
           ),
         ),
