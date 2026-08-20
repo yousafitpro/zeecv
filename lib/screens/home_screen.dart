@@ -22,6 +22,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _showWebView = false;
   bool _isLoading = false;
+  String _webViewTitle = 'ZEECV';
+  String _webViewUrl = '';
 
   WebViewController? _webViewController;
 
@@ -40,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // CREATE WEBVIEW CONTROLLER
   // ============================================================
 
-  WebViewController _createWebViewController() {
+  WebViewController _createWebViewController(String url) {
     final controller = WebViewController();
 
     controller
@@ -50,9 +52,15 @@ class _HomeScreenState extends State<HomeScreen> {
         NavigationDelegate(
           onPageStarted: (String url) {
             debugPrint('WEBVIEW STARTED: $url');
+            setState(() {
+              _isLoading = true;
+            });
           },
           onPageFinished: (String url) {
             debugPrint('WEBVIEW FINISHED: $url');
+            setState(() {
+              _isLoading = false;
+            });
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint(
@@ -60,6 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
               '${error.errorCode} - '
               '${error.description}',
             );
+            setState(() {
+              _isLoading = false;
+            });
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Load Error: ${error.description}")),
@@ -160,10 +171,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============================================================
-  // OPEN WEBVIEW
+  // OPEN WEBVIEW - Edit Resume
   // ============================================================
 
-  void _openWebView(UserModel user) {
+  void _openEditResumeWebView(UserModel user) {
     if (user.loginToken == null || user.loginToken!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -175,12 +186,39 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final url = 'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-    
+    _openWebView(url, 'Edit Resume');
+  }
+
+  // ============================================================
+  // OPEN WEBVIEW - Terms & Conditions
+  // ============================================================
+
+  void _openTermsWebView() {
+    const url = 'https://zeecv.com/terms?app=yes';
+    _openWebView(url, 'Terms & Conditions');
+  }
+
+  // ============================================================
+  // OPEN WEBVIEW - Privacy Policy
+  // ============================================================
+
+  void _openPrivacyWebView() {
+    const url = 'https://zeecv.com/page-view/privacy-policy?app=yes';
+    _openWebView(url, 'Privacy Policy');
+  }
+
+  // ============================================================
+  // OPEN WEBVIEW - Generic
+  // ============================================================
+
+  void _openWebView(String url, String title) {
     setState(() {
       _isLoading = true;
+      _webViewTitle = title;
+      _webViewUrl = url;
     });
 
-    final controller = _createWebViewController();
+    final controller = _createWebViewController(url);
     _webViewController = controller;
 
     controller.loadRequest(Uri.parse(url)).then((_) {
@@ -214,6 +252,8 @@ class _HomeScreenState extends State<HomeScreen> {
       _showWebView = false;
       _webViewController = null;
       _isLoading = false;
+      _webViewTitle = 'ZEECV';
+      _webViewUrl = '';
     });
   }
 
@@ -222,7 +262,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================================================
 
   void _logout(BuildContext context) {
-    // Show confirmation dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -236,20 +275,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                
-                // Show success message
+                Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(AppStrings.logoutSuccess),
                     backgroundColor: AppColors.success,
                   ),
                 );
-                
-                // Close drawer
                 Navigator.of(context).pop();
-                
-                // Navigate to login
                 context.go('/login');
               },
               style: TextButton.styleFrom(
@@ -264,34 +297,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============================================================
-  // OPEN TERMS & CONDITIONS
-  // ============================================================
-
-  void _openTermsAndConditions() {
-    _launchURL('https://zeecv.com/terms-and-conditions');
-  }
-
-  // ============================================================
-  // OPEN PRIVACY POLICY
-  // ============================================================
-
-  void _openPrivacyPolicy() {
-    _launchURL('https://zeecv.com/privacy-policy');
-  }
-
-  // ============================================================
-  // LAUNCH URL
+  // LAUNCH URL (Fallback)
   // ============================================================
 
   Future<void> _launchURL(String url) async {
+    if (url.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid URL'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    String finalUrl = url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      finalUrl = 'https://$url';
+    }
+
     try {
-      final Uri uri = Uri.parse(url);
+      final Uri uri = Uri.parse(finalUrl);
+      
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
           mode: LaunchMode.externalApplication,
         );
       } else {
+        debugPrint('Cannot launch URL: $finalUrl');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -306,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Error opening link: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -340,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_showWebView && _webViewController != null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('ZEECV'),
+          title: Text(_webViewTitle),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: _closeWebView,
@@ -354,13 +390,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: _isLoading
-            ? const Center(
+        body: Stack(
+          children: [
+            WebViewWidget(
+              controller: _webViewController!,
+            ),
+            if (_isLoading)
+              const Center(
                 child: CircularProgressIndicator(),
-              )
-            : WebViewWidget(
-                controller: _webViewController!,
               ),
+          ],
+        ),
       );
     }
 
@@ -432,54 +472,37 @@ class _HomeScreenState extends State<HomeScreen> {
             // DRAWER ITEMS
             // ------------------------------------------------
             
-            // Profile Item
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Profile'),
-              onTap: () {
-                Navigator.of(context).pop(); // Close drawer
-                // You can navigate to profile or show user info
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile section coming soon!'),
-                  ),
-                );
-              },
-            ),
-            
-            const Divider(),
-            
             // Edit Resume
             ListTile(
               leading: const Icon(Icons.edit_document),
               title: const Text('Edit Resume'),
               onTap: () {
-                Navigator.of(context).pop(); // Close drawer
+                Navigator.of(context).pop();
                 if (user != null) {
-                  _openWebView(user);
+                  _openEditResumeWebView(user);
                 }
               },
             ),
             
             const Divider(),
             
-            // Terms & Conditions
+            // Terms & Conditions - NOW OPENS IN WEBVIEW
             ListTile(
               leading: const Icon(Icons.description),
               title: const Text('Terms & Conditions'),
               onTap: () {
-                Navigator.of(context).pop(); // Close drawer
-                _openTermsAndConditions();
+                Navigator.of(context).pop();
+                _openTermsWebView();  // ← Changed to WebView
               },
             ),
             
-            // Privacy Policy
+            // Privacy Policy - NOW OPENS IN WEBVIEW
             ListTile(
               leading: const Icon(Icons.privacy_tip),
               title: const Text('Privacy Policy'),
               onTap: () {
-                Navigator.of(context).pop(); // Close drawer
-                _openPrivacyPolicy();
+                Navigator.of(context).pop();
+                _openPrivacyWebView();  // ← Changed to WebView
               },
             ),
             
@@ -605,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: user == null ? null : () => _openWebView(user),
+                  onPressed: user == null ? null : () => _openEditResumeWebView(user),
                   icon: const Icon(Icons.edit_document),
                   label: const Text(
                     'Edit Resume',
@@ -625,15 +648,36 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
 
               // ------------------------------------------------
-              // OPEN ZEECV (Optional additional button)
+              // TERMS & CONDITIONS BUTTON
               // ------------------------------------------------
 
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: user == null ? null : () => _openWebView(user),
-                  icon: const Icon(Icons.language),
-                  label: const Text('Open ZEECV'),
+                  onPressed: _openTermsWebView,
+                  icon: const Icon(Icons.description),
+                  label: const Text('Terms & Conditions'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // ------------------------------------------------
+              // PRIVACY POLICY BUTTON
+              // ------------------------------------------------
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _openPrivacyWebView,
+                  icon: const Icon(Icons.privacy_tip),
+                  label: const Text('Privacy Policy'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
