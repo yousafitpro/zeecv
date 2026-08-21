@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../core/constants/app_strings.dart';
+
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
@@ -27,6 +28,10 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider() {
     _init();
   }
+
+  // ============================================================
+  // INIT
+  // ============================================================
 
   Future<void> _init() async {
     _isLoading = true;
@@ -53,81 +58,51 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
-Future<bool> signInWithGoogle() async {
-  print('🟡 Google Sign-In started');
-  _isLoading = true;
-  _error = null;
-  notifyListeners();
 
-  try {
-    // 1. Sign in with Google
-    print('🟡 Attempting Google sign-in...');
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+  // ============================================================
+  // SETTERS
+  // ============================================================
 
-    if (googleUser == null) {
-      print('🔴 User canceled sign-in');
-      _isLoading = false;
-      notifyListeners();
-      return false; // User canceled
-    }
-
-    print('🟢 User signed in: ${googleUser.email}');
-    
-    // 2. Get authentication tokens
-    final GoogleSignInAuthentication googleAuth = 
-        await googleUser.authentication;
-    
-    print('🟢 Got authentication tokens');
-
-    // 3. Send to your backend API
-    try {
-      final result = await _apiService.signUpWithGoogle(
-        name: googleUser.displayName ?? googleUser.email?.split('@').first ?? 'User',
-        email: googleUser.email ?? '',  // FIXED: was using displayName instead of email
-        idtoken: googleAuth.idToken ?? '',
-        accesstoken: googleAuth.accessToken ?? '',
-      );
-
-      if (result['success']) {
-        final data = result['data'];
-        
-        if (data['token'] != null) {
-          final user = UserModel.fromJson(data);
-          _user = user;
-          
-          if (user.token != null) {
-            _apiService.setAuthToken(user.token!);
-            await _saveToStorage(user.token!, user);
-          }
-        }
-        
-        _isLoading = false;
-        notifyListeners();
-        print('✅ Google Sign-In successful!');
-        return true;
-      } else {
-        _error = result['message'] ?? 'Signup failed';
-        _isLoading = false;
-        notifyListeners();
-        print('🔴 Backend error: ${_error}');
-        return false;
-      }
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      print('🔴 API Error: $e');
-      return false;
-    }
-
-  } catch (e) {
-    print('🔴 Error during Google Sign-In: $e');
-    _error = e.toString();
-    _isLoading = false;
+  void _setLoading(bool loading) {
+    _isLoading = loading;
     notifyListeners();
-    return false;
   }
-}
+
+  void _setError(String error) {
+    _error = error;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  void clearError() {
+    _clearError();
+  }
+
+  // ============================================================
+  // STORAGE
+  // ============================================================
+
+  Future<void> _saveToStorage(String token, UserModel user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+    await prefs.setString('user_data', jsonEncode(user.toJson()));
+  }
+
+  Future<void> _clearStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('user_data');
+    _apiService.clearAuthToken();
+  }
+
+  // ============================================================
+  // SIGN UP
+  // ============================================================
+
   Future<bool> signUp({
     required String name,
     required String email,
@@ -174,7 +149,9 @@ Future<bool> signInWithGoogle() async {
     }
   }
 
-  // REMOVED openZeecvAndCloseApp - Now handled in HomeScreen with WebView
+  // ============================================================
+  // SIGN IN
+  // ============================================================
 
   Future<bool> signIn({
     required String email,
@@ -214,6 +191,91 @@ Future<bool> signInWithGoogle() async {
       return false;
     }
   }
+
+  // ============================================================
+  // SIGN IN WITH GOOGLE
+  // ============================================================
+
+  Future<bool> signInWithGoogle() async {
+    print('🟡 Google Sign-In started');
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // 1. Sign in with Google
+      print('🟡 Attempting Google sign-in...');
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        print('🔴 User canceled sign-in');
+        _isLoading = false;
+        notifyListeners();
+        return false; // User canceled
+      }
+
+      print('🟢 User signed in: ${googleUser.email}');
+      
+      // 2. Get authentication tokens
+      final GoogleSignInAuthentication googleAuth = 
+          await googleUser.authentication;
+      
+      print('🟢 Got authentication tokens');
+
+      // 3. Send to your backend API
+      try {
+        final result = await _apiService.signUpWithGoogle(
+          name: googleUser.displayName ?? googleUser.email?.split('@').first ?? 'User',
+          email: googleUser.email ?? '',
+          idtoken: googleAuth.idToken ?? '',
+          accesstoken: googleAuth.accessToken ?? '',
+        );
+
+        if (result['success']) {
+          final data = result['data'];
+          
+          if (data['token'] != null) {
+            final user = UserModel.fromJson(data);
+            _user = user;
+            
+            if (user.token != null) {
+              _apiService.setAuthToken(user.token!);
+              await _saveToStorage(user.token!, user);
+            }
+          }
+          
+          _isLoading = false;
+          notifyListeners();
+          print('✅ Google Sign-In successful!');
+          return true;
+        } else {
+          _error = result['message'] ?? 'Signup failed';
+          _isLoading = false;
+          notifyListeners();
+          print('🔴 Backend error: ${_error}');
+          return false;
+        }
+      } catch (e) {
+        _error = e.toString();
+        _isLoading = false;
+        notifyListeners();
+        print('🔴 API Error: $e');
+        return false;
+      }
+
+    } catch (e) {
+      print('🔴 Error during Google Sign-In: $e');
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // ============================================================
+  // FORGOT PASSWORD
+  // ============================================================
+
   Future<bool> forgotPassword({
     required String email
   }) async {
@@ -230,7 +292,7 @@ Future<bool> signInWithGoogle() async {
         notifyListeners();
         return true;
       } else {
-        _setError(result['message'] ?? 'Invalid credentials');
+        _setError(result['message'] ?? 'Failed to send reset email');
         _setLoading(false);
         return false;
       }
@@ -240,6 +302,10 @@ Future<bool> signInWithGoogle() async {
       return false;
     }
   }
+
+  // ============================================================
+  // SIGN OUT
+  // ============================================================
 
   Future<void> signOut() async {
     _setLoading(true);
@@ -258,35 +324,63 @@ Future<bool> signInWithGoogle() async {
     _setLoading(false);
   }
 
-  Future<void> _saveToStorage(String token, UserModel user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
-    await prefs.setString('user_data', jsonEncode(user.toJson()));
+  // ============================================================
+  // DELETE ACCOUNT
+  // ============================================================
+
+  Future<bool> deleteAccount() async {
+    try {
+      _setLoading(true);
+      _clearError();
+
+      final result = await _apiService.deleteAccount();
+
+      if (result['success']) {
+        // Clear user data
+        await _clearStorage();
+        _user = null;
+        _setLoading(false);
+        notifyListeners();
+        return true;
+      } else {
+        _setError(result['message'] ?? 'Failed to delete account');
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      _setError('An unexpected error occurred');
+      _setLoading(false);
+      return false;
+    }
   }
 
-  Future<void> _clearStorage() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
-    _apiService.clearAuthToken();
-  }
+  // ============================================================
+  // VERIFY TOKEN
+  // ============================================================
 
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
+  Future<bool> verifyToken() async {
+    if (_user?.token == null) return false;
 
-  void _setError(String error) {
-    _error = error;
-    notifyListeners();
-  }
+    try {
+      final result = await _apiService.verifyToken();
 
-  void _clearError() {
-    _error = null;
-    notifyListeners();
-  }
-
-  void clearError() {
-    _clearError();
+      if (result['success']) {
+        final data = result['data'];
+        final userData = data['user'] ?? data;
+        _user = UserModel.fromJson(userData);
+        notifyListeners();
+        return true;
+      } else {
+        await _clearStorage();
+        _user = null;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      await _clearStorage();
+      _user = null;
+      notifyListeners();
+      return false;
+    }
   }
 }

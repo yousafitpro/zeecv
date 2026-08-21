@@ -245,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openTermsAndConditions() {
     _openWebViewForUrl(
-      'https://zeecv.com/terms?app=yes',
+      'https://zeecv.com/terms?is_app=yes',
       'Terms & Conditions',
     );
   }
@@ -256,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openPrivacyPolicy() {
     _openWebViewForUrl(
-      'https://zeecv.com/privacy-policy?app=yes',
+      'https://zeecv.com/privacy-policy?is_app=yes',
       'Privacy Policy',
     );
   }

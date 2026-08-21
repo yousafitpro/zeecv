@@ -46,7 +46,29 @@ class ApiService {
       ),
     );
   }
+// Add this method to your ApiService class
 
+// ============================================================
+// DELETE ACCOUNT
+// ============================================================
+
+Future<Map<String, dynamic>> deleteAccount() async {
+  try {
+    final response = await _dio.delete(
+      ApiConstants.deleteAccount,
+    );
+
+    // Clear auth token after successful deletion
+    clearAuthToken();
+
+    return {
+      'success': true,
+      'data': response.data,
+    };
+  } catch (e) {
+    return _handleError(e);
+  }
+}
   // ============================================================
   // LOAD JOBS
   // ============================================================
@@ -57,6 +79,7 @@ class ApiService {
   /// {
   ///   "search": "flutter"
   /// }
+  /// 
   Future<Map<String, dynamic>> loadJobs({
     String? search,
   }) async {

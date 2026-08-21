@@ -30,6 +30,154 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isDeleting = false;
+
+  // ============================================================
+  // SHOW DELETE ACCOUNT DIALOG
+  // ============================================================
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Delete Account',
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Are you sure you want to delete your account?',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.red.withOpacity(0.2),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.red,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This action is permanent and cannot be undone. All your data, including resumes and saved jobs, will be permanently deleted.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: _isDeleting ? null : () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: _isDeleting ? null : () => _deleteAccount(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: _isDeleting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Delete Account'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // DELETE ACCOUNT
+  // ============================================================
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    setState(() {
+      _isDeleting = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success = await authProvider.deleteAccount();
+
+      if (success && mounted) {
+        // Close the dialog
+        Navigator.of(context).pop();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account deleted successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+
+        // Navigate to login screen
+        context.go('/login');
+      } else if (mounted) {
+        // Close the dialog
+        Navigator.of(context).pop();
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.error ?? 'Failed to delete account'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDeleting = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -161,6 +309,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 
                 const Divider(height: 1),
                 
+                // Delete Account
+                _buildProfileMenuItem(
+                  icon: Icons.delete_forever,
+                  title: 'Delete Account',
+                  subtitle: 'Permanently delete your account and data',
+                  color: Colors.red,
+                  onTap: () => _showDeleteAccountDialog(context),
+                  isDanger: true,
+                ),
+                
+                const Divider(height: 1),
+                
                 // Logout
                 _buildProfileMenuItem(
                   icon: Icons.logout,
@@ -202,6 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required Color color,
     required VoidCallback? onTap,
     bool isLogout = false,
+    bool isDanger = false,
   }) {
     return ListTile(
       leading: Container(
@@ -221,7 +382,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: isLogout ? Colors.red : Colors.black87,
+          color: (isLogout || isDanger) ? Colors.red : Colors.black87,
         ),
       ),
       subtitle: Text(
@@ -232,12 +393,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       trailing: Icon(
-        isLogout ? Icons.arrow_forward_ios : Icons.chevron_right,
-        color: isLogout ? Colors.red : Colors.grey[400],
+        (isLogout || isDanger) ? Icons.arrow_forward_ios : Icons.chevron_right,
+        color: (isLogout || isDanger) ? Colors.red : Colors.grey[400],
         size: 18,
       ),
       onTap: onTap,
-      tileColor: isLogout ? Colors.red.withOpacity(0.05) : null,
+      tileColor: (isLogout || isDanger) ? Colors.red.withOpacity(0.05) : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),

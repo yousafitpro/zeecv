@@ -73,31 +73,16 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   // ============================================================
-  // OPEN URL BASED ON TYPE
+  // OPEN URL IN IN-APP BROWSER (ALL URLs)
   // ============================================================
 
-  Future<void> _openJobUrl(String url, {String? type}) async {
+  Future<void> _openInAppBrowser(String url) async {
     try {
-      final uri = Uri.parse(url);
-      
-      // If type is 'internal', open in InAppWebView
-      if (type != null && type.toLowerCase() == 'internal') {
-        setState(() {
-          _showInAppBrowser = true;
-          _inAppBrowserUrl = url;
-          _progress = 0;
-        });
-      } else {
-        // Otherwise open in external browser
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(
-            uri,
-            mode: LaunchMode.externalApplication,
-          );
-        } else {
-          _showError('Could not open link');
-        }
-      }
+      setState(() {
+        _showInAppBrowser = true;
+        _inAppBrowserUrl = url;
+        _progress = 0;
+      });
     } catch (e) {
       _showError('Error: $e');
     }
@@ -294,42 +279,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              // Show type badge for internal jobs only
-              if (isInternal)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.purple[50],
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.purple[300]!,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.open_in_browser,
-                        size: 12,
-                        color: Colors.purple[700],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Internal',
-                        style: TextStyle(
-                          color: Colors.purple[700],
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              const SizedBox(width: 8)
             ],
           ),
           const SizedBox(height: 12),
@@ -449,18 +399,13 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Apply Now Button - ALWAYS show for both internal and external
+          // Apply Now Button - ALWAYS opens in in-app browser
           if (_job!.url.isNotEmpty)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _openJobUrl(
-                  _job!.url,
-                  type: _job!.type,
-                ),
-                icon: Icon(
-                  isInternal ? Icons.open_in_browser : Icons.open_in_new,
-                ),
+                onPressed: () => _openInAppBrowser(_job!.url),
+                icon: const Icon(Icons.open_in_browser),
                 label: const Text(
                   'Apply Now',
                   style: TextStyle(
@@ -473,9 +418,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  backgroundColor: isInternal 
-                      ? Colors.purple 
-                      : Theme.of(context).primaryColor,
+                  backgroundColor: Theme.of(context).primaryColor,
                 ),
               ),
             ),
@@ -574,13 +517,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             ),
           const SizedBox(height: 24),
 
-          // Source Link
+          // Source Link - Opens in in-app browser
           if (_job!.url.isNotEmpty)
             InkWell(
-              onTap: () => _openJobUrl(
-                _job!.url,
-                type: _job!.type,
-              ),
+              onTap: () => _openInAppBrowser(_job!.url),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -594,9 +534,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    isInternal
-                        ? Icons.open_in_browser
-                        : Icons.open_in_new,
+                    Icons.open_in_browser,
                     size: 16,
                     color: Theme.of(context).primaryColor,
                   ),

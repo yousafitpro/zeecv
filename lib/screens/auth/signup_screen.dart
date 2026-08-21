@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zeecv/widgets/google_sign_in_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -33,6 +35,47 @@ class _SignupScreenState extends State<SignupScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  // ============================================================
+  // LAUNCH URL IN APP WEBVIEW
+  // ============================================================
+
+  Future<void> _launchInAppWebView(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.inAppWebView,
+          webViewConfiguration: const WebViewConfiguration(
+            enableJavaScript: true,
+            enableDomStorage: true,
+          ),
+        );
+      } else {
+        // Fallback to external browser
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        }
+      }
+    } catch (e) {
+      // Try external browser as fallback
+      try {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        }
+      } catch (_) {
+        // Ignore
+      }
+    }
   }
 
   @override
@@ -140,32 +183,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 
                 const SizedBox(height: 16),
                 
-                // Terms & Conditions
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _acceptedTerms,
-                      onChanged: (value) {
-                        setState(() {
-                          _acceptedTerms = value ?? false;
-                        });
-                      },
-                      activeColor: AppColors.primary,
-                    ),
-                    Expanded(
-                      child: Text(
-                        'I agree to the Terms of Service and Privacy Policy',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                
                 // Error Message
                 if (authProvider.error != null) ...[
                   Container(
@@ -208,6 +225,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Please accept the Terms of Service'),
+                            backgroundColor: Colors.orange,
                           ),
                         );
                         return;
@@ -239,9 +257,35 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                   isLoading: authProvider.isLoading,
                 ),
+                
                 const SizedBox(height: 16),
+                
+                // OR Divider
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: AppColors.border)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        AppStrings.or,
+                        style: TextStyle(color: AppColors.textLight),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: AppColors.border)),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Google Sign In Button
                 const GoogleSignInButton(),
-                const SizedBox(height: 24),
+                
+                const SizedBox(height: 16),
+                
+                // Terms & Conditions Section
+                _buildTermsSection(),
+                
+                const SizedBox(height: 16),
                 
                 // Sign In Link
                 Row(
@@ -264,6 +308,100 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // ============================================================
+  // BUILD TERMS SECTION
+  // ============================================================
+
+  Widget _buildTermsSection() {
+    return Column(
+      children: [
+        // Terms Checkbox
+        Row(
+          children: [
+            Checkbox(
+              value: _acceptedTerms,
+              onChanged: (value) {
+                setState(() {
+                  _acceptedTerms = value ?? false;
+                });
+              },
+              activeColor: AppColors.primary,
+            ),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                  children: [
+                    const TextSpan(text: 'I agree to the '),
+                    TextSpan(
+                      text: 'Terms & Conditions',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()..onTap = () {
+                        _launchInAppWebView('https://zeecv.com/terms?is_app=yes');
+                      },
+                    ),
+                    const TextSpan(text: ' and '),
+                    TextSpan(
+                      text: 'Privacy Policy',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()..onTap = () {
+                        _launchInAppWebView('https://zeecv.com/privacy-policy?is_app=yes');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 8),
+        
+        // Info Container
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey[200]!,
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.info_outline,
+                size: 16,
+                color: Colors.grey,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'By creating an account, you agree to our Terms and Privacy Policy',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

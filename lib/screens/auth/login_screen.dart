@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zeecv/widgets/google_sign_in_button.dart';
+import 'package:flutter/gestures.dart'; 
 import '../../providers/auth_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
@@ -27,6 +29,47 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  // ============================================================
+  // LAUNCH URL IN APP WEBVIEW
+  // ============================================================
+
+  Future<void> _launchInAppWebView(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.inAppWebView,
+          webViewConfiguration: const WebViewConfiguration(
+            enableJavaScript: true,
+            enableDomStorage: true,
+          ),
+        );
+      } else {
+        // Fallback to external browser
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        }
+      }
+    } catch (e) {
+      // Try external browser as fallback
+      try {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        }
+      } catch (_) {
+        // Ignore
+      }
+    }
   }
 
   @override
@@ -114,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      context.go('/forgot-paasword');
+                      context.go('/forgot-password');
                     },
                     child: const Text('Forgot Password?'),
                   ),
@@ -179,8 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 
                 const SizedBox(height: 16),
-                const GoogleSignInButton(),
-                const SizedBox(height: 16),
+                
                 // OR Divider
                 Row(
                   children: [
@@ -195,6 +237,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     Expanded(child: Divider(color: AppColors.border)),
                   ],
                 ),
+                
+                const SizedBox(height: 16),
+                
+                // Google Sign In Button
+                const GoogleSignInButton(),
+                
+                const SizedBox(height: 16),
+                
+                // Terms & Conditions Section
+                _buildTermsSection(),
                 
                 const SizedBox(height: 16),
                 
@@ -219,6 +271,74 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // ============================================================
+  // BUILD TERMS SECTION
+  // ============================================================
+
+  Widget _buildTermsSection() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey[200]!,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.info_outline,
+                size: 16,
+                color: Colors.grey,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                    children: [
+                      const TextSpan(text: 'By continuing, you agree to our '),
+                      TextSpan(
+                        text: 'Terms & Conditions',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w500,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()..onTap = () {
+                          _launchInAppWebView('https://zeecv.com/terms?is_app=yes');
+                        },
+                      ),
+                      const TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'Privacy Policy',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w500,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: TapGestureRecognizer()..onTap = () {
+                          _launchInAppWebView('https://zeecv.com/privacy-policy?is_app=yes');
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
