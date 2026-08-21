@@ -272,7 +272,22 @@ class ApiService {
       };
     }
   }
+  /// Load my jobs (saved/applied jobs)
+  Future<Map<String, dynamic>> loadMyJobs() async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.myJobs,
+        data: {},
+      );
 
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      return _handleError(e);
+    }
+  }
   Future<Map<String, dynamic>> verifyToken() async {
     if (_authToken == null) return {'success': false, 'message': 'No token found'};
 

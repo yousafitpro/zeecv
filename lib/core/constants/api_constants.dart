@@ -10,6 +10,7 @@ class ApiConstants {
   static const String forgotPassword = '$baseUrl/forgot-password';
   static const String resetPassword = '$baseUrl/reset-password';
   static const String jobs = '$baseUrl/jobs';
+  static const String myJobs = '$baseUrl/jobs';
   
   // Headers
   static const String contentType = 'application/json';

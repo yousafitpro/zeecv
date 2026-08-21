@@ -13,7 +13,7 @@ import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
 import 'find_job_screen.dart';
 import 'my_jobs_screen.dart';
-import 'resumes_screen.dart';
+import 'resume_screen.dart';
 import 'profile_screen.dart';
 
 // ============================================================
@@ -39,6 +39,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Bottom navigation index
   int _selectedIndex = 0;
+
+  // ============================================================
+  // GET TITLE BASED ON SELECTED INDEX
+  // ============================================================
+
+  String _getTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Find Jobs';
+      case 1:
+        return 'My Jobs';
+      case 2:
+        return 'Resume';
+      case 3:
+        return 'Profile';
+      default:
+        return AppStrings.appName;
+    }
+  }
 
   // ============================================================
   // INIT
@@ -191,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
     
     setState(() {
       _isLoading = true;
-      _webViewTitle = 'ZEECV';
+      _webViewTitle = 'Edit Resume';
       _webViewUrl = url;
     });
 
@@ -426,7 +445,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Widget> _screens = [
       const FindJobScreen(),
       const MyJobsScreen(),
-      const ResumesScreen(),
+      ResumeScreen(
+        user: user,
+        onEditResume: user != null ? () => _openWebView(user) : null,
+      ),
       ProfileScreen(
         user: user,
         onLogout: () => _logout(context),
@@ -438,13 +460,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.appName),
-        actions: [
-          IconButton(
-            onPressed: () => _logout(context),
-            icon: const Icon(Icons.logout),
-          ),
-        ],
+        title: Text(_getTitle(_selectedIndex)),
+        elevation: 0,
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -468,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.description),
-            label: 'Resumes',
+            label: 'Resume',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
