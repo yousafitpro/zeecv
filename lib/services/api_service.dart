@@ -15,7 +15,7 @@ class ApiService {
   ApiService._internal() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.baseUrl, // Assuming you have a baseUrl in constants
+        baseUrl: ApiConstants.baseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         headers: {
@@ -24,6 +24,81 @@ class ApiService {
         },
       ),
     );
+
+    // ============================================================
+    // ADD INTERCEPTOR TO AUTO-ADD AUTH TOKEN
+    // ============================================================
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // Automatically add token to all requests if available
+          if (_authToken != null && _authToken!.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $_authToken';
+          }
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          return handler.next(response);
+        },
+        onError: (error, handler) {
+          return handler.next(error);
+        },
+      ),
+    );
+  }
+
+  // ============================================================
+  // LOAD JOBS
+  // ============================================================
+  
+  /// Load jobs with optional search query
+  /// 
+  /// Example payload:
+  /// {
+  ///   "search": "flutter"
+  /// }
+  Future<Map<String, dynamic>> loadJobs({
+    String? search,
+  }) async {
+    try {
+      final payload = <String, dynamic>{};
+      
+      if (search != null && search.isNotEmpty) {
+        payload['search'] = search;
+      }
+      
+      final response = await _dio.post(
+        ApiConstants.jobs,
+        data: payload,
+      );
+
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  // ============================================================
+  // GET JOB DETAILS
+  // ============================================================
+  
+  /// Get job details by slug
+  Future<Map<String, dynamic>> getJobDetails(String slug) async {
+    try {
+      final response = await _dio.get(
+        '${ApiConstants.jobs}/$slug',
+      );
+
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      return _handleError(e);
+    }
   }
 
   /// IMPORTANT: Call this in your main.dart or before first API call
@@ -41,8 +116,6 @@ class ApiService {
       _dio.httpClientAdapter = IOHttpClientAdapter(
         createHttpClient: () {
           final client = HttpClient(context: context);
-          // Optional: You can still add a fail-safe (not recommended for strict production)
-          // client.badCertificateCallback = (cert, host, port) => false; 
           return client;
         },
       );
@@ -54,23 +127,26 @@ class ApiService {
 
   void setAuthToken(String token) {
     _authToken = token;
-    // Add to default headers for all future requests
-    _dio.options.headers['Authorization'] = 'Bearer $token';
+    // The interceptor will automatically add this to all requests
+    // No need to manually set headers here anymore
   }
 
   void clearAuthToken() {
     _authToken = null;
-    _dio.options.headers.remove('Authorization');
+    // The interceptor will stop adding the token
   }
 
   // Helper to handle Dio errors consistently
   Map<String, dynamic> _handleError(dynamic e) {
     String message = "An unexpected error occurred";
     if (e is DioException) {
-      if (e.type == DioExceptionType.connectionError && e.error.toString().contains('CERTIFICATE_VERIFY_FAILED')) {
+      if (e.type == DioExceptionType.connectionError && 
+          e.error.toString().contains('CERTIFICATE_VERIFY_FAILED')) {
         message = "SSL Certificate Error: Please ensure the app is up to date.";
       } else {
-        message = e.response?.data['message'] ?? e.response?.data['error'] ?? e.message;
+        message = e.response?.data['message'] ?? 
+                  e.response?.data['error'] ?? 
+                  e.message;
       }
     }
     return {'success': false, 'message': message};
@@ -85,17 +161,16 @@ class ApiService {
     required String accesstoken,
   }) async {
     try {
-      // Dio automatically encodes Map to JSON
       final response = await _dio.post(
         ApiConstants.signupwithgoogle,
         data: {
           'name': name,
           'email': email,
-          'idtoken':idtoken,
-          'accesstoken':accesstoken
+          'idtoken': idtoken,
+          'accesstoken': accesstoken
         },
       );
-       final data = response.data;
+      final data = response.data;
       if (data['token'] != null) {
         setAuthToken(data['token']);
       }
@@ -107,13 +182,13 @@ class ApiService {
       return _handleError(e);
     }
   }
+
   Future<Map<String, dynamic>> signUp({
     required String name,
     required String email,
     required String password,
   }) async {
     try {
-      // Dio automatically encodes Map to JSON
       final response = await _dio.post(
         ApiConstants.signup,
         data: {
@@ -158,6 +233,7 @@ class ApiService {
       return _handleError(e);
     }
   }
+
   Future<Map<String, dynamic>> forgotPassword({
     required String email
   }) async {
@@ -170,9 +246,6 @@ class ApiService {
       );
 
       final data = response.data;
-      if (data['token'] != null) {
-        
-      }
 
       return {
         'success': true,
