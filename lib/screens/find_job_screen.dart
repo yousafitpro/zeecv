@@ -10,7 +10,7 @@ class FindJobScreen extends StatefulWidget {
   State<FindJobScreen> createState() => _FindJobScreenState();
 }
 
-class _FindJobScreenState extends State<FindJobScreen> {
+class _FindJobScreenState extends State<FindJobScreen> with AutomaticKeepAliveClientMixin {
   List<Job> _jobs = [];
   bool _isLoading = true;
   bool _isFirstLoad = true;
@@ -18,6 +18,9 @@ class _FindJobScreenState extends State<FindJobScreen> {
   String? _currentSearchQuery;
 
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  bool get wantKeepAlive => true; // This keeps the state alive when switching tabs
 
   @override
   void initState() {
@@ -82,6 +85,8 @@ class _FindJobScreenState extends State<FindJobScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    
     return Scaffold(
       body: Column(
         children: [
@@ -277,10 +282,7 @@ class _FindJobScreenState extends State<FindJobScreen> {
           MaterialPageRoute(
             builder: (context) => JobDetailScreen(slug: job.slug),
           ),
-        ).then((_) {
-          // Refresh data when coming back from detail
-          _loadJobs(searchQuery: _currentSearchQuery);
-        });
+        );
       },
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),
