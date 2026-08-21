@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
 
@@ -20,6 +21,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Job? _job;
   bool _isLoading = true;
   String? _errorMessage;
+
+  // InAppWebView state
+  bool _showInAppBrowser = false;
+  String? _inAppBrowserUrl;
+  InAppWebViewController? _webViewController;
+  double _progress = 0;
 
   @override
   void initState() {
@@ -65,8 +72,140 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     }
   }
 
+  // ============================================================
+  // OPEN URL BASED ON TYPE
+  // ============================================================
+
+  Future<void> _openJobUrl(String url, {String? type}) async {
+    try {
+      final uri = Uri.parse(url);
+      
+      // If type is 'internal', open in InAppWebView
+      if (type != null && type.toLowerCase() == 'internal') {
+        setState(() {
+          _showInAppBrowser = true;
+          _inAppBrowserUrl = url;
+          _progress = 0;
+        });
+      } else {
+        // Otherwise open in external browser
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        } else {
+          _showError('Could not open link');
+        }
+      }
+    } catch (e) {
+      _showError('Error: $e');
+    }
+  }
+
+  // ============================================================
+  // CLOSE IN-APP BROWSER
+  // ============================================================
+
+  void _closeInAppBrowser() {
+    setState(() {
+      _showInAppBrowser = false;
+      _inAppBrowserUrl = null;
+      _webViewController = null;
+      _progress = 0;
+    });
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ==========================================================
+    // IN-APP BROWSER (WEBVIEW)
+    // ==========================================================
+
+    if (_showInAppBrowser && _inAppBrowserUrl != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _job?.title ?? 'Loading...',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: _closeInAppBrowser,
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                _webViewController?.reload();
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.open_in_browser),
+              onPressed: () async {
+                if (_inAppBrowserUrl != null) {
+                  final uri = Uri.parse(_inAppBrowserUrl!);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(
+                      uri,
+                      mode: LaunchMode.externalApplication,
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(2),
+            child: LinearProgressIndicator(
+              value: _progress,
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+        ),
+        body: InAppWebView(
+          initialUrlRequest: URLRequest(
+            url: WebUri(_inAppBrowserUrl!),
+          ),
+          onWebViewCreated: (controller) {
+            _webViewController = controller;
+          },
+          onProgressChanged: (controller, progress) {
+            setState(() {
+              _progress = progress / 100;
+            });
+          },
+          onLoadStart: (controller, url) {
+            setState(() {
+              _inAppBrowserUrl = url?.toString();
+            });
+          },
+          onLoadError: (controller, url, code, message) {
+            _showError('Failed to load page: $message');
+          },
+        ),
+      );
+    }
+
+    // ==========================================================
+    // NORMAL DETAIL VIEW
+    // ==========================================================
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Job Details'),
@@ -126,29 +265,72 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       );
     }
 
+    final bool isInternal = _job!.type != null && 
+        _job!.type!.toLowerCase() == 'internal';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Company Name
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              _job!.companyName,
-              style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+          // Company Name with Type Badge
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _job!.companyName,
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // Show type badge for internal jobs only
+              if (isInternal)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.purple[50],
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.purple[300]!,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.open_in_browser,
+                        size: 12,
+                        color: Colors.purple[700],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Internal',
+                        style: TextStyle(
+                          color: Colors.purple[700],
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 12),
 
@@ -267,19 +449,33 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Apply Button
+          // Apply Now Button - ALWAYS show for both internal and external
           if (_job!.url.isNotEmpty)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _launchUrl(_job!.url),
-                icon: const Icon(Icons.open_in_new),
-                label: const Text('Apply Now'),
+                onPressed: () => _openJobUrl(
+                  _job!.url,
+                  type: _job!.type,
+                ),
+                icon: Icon(
+                  isInternal ? Icons.open_in_browser : Icons.open_in_new,
+                ),
+                label: const Text(
+                  'Apply Now',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  backgroundColor: isInternal 
+                      ? Colors.purple 
+                      : Theme.of(context).primaryColor,
                 ),
               ),
             ),
@@ -376,7 +572,37 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                 },
               ),
             ),
+          const SizedBox(height: 24),
 
+          // Source Link
+          if (_job!.url.isNotEmpty)
+            InkWell(
+              onTap: () => _openJobUrl(
+                _job!.url,
+                type: _job!.type,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'View on ${_getDomainName(_job!.url)}',
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    isInternal
+                        ? Icons.open_in_browser
+                        : Icons.open_in_new,
+                    size: 16,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 16),
         ],
       ),
@@ -418,36 +644,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       return host;
     } catch (e) {
       return 'Website';
-    }
-  }
-
-  Future<void> _launchUrl(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Could not open link'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     }
   }
 }
