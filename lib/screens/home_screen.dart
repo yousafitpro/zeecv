@@ -12,6 +12,122 @@ import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
 
+// ============================================================
+// PLACEHOLDER SCREENS FOR BOTTOM TABS
+// ============================================================
+
+class FindJobScreen extends StatelessWidget {
+  const FindJobScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Find Job',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Search and discover job opportunities',
+            style: TextStyle(
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MyJobsScreen extends StatelessWidget {
+  const MyJobsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.work,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'My Jobs',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'View your applied and saved jobs',
+            style: TextStyle(
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ResumesScreen extends StatelessWidget {
+  const ResumesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.description,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Resumes',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Manage your resumes and CVs',
+            style: TextStyle(
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -28,6 +144,9 @@ class _HomeScreenState extends State<HomeScreen> {
   WebViewController? _webViewController;
 
   Timer? _openWebViewTimer;
+
+  // Bottom navigation index
+  int _selectedIndex = 0;
 
   // ============================================================
   // INIT
@@ -408,8 +527,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // ==========================================================
-    // NORMAL HOME SCREEN
+    // BOTTOM NAVIGATION HOME SCREEN
     // ==========================================================
+
+    // Define the screens for each tab
+    final List<Widget> _screens = [
+      const FindJobScreen(),
+      const MyJobsScreen(),
+      const ResumesScreen(),
+      _buildProfileScreen(user),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -421,224 +548,250 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            // ------------------------------------------------
-            // DRAWER HEADER - FULL WIDTH WITH GRADIENT
-            // ------------------------------------------------
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.primary,
-                    AppColors.primaryDark,
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Find Job',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.work),
+            label: 'My Jobs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.description),
+            label: 'Resumes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // PROFILE SCREEN
+  // ============================================================
+
+  Widget _buildProfileScreen(UserModel? user) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Profile Header with Gradient Background
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary,
+                  AppColors.primaryDark,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
+                child: Column(
+                  children: [
+                    // Profile Avatar
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 4,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          _getInitial(user),
+                          style: const TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      user?.name ?? 'User',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user?.email ?? '',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'ID: ${user?.id ?? 'N/A'}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 3,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 35,
-                          backgroundColor: Colors.white,
-                          child: Text(
-                            _getInitial(user),
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        user?.name ?? 'User',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? '',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Menu Items
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                // Edit Resume
+                _buildProfileMenuItem(
+                  icon: Icons.edit_document,
+                  title: 'Edit Resume',
+                  subtitle: 'Update your CV and portfolio',
+                  color: AppColors.primary,
+                  onTap: user == null ? null : () => _openWebView(user),
                 ),
-              ),
-            ),
-            
-            // ------------------------------------------------
-            // DRAWER ITEMS
-            // ------------------------------------------------
-            
-            ListTile(
-              leading: Icon(Icons.edit_document, color: AppColors.primary),
-              title: const Text(
-                'Edit Resume',
-                style: TextStyle(fontSize: 16),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                if (user != null) {
-                  _openWebView(user);
-                }
-              },
-            ),
-            
-            const Divider(height: 1),
-            
-            ListTile(
-              leading: Icon(Icons.description, color: AppColors.primary),
-              title: const Text(
-                'Terms & Conditions',
-                style: TextStyle(fontSize: 16),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                _openTermsAndConditions();
-              },
-            ),
-            
-            const Divider(height: 1),
-            
-            ListTile(
-              leading: Icon(Icons.privacy_tip, color: AppColors.primary),
-              title: const Text(
-                'Privacy Policy',
-                style: TextStyle(fontSize: 16),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                _openPrivacyPolicy();
-              },
-            ),
-            
-            const Spacer(),
-            
-            const Divider(height: 1),
-            
-            ListTile(
-              leading: const Icon(
-                Icons.logout,
-                color: Colors.red,
-              ),
-              title: const Text(
-                'Logout',
-                style: TextStyle(
+                
+                const Divider(height: 1),
+                
+                // Terms & Conditions
+                _buildProfileMenuItem(
+                  icon: Icons.description,
+                  title: 'Terms & Conditions',
+                  subtitle: 'Read our terms of service',
+                  color: Colors.blue,
+                  onTap: _openTermsAndConditions,
+                ),
+                
+                const Divider(height: 1),
+                
+                // Privacy Policy
+                _buildProfileMenuItem(
+                  icon: Icons.privacy_tip,
+                  title: 'Privacy Policy',
+                  subtitle: 'Learn how we protect your data',
+                  color: Colors.purple,
+                  onTap: _openPrivacyPolicy,
+                ),
+                
+                const Divider(height: 1),
+                
+                // Logout
+                _buildProfileMenuItem(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  subtitle: 'Sign out from your account',
                   color: Colors.red,
-                  fontSize: 16,
+                  onTap: () => _logout(context),
+                  isLogout: true,
                 ),
-              ),
-              onTap: () => _logout(context),
+              ],
             ),
-            
-            const SizedBox(height: 8),
-          ],
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // App Version
+          Text(
+            'App Version 1.0.0',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 12,
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // PROFILE MENU ITEM
+  // ============================================================
+
+  Widget _buildProfileMenuItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback? onTap,
+    bool isLogout = false,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          color: color,
+          size: 24,
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: AppColors.primaryBackground,
-                child: Text(
-                  _getInitial(user),
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Welcome, ${user?.name ?? 'User'}!',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                user?.email ?? '',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBackground,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'ID: ${user?.id ?? 'N/A'}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textLight,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: user == null ? null : () => _openWebView(user),
-                  icon: const Icon(Icons.edit_document),
-                  label: const Text(
-                    'Edit Resume',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: isLogout ? Colors.red : Colors.black87,
         ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          fontSize: 13,
+          color: Colors.grey[600],
+        ),
+      ),
+      trailing: Icon(
+        isLogout ? Icons.arrow_forward_ios : Icons.chevron_right,
+        color: isLogout ? Colors.red : Colors.grey[400],
+        size: 18,
+      ),
+      onTap: onTap,
+      tileColor: isLogout ? Colors.red.withOpacity(0.05) : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
     );
   }
