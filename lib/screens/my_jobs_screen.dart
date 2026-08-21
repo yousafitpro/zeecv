@@ -4,7 +4,14 @@ import '../models/job_model.dart';
 import 'job_detail_screen.dart';
 
 class MyJobsScreen extends StatefulWidget {
-  const MyJobsScreen({super.key});
+  final VoidCallback? onEditResume;
+  final VoidCallback? onBrowseJobs;
+
+  const MyJobsScreen({
+    super.key,
+    this.onEditResume,
+    this.onBrowseJobs,
+  });
 
   @override
   State<MyJobsScreen> createState() => _MyJobsScreenState();
@@ -125,33 +132,89 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
 
     if (_jobs.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.work_off,
-              size: 80,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No jobs saved',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Empty state icon
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.work_off,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'You haven\'t saved or applied to any jobs yet',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 14,
+              const SizedBox(height: 24),
+              
+              // Title
+              Text(
+                'No Jobs Found',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 12),
+              
+              // Description
+              Text(
+                'Jobs will appear here once you\'ve built your resume with your skills and experience',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              
+              // Edit Resume Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: widget.onEditResume,
+                  icon: const Icon(Icons.edit_document),
+                  label: const Text(
+                    'Edit Resume',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Or browse jobs
+              TextButton(
+                onPressed: widget.onBrowseJobs,
+                child: Text(
+                  'Browse Jobs Instead',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
