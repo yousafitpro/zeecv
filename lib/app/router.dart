@@ -19,6 +19,7 @@ import '../screens/profile_screen.dart';
 import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
+import '../screens/job_detail_screen.dart';
 
 class AppRouter {
   // ============================================================
@@ -169,48 +170,103 @@ class AppRouter {
   // LOGOUT
   // ============================================================
 
-  static void _logout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              await authProvider.logout();
-                Navigator.of(context).pop();
-                
-                  
-                  context.go('/login');
-                await authProvider.logout();
-                
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(AppStrings.logoutSuccess),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
-                }
-                context.go('/login');
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
+static void _logout(BuildContext context) {
+  bool isLoading = false;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext dialogContext) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Logout'),
+            content: isLoading
+                ? const Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(),
+                      ),
+                      SizedBox(width: 16),
+                      Text('Logging out...'),
+                    ],
+                  )
+                : const Text('Are you sure you want to logout?'),
+            actions: [
+              TextButton(
+                onPressed: isLoading
+                    ? null
+                    : () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
               ),
-              child: const Text('Logout'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+              TextButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        setState(() {
+                          isLoading = true;
+                        });
+
+                        final authProvider =
+                            Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        );
+
+                        try {
+                          await authProvider.logout();
+
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
+
+                          if (context.mounted) {
+                            context.go('/login');
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text(AppStrings.logoutSuccess),
+                                backgroundColor: AppColors.success,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            setState(() {
+                              isLoading = false;
+                            });
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Logout failed: $e'),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                ),
+                child: isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Logout'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
   // ============================================================
   // ROUTER CONFIGURATION
@@ -333,6 +389,14 @@ class AppRouter {
                     ? () => _openEditResumeWebView(context, user)
                     : null,
               );
+            },
+          ),
+          GoRoute(
+            path: '/job-detail/:slug',
+            name: 'job-detail',
+            builder: (context, state) {
+              final slug = state.pathParameters['slug'] ?? '';
+              return JobDetailScreen(slug: slug);
             },
           ),
           GoRoute(

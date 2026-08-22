@@ -46,19 +46,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int get _selectedIndex {
     try {
-      // Use GoRouterState to get the current location
       final routerState = GoRouterState.of(context);
-      final location = routerState.matchedLocation; // Use matchedLocation instead of location
+      final location = routerState.matchedLocation;
       
       if (location.contains('/home/find-jobs')) return 0;
       if (location.contains('/home/my-jobs')) return 1;
       if (location.contains('/home/resume')) return 2;
       if (location.contains('/home/profile')) return 3;
     } catch (e) {
-      // Fallback if GoRouterState is not available
       debugPrint('Error getting route: $e');
     }
     return 0;
+  }
+
+  // ============================================================
+  // CHECK IF ON JOB DETAIL
+  // ============================================================
+
+  bool get _isOnJobDetail {
+    try {
+      final routerState = GoRouterState.of(context);
+      final location = routerState.matchedLocation;
+      return location.contains('/job-detail');
+    } catch (e) {
+      return false;
+    }
   }
 
   // ============================================================
@@ -359,7 +371,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
                 
-                // Clear auth provider
                 final authProvider = Provider.of<AuthProvider>(context, listen: false);
                 authProvider.logout();
                 
@@ -465,53 +476,65 @@ class _HomeScreenState extends State<HomeScreen> {
     // BOTTOM NAVIGATION HOME SCREEN
     // ==========================================================
 
+    // Check if on job detail
+    final isJobDetail = _isOnJobDetail;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_getTitle(_selectedIndex)),
+        title: Text(isJobDetail ? 'Job Detail' : _getTitle(_selectedIndex)),
         elevation: 0,
+        leading: isJobDetail
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  context.go('/home/find-jobs');
+                },
+              )
+            : null,
       ),
       body: widget.tabNavigator ?? const FindJobScreen(),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          // Navigate to the appropriate route
-          switch (index) {
-            case 0:
-              context.go('/home/find-jobs');
-              break;
-            case 1:
-              context.go('/home/my-jobs');
-              break;
-            case 2:
-              context.go('/home/resume');
-              break;
-            case 3:
-              context.go('/home/profile');
-              break;
-          }
-        },
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Find Job',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.work),
-            label: 'My Jobs',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.description),
-            label: 'Resume',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
+      bottomNavigationBar: isJobDetail
+          ? null // Hide bottom nav on job detail
+          : BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _selectedIndex,
+              onTap: (index) {
+                switch (index) {
+                  case 0:
+                    context.go('/home/find-jobs');
+                    break;
+                  case 1:
+                    context.go('/home/my-jobs');
+                    break;
+                  case 2:
+                    context.go('/home/resume');
+                    break;
+                  case 3:
+                    context.go('/home/profile');
+                    break;
+                }
+              },
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: Colors.grey,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.search),
+                  label: 'Find Job',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.work),
+                  label: 'My Jobs',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.description),
+                  label: 'Resume',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+              ],
+            ),
     );
   }
 }

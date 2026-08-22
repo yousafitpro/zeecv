@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
 import 'job_detail_screen.dart';
-
+import 'package:go_router/go_router.dart'; //
 class FindJobScreen extends StatefulWidget {
   const FindJobScreen({super.key});
 
@@ -276,14 +276,9 @@ class _FindJobScreenState extends State<FindJobScreen> with AutomaticKeepAliveCl
         : [];
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => JobDetailScreen(slug: job.slug),
-          ),
-        );
-      },
+        onTap: () {
+          context.go('/job-detail/${job.slug}');
+        },
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(

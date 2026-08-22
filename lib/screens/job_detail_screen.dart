@@ -192,10 +192,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     // ==========================================================
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Job Details'),
-        elevation: 0,
-      ),
       body: _buildContent(),
     );
   }
