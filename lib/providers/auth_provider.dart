@@ -323,6 +323,22 @@ class AuthProvider extends ChangeNotifier {
     
     _setLoading(false);
   }
+  Future<void> logout() async {
+    _setLoading(true);
+    
+    try {
+      await _apiService.signOut();
+      await _clearStorage();
+      _user = null;
+      notifyListeners();
+    } catch (e) {
+      await _clearStorage();
+      _user = null;
+      notifyListeners();
+    }
+    
+    _setLoading(false);
+  }
 
   // ============================================================
   // DELETE ACCOUNT

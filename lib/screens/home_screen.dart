@@ -1,3 +1,5 @@
+// lib/screens/home_screen.dart
+
 import 'dart:async';
 import 'dart:io';
 
@@ -21,7 +23,8 @@ import 'profile_screen.dart';
 // ============================================================
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Widget? tabNavigator;
+  const HomeScreen({super.key, this.tabNavigator});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -37,8 +40,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Timer? _openWebViewTimer;
 
-  // Bottom navigation index
-  int _selectedIndex = 0;
+  // ============================================================
+  // GET SELECTED INDEX BASED ON CURRENT ROUTE
+  // ============================================================
+
+  int get _selectedIndex {
+    try {
+      // Use GoRouterState to get the current location
+      final routerState = GoRouterState.of(context);
+      final location = routerState.matchedLocation; // Use matchedLocation instead of location
+      
+      if (location.contains('/home/find-jobs')) return 0;
+      if (location.contains('/home/my-jobs')) return 1;
+      if (location.contains('/home/resume')) return 2;
+      if (location.contains('/home/profile')) return 3;
+    } catch (e) {
+      // Fallback if GoRouterState is not available
+      debugPrint('Error getting route: $e');
+    }
+    return 0;
+  }
 
   // ============================================================
   // GET TITLE BASED ON SELECTED INDEX
@@ -338,7 +359,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
                 
-                Navigator.of(context).pop();
+                // Clear auth provider
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                authProvider.logout();
+                
                 context.go('/login');
               },
               style: TextButton.styleFrom(
@@ -441,36 +465,31 @@ class _HomeScreenState extends State<HomeScreen> {
     // BOTTOM NAVIGATION HOME SCREEN
     // ==========================================================
 
-    // Define the screens for each tab
-    final List<Widget> _screens = [
-      const FindJobScreen(),
-      const MyJobsScreen(),
-      ResumeScreen(
-        user: user,
-        onEditResume: user != null ? () => _openWebView(user) : null,
-      ),
-      ProfileScreen(
-        user: user,
-        onLogout: () => _logout(context),
-        onEditResume: _openWebView,
-        onTermsAndConditions: _openTermsAndConditions,
-        onPrivacyPolicy: _openPrivacyPolicy,
-      ),
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_getTitle(_selectedIndex)),
         elevation: 0,
       ),
-      body: _screens[_selectedIndex],
+      body: widget.tabNavigator ?? const FindJobScreen(),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          // Navigate to the appropriate route
+          switch (index) {
+            case 0:
+              context.go('/home/find-jobs');
+              break;
+            case 1:
+              context.go('/home/my-jobs');
+              break;
+            case 2:
+              context.go('/home/resume');
+              break;
+            case 3:
+              context.go('/home/profile');
+              break;
+          }
         },
         selectedItemColor: AppColors.primary,
         unselectedItemColor: Colors.grey,
