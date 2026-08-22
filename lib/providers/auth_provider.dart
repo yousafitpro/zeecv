@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../core/constants/app_strings.dart';
-
+import '../app/router.dart';
 class AuthProvider extends ChangeNotifier {
   
   final ApiService _apiService = ApiService();
@@ -38,6 +38,8 @@ Future<void> _handleUnauthorized() async {
   print('🔴 AuthProvider: Unauthorized - Logging out');
 
   await logout();
+
+  AppRouter.router.go('/login');
 }
   Future<void> _init() async {
     _isLoading = true;

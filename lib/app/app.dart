@@ -10,7 +10,8 @@ class ZeeCVApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    
+    final GlobalKey<NavigatorState> navigatorKey =
+    GlobalKey<NavigatorState>();
     // Wait for initialization
     if (!authProvider.isInitialized) {
       return const MaterialApp(
