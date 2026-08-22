@@ -1,1 +1,55 @@
-{"installed":{"client_id":"422107728130-jih4slr06ci0btlig9ndi3cnqsj4gr9n.apps.googleusercontent.com","project_id":"zeecv-505109","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs"}}
+{
+  "project_info": {
+    "project_number": "422107728130",
+    "project_id": "zeecv-505109",
+    "storage_bucket": "zeecv-505109.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:422107728130:android:975d4c1bf546e384acda1b",
+        "android_client_info": {
+          "package_name": "com.zeecv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "422107728130-7v0kdod3vcoirjo7c6un5rf30ea03uda.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zeecv",
+            "certificate_hash": "c8b5724856349da61ba8188b0809813c96a1b628"
+          }
+        },
+        {
+          "client_id": "422107728130-jih4slr06ci0btlig9ndi3cnqsj4gr9n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zeecv",
+            "certificate_hash": "8c451ecebc6335819df05b3d856150a823fd6e91"
+          }
+        },
+        {
+          "client_id": "422107728130-tepgihl1glij1uk719du1ddt35ec0fjk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDs7GNO27YASswwMYaluadKcIM0wU4ToBM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "422107728130-lfocbn4r7atglvhdd4rhehi63517uo19.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

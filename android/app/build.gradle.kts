@@ -28,6 +28,17 @@ android {
     }
 
     signingConfigs {
+        create("customDebug") {
+            val keystorePropertiesFile = rootProject.file("key.properties")
+            if (keystorePropertiesFile.exists()) {
+                val keystoreProperties = Properties()
+                keystoreProperties.load(keystorePropertiesFile.inputStream())
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
         create("release") {
             val keystorePropertiesFile = rootProject.file("key.properties")
             if (keystorePropertiesFile.exists()) {
@@ -42,6 +53,9 @@ android {
     }
 
     buildTypes {
+        debug { 
+            signingConfig = signingConfigs.getByName("customDebug")
+        }
         release {
             signingConfig = signingConfigs.getByName("release")
         }
