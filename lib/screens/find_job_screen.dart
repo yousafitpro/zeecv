@@ -355,13 +355,14 @@ class _FindJobScreenState extends State<FindJobScreen> with AutomaticKeepAliveCl
                       color: Colors.grey,
                     ),
                     const SizedBox(width: 4),
-                    Text(
+                    Expanded(
+                      child:Text(
                       job.location,
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
                       ),
-                    ),
+                    )),
                   ],
                 ),
               ],
