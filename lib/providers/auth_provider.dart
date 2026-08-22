@@ -98,7 +98,12 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove('user_data');
     _apiService.clearAuthToken();
   }
-
+  Future<void> clearStorageNow() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('user_data');
+    _apiService.clearAuthToken();
+  }
   // ============================================================
   // SIGN UP
   // ============================================================
