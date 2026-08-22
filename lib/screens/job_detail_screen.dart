@@ -115,74 +115,68 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // ==========================================================
-    // IN-APP BROWSER (WEBVIEW)
+    // IN-APP BROWSER (WEBVIEW) - NO APPBAR
     // ==========================================================
 
     if (_showInAppBrowser && _inAppBrowserUrl != null) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _job?.title ?? 'Loading...',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: _closeInAppBrowser,
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                _webViewController?.reload();
+        // Remove AppBar - no top bar
+        body: Stack(
+          children: [
+            InAppWebView(
+              initialUrlRequest: URLRequest(
+                url: WebUri(_inAppBrowserUrl!),
+              ),
+              onWebViewCreated: (controller) {
+                _webViewController = controller;
+              },
+              onProgressChanged: (controller, progress) {
+                setState(() {
+                  _progress = progress / 100;
+                });
+              },
+              onLoadStart: (controller, url) {
+                setState(() {
+                  _inAppBrowserUrl = url?.toString();
+                });
+              },
+              onLoadError: (controller, url, code, message) {
+                _showError('Failed to load page: $message');
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.open_in_browser),
-              onPressed: () async {
-                if (_inAppBrowserUrl != null) {
-                  final uri = Uri.parse(_inAppBrowserUrl!);
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(
-                      uri,
-                      mode: LaunchMode.externalApplication,
-                    );
-                  }
-                }
-              },
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(2),
-            child: LinearProgressIndicator(
-              value: _progress,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).primaryColor,
+            // Floating close button
+            Positioned(
+              top: 40,
+              left: 16,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                  ),
+                  onPressed: _closeInAppBrowser,
+                ),
               ),
             ),
-          ),
-        ),
-        body: InAppWebView(
-          initialUrlRequest: URLRequest(
-            url: WebUri(_inAppBrowserUrl!),
-          ),
-          onWebViewCreated: (controller) {
-            _webViewController = controller;
-          },
-          onProgressChanged: (controller, progress) {
-            setState(() {
-              _progress = progress / 100;
-            });
-          },
-          onLoadStart: (controller, url) {
-            setState(() {
-              _inAppBrowserUrl = url?.toString();
-            });
-          },
-          onLoadError: (controller, url, code, message) {
-            _showError('Failed to load page: $message');
-          },
+            // Progress indicator at top
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(
+                value: _progress,
+                backgroundColor: Colors.grey[300],
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).primaryColor,
+                ),
+                minHeight: 3,
+              ),
+            ),
+          ],
         ),
       );
     }
