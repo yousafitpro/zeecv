@@ -115,68 +115,69 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // ==========================================================
-    // IN-APP BROWSER (WEBVIEW) - NO APPBAR
+    // IN-APP BROWSER (WEBVIEW) - WITH SAFE AREA
     // ==========================================================
 
     if (_showInAppBrowser && _inAppBrowserUrl != null) {
       return Scaffold(
-        // Remove AppBar - no top bar
-        body: Stack(
-          children: [
-            InAppWebView(
-              initialUrlRequest: URLRequest(
-                url: WebUri(_inAppBrowserUrl!),
-              ),
-              onWebViewCreated: (controller) {
-                _webViewController = controller;
-              },
-              onProgressChanged: (controller, progress) {
-                setState(() {
-                  _progress = progress / 100;
-                });
-              },
-              onLoadStart: (controller, url) {
-                setState(() {
-                  _inAppBrowserUrl = url?.toString();
-                });
-              },
-              onLoadError: (controller, url, code, message) {
-                _showError('Failed to load page: $message');
-              },
-            ),
-            // Floating close button
-            Positioned(
-              top: 40,
-              left: 16,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  shape: BoxShape.circle,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              InAppWebView(
+                initialUrlRequest: URLRequest(
+                  url: WebUri(_inAppBrowserUrl!),
                 ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
+                onWebViewCreated: (controller) {
+                  _webViewController = controller;
+                },
+                onProgressChanged: (controller, progress) {
+                  setState(() {
+                    _progress = progress / 100;
+                  });
+                },
+                onLoadStart: (controller, url) {
+                  setState(() {
+                    _inAppBrowserUrl = url?.toString();
+                  });
+                },
+                onLoadError: (controller, url, code, message) {
+                  _showError('Failed to load page: $message');
+                },
+              ),
+              // Floating close button
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
                   ),
-                  onPressed: _closeInAppBrowser,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                    ),
+                    onPressed: _closeInAppBrowser,
+                  ),
                 ),
               ),
-            ),
-            // Progress indicator at top
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: LinearProgressIndicator(
-                value: _progress,
-                backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).primaryColor,
+              // Progress indicator at top
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: LinearProgressIndicator(
+                  value: _progress,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor,
+                  ),
+                  minHeight: 3,
                 ),
-                minHeight: 3,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
