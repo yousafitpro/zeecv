@@ -142,7 +142,7 @@ class _FindJobScreenState extends State<FindJobScreen> with AutomaticKeepAliveCl
                     ),
                     minimumSize: const Size(50, 50),
                   ),
-                  child: const Icon(Icons.search,size: 30),
+                  child: const Icon(Icons.search,size: 25),
                 ),
               ],
             ),

@@ -102,12 +102,15 @@ class ResumeScreen extends StatelessWidget {
                     color: Colors.grey[400],
                   ),
                   const SizedBox(width: 8),
-                  Text(
+                  Expanded(
+                   child:Text(
                     'Your resume will be available for employers to view',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[500],
                     ),
+                    softWrap: true,
+                   )
                   ),
                 ],
               ),
