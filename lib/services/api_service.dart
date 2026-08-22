@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart'; // Required for IOHttpClientAdapter
 import 'package:flutter/services.dart';
 import '../core/constants/api_constants.dart';
-
+import 'package:flutter/foundation.dart';
 class ApiService {
   // Singleton setup
   static final ApiService _instance = ApiService._internal();
@@ -11,7 +11,7 @@ class ApiService {
   
   late Dio _dio;
   String? _authToken;
-
+ VoidCallback? onUnauthorized;
   ApiService._internal() {
     _dio = Dio(
       BaseOptions(
@@ -44,10 +44,7 @@ class ApiService {
       // Check if error is 401 Unauthorized
       if (error.response?.statusCode == 401) {
         print('🔴 UNAUTHORIZED - 401 Status Code');
-        
-        // Optional: Handle token expiry - clear auth and redirect to login
-        // You can add callback here to handle logout
-        // _onUnauthorized?.call();
+       onUnauthorized?.call();
       }
       return handler.next(error);
     },

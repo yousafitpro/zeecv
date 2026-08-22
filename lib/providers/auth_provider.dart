@@ -11,9 +11,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../core/constants/app_strings.dart';
 
 class AuthProvider extends ChangeNotifier {
+  
   final ApiService _apiService = ApiService();
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
-
+  
   UserModel? _user;
   bool _isLoading = false;
   String? _error;
@@ -26,13 +27,18 @@ class AuthProvider extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
 
   AuthProvider() {
+     _apiService.onUnauthorized = _handleUnauthorized;
     _init();
   }
 
   // ============================================================
   // INIT
   // ============================================================
+Future<void> _handleUnauthorized() async {
+  print('🔴 AuthProvider: Unauthorized - Logging out');
 
+  await logout();
+}
   Future<void> _init() async {
     _isLoading = true;
     notifyListeners();
