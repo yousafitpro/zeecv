@@ -28,23 +28,31 @@ class ApiService {
     // ============================================================
     // ADD INTERCEPTOR TO AUTO-ADD AUTH TOKEN
     // ============================================================
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          // Automatically add token to all requests if available
-          if (_authToken != null && _authToken!.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $_authToken';
-          }
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          return handler.next(response);
-        },
-        onError: (error, handler) {
-          return handler.next(error);
-        },
-      ),
-    );
+ _dio.interceptors.add(
+  InterceptorsWrapper(
+    onRequest: (options, handler) {
+      // Automatically add token to all requests if available
+      if (_authToken != null && _authToken!.isNotEmpty) {
+        options.headers['Authorization'] = 'Bearer $_authToken';
+      }
+      return handler.next(options);
+    },
+    onResponse: (response, handler) {
+      return handler.next(response);
+    },
+    onError: (error, handler) {
+      // Check if error is 401 Unauthorized
+      if (error.response?.statusCode == 401) {
+        print('🔴 UNAUTHORIZED - 401 Status Code');
+        
+        // Optional: Handle token expiry - clear auth and redirect to login
+        // You can add callback here to handle logout
+        // _onUnauthorized?.call();
+      }
+      return handler.next(error);
+    },
+  ),
+);
   }
 // Add this method to your ApiService class
 
