@@ -1,7 +1,7 @@
 class AppStrings {
   // App
   static const String appName = 'ZeeCV';
-  static const String tagline = 'Your Resume, Simplified';
+  static const String tagline = 'AI Resume Builder + Find Jobs';
   
   // Auth
   static const String welcome = 'Welcome to ZeeCV';

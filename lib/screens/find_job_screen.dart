@@ -140,9 +140,9 @@ class _FindJobScreenState extends State<FindJobScreen> with AutomaticKeepAliveCl
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    minimumSize: const Size(50, 56),
+                    minimumSize: const Size(50, 50),
                   ),
-                  child: const Icon(Icons.search),
+                  child: const Icon(Icons.search,size: 30),
                 ),
               ],
             ),

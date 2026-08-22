@@ -92,14 +92,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBackground,
+                      color: AppColors.surface,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.description,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
+                    child: Image.asset(
+                    'assets/icon/icon.png',
+                    height: 80,
+                    width: 80,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to container with icon if image fails to load
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBackground,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.description,
+                          size: 40,
+                          color: AppColors.primary,
+                        ),
+                      );
+                    },
+                  ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -113,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to continue building your resume',
+                  AppStrings.tagline,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),

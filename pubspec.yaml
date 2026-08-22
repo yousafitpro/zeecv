@@ -32,6 +32,7 @@ flutter:
   assets:
     - assets/icon/
     - assets/icon/icon.png
+    - assets/assets/images/google_logo.png
     - assets/certs/root_ca.pem
 
 flutter_launcher_icons:

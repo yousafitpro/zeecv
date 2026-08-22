@@ -51,14 +51,29 @@ class _SplashScreenState extends State<SplashScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.description,
-                size: 64,
-                color: Colors.white,
-              ),
+              child: Image.asset(
+                    'assets/icon/icon.png',
+                    height: 80,
+                    width: 80,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to container with icon if image fails to load
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBackground,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.description,
+                          size: 40,
+                          color: AppColors.primary,
+                        ),
+                      );
+                    },
+                  ),
             ),
             const SizedBox(height: 24),
             Text(
