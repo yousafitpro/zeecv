@@ -3,7 +3,7 @@ import '../services/api_service.dart';
 import '../models/job_model.dart';
 import 'job_detail_screen.dart';
 import 'package:go_router/go_router.dart';
-
+import 'dart:async';
 class FindJobScreen extends StatefulWidget {
   const FindJobScreen({super.key});
 
@@ -31,6 +31,9 @@ class _FindJobScreenState extends State<FindJobScreen>
   bool _thisWeek = false;
 
   final TextEditingController _searchController = TextEditingController();
+  
+  // Debounce timer
+  Timer? _debounceTimer;
 
   @override
   bool get wantKeepAlive => true;
@@ -43,6 +46,7 @@ class _FindJobScreenState extends State<FindJobScreen>
 
   @override
   void dispose() {
+    _debounceTimer?.cancel(); // Cancel timer to prevent memory leaks
     _searchController.dispose();
     super.dispose();
   }
@@ -103,20 +107,42 @@ class _FindJobScreenState extends State<FindJobScreen>
   }
 
   // ============================================================
-  // SEARCH
+  // SEARCH WITH DEBOUNCE
   // ============================================================
 
-  void _onSearch() {
-    final query = _searchController.text.trim();
+  void _onSearchTextChanged(String value) {
+    // Cancel any pending timer
+    _debounceTimer?.cancel();
+    
+    // If search is empty, clear immediately (optional but better UX)
+    if (value.trim().isEmpty) {
+      _loadJobs(searchQuery: null);
+      return;
+    }
+    
+    // Set new timer for 1 second delay
+    _debounceTimer = Timer(const Duration(seconds: 1), () {
+      _loadJobs(
+        searchQuery: value.trim().isNotEmpty ? value.trim() : null,
+      );
+    });
+  }
 
+  void _onSearch() {
+    // Cancel debounce timer when user explicitly submits
+    _debounceTimer?.cancel();
+    
+    final query = _searchController.text.trim();
     _loadJobs(
       searchQuery: query.isNotEmpty ? query : null,
     );
   }
 
   void _clearSearch() {
+    // Cancel debounce timer
+    _debounceTimer?.cancel();
+    
     _searchController.clear();
-
     _loadJobs(
       searchQuery: null,
     );
@@ -180,73 +206,72 @@ class _FindJobScreenState extends State<FindJobScreen>
                       // HEADER
                       // ====================================================
 
-                     Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    const Text(
-      'Filters',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Filters',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
 
-       Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Cancel
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('Cancel'),
+                                  ),
 
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Cancel
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Cancel'),
-                ),
+                                  // Reset All
+                                  TextButton(
+                                    onPressed: () {
+                                      setModalState(() {
+                                        tempRemote = false;
+                                        tempPermanent = false;
+                                        tempContract = false;
+                                        tempPartTime = false;
+                                        tempFullTime = false;
+                                        tempInternship = false;
+                                        tempThisWeek = false;
+                                      });
+                                    },
+                                    child: const Text('Reset All'),
+                                  ),
 
-                // Reset All
-                TextButton(
-                  onPressed: () {
-                    setModalState(() {
-                      tempRemote = false;
-                      tempPermanent = false;
-                      tempContract = false;
-                      tempPartTime = false;
-                      tempFullTime = false;
-                      tempInternship = false;
-                      tempThisWeek = false;
-                    });
-                  },
-                  child: const Text('Reset All'),
-                ),
+                                  // Apply
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isRemote = tempRemote;
+                                        _isPermanent = tempPermanent;
+                                        _isContract = tempContract;
+                                        _isPartTime = tempPartTime;
+                                        _isFullTime = tempFullTime;
+                                        _isInternship = tempInternship;
+                                        _thisWeek = tempThisWeek;
+                                      });
 
-                // Apply
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _isRemote = tempRemote;
-                      _isPermanent = tempPermanent;
-                      _isContract = tempContract;
-                      _isPartTime = tempPartTime;
-                      _isFullTime = tempFullTime;
-                      _isInternship = tempInternship;
-                      _thisWeek = tempThisWeek;
-                    });
+                                      Navigator.pop(context);
 
-                    Navigator.pop(context);
-
-                    _applyFilters();
-                  },
-                  child: const Text('Apply'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    ),
+                                      _applyFilters();
+                                    },
+                                    child: const Text('Apply'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
 
                       const SizedBox(height: 16),
 
@@ -602,6 +627,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                                 )
                               : null,
                     ),
+                    onChanged: _onSearchTextChanged, // Using debounced method
                     onSubmitted: (_) => _onSearch(),
                   ),
                 ),
