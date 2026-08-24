@@ -25,7 +25,6 @@ class _FindJobScreenState extends State<FindJobScreen>
   @override
   void initState() {
     super.initState();
-    // Load jobs only if not loaded yet
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final jobStore = context.read<JobStore>();
       if (!jobStore.hasLoadedOnce) {
@@ -77,6 +76,10 @@ class _FindJobScreenState extends State<FindJobScreen>
     jobStore.loadJobs(searchQuery: null);
   }
 
+  // ============================================================
+  // FIXED FILTER MODAL
+  // ============================================================
+  
   void _showFilterModal() {
     final jobStore = context.read<JobStore>();
     
@@ -92,163 +95,168 @@ class _FindJobScreenState extends State<FindJobScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            return DraggableScrollableSheet(
-              initialChildSize: 0.7,
-              minChildSize: 0.4,
-              maxChildSize: 0.9,
-              expand: false,
-              builder: (context, scrollController) {
-                return Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Handle bar
-                      Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(2),
-                          ),
+                      const Text(
+                        'Filters',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 20),
-
-                      // Header
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Filters',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
                           ),
-                          Row(
-                            children: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
+                          TextButton(
+                            onPressed: () {
+                              setModalState(() {
+                                tempRemote = false;
+                                tempPermanent = false;
+                                tempContract = false;
+                                tempPartTime = false;
+                                tempFullTime = false;
+                                tempInternship = false;
+                                tempThisWeek = false;
+                              });
+                            },
+                            child: const Text('Reset All'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // Update store with new filter values
+                              final store = context.read<JobStore>();
+                              store.setFilters(
+                                isRemote: tempRemote,
+                                isPermanent: tempPermanent,
+                                isContract: tempContract,
+                                isPartTime: tempPartTime,
+                                isFullTime: tempFullTime,
+                                isInternship: tempInternship,
+                                thisWeek: tempThisWeek,
+                              );
+                              Navigator.pop(context);
+                              store.applyFilters();
+                            },
+                            child: const Text(
+                              'Apply',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  setModalState(() {
-                                    tempRemote = false;
-                                    tempPermanent = false;
-                                    tempContract = false;
-                                    tempPartTime = false;
-                                    tempFullTime = false;
-                                    tempInternship = false;
-                                    tempThisWeek = false;
-                                  });
-                                },
-                                child: const Text('Reset All'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  // Update store with new filter values
-                                  final store = context.read<JobStore>();
-                                  store.setFilters(
-                                    isRemote: tempRemote,
-                                    isPermanent: tempPermanent,
-                                    isContract: tempContract,
-                                    isPartTime: tempPartTime,
-                                    isFullTime: tempFullTime,
-                                    isInternship: tempInternship,
-                                    thisWeek: tempThisWeek,
-                                  );
-                                  Navigator.pop(context);
-                                  store.applyFilters();
-                                },
-                                child: const Text('Apply'),
-                              ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-
-                      // Filter content
-                      Expanded(
-                        child: ListView(
-                          controller: scrollController,
-                          children: [
-                            _buildFilterSection(
-                              title: 'Job Type',
-                              children: [
-                                _buildFilterCheckbox(
-                                  label: 'Permanent',
-                                  value: tempPermanent,
-                                  onChanged: (value) {
-                                    setModalState(() => tempPermanent = value ?? false);
-                                  },
-                                ),
-                                _buildFilterCheckbox(
-                                  label: 'Contract',
-                                  value: tempContract,
-                                  onChanged: (value) {
-                                    setModalState(() => tempContract = value ?? false);
-                                  },
-                                ),
-                                _buildFilterCheckbox(
-                                  label: 'Part Time',
-                                  value: tempPartTime,
-                                  onChanged: (value) {
-                                    setModalState(() => tempPartTime = value ?? false);
-                                  },
-                                ),
-                                _buildFilterCheckbox(
-                                  label: 'Full Time',
-                                  value: tempFullTime,
-                                  onChanged: (value) {
-                                    setModalState(() => tempFullTime = value ?? false);
-                                  },
-                                ),
-                                _buildFilterCheckbox(
-                                  label: 'Internship',
-                                  value: tempInternship,
-                                  onChanged: (value) {
-                                    setModalState(() => tempInternship = value ?? false);
-                                  },
-                                ),
-                              ],
-                            ),
-                            const Divider(),
-                            _buildFilterSection(
-                              title: 'Others',
-                              children: [
-                                _buildFilterCheckbox(
-                                  label: 'Remote',
-                                  value: tempRemote,
-                                  onChanged: (value) {
-                                    setModalState(() => tempRemote = value ?? false);
-                                  },
-                                ),
-                                _buildFilterCheckbox(
-                                  label: 'Posted This Week',
-                                  value: tempThisWeek,
-                                  onChanged: (value) {
-                                    setModalState(() => tempThisWeek = value ?? false);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
-                );
-              },
+                  const SizedBox(height: 16),
+
+                  // Filter content - using Expanded with SingleChildScrollView
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildFilterSection(
+                            title: 'Job Type',
+                            children: [
+                              _buildFilterCheckbox(
+                                label: 'Permanent',
+                                value: tempPermanent,
+                                onChanged: (value) {
+                                  setModalState(() => tempPermanent = value ?? false);
+                                },
+                              ),
+                              _buildFilterCheckbox(
+                                label: 'Contract',
+                                value: tempContract,
+                                onChanged: (value) {
+                                  setModalState(() => tempContract = value ?? false);
+                                },
+                              ),
+                              _buildFilterCheckbox(
+                                label: 'Part Time',
+                                value: tempPartTime,
+                                onChanged: (value) {
+                                  setModalState(() => tempPartTime = value ?? false);
+                                },
+                              ),
+                              _buildFilterCheckbox(
+                                label: 'Full Time',
+                                value: tempFullTime,
+                                onChanged: (value) {
+                                  setModalState(() => tempFullTime = value ?? false);
+                                },
+                              ),
+                              _buildFilterCheckbox(
+                                label: 'Internship',
+                                value: tempInternship,
+                                onChanged: (value) {
+                                  setModalState(() => tempInternship = value ?? false);
+                                },
+                              ),
+                            ],
+                          ),
+                          const Divider(),
+                          _buildFilterSection(
+                            title: 'Others',
+                            children: [
+                              _buildFilterCheckbox(
+                                label: 'Remote',
+                                value: tempRemote,
+                                onChanged: (value) {
+                                  setModalState(() => tempRemote = value ?? false);
+                                },
+                              ),
+                              _buildFilterCheckbox(
+                                label: 'Posted This Week',
+                                value: tempThisWeek,
+                                onChanged: (value) {
+                                  setModalState(() => tempThisWeek = value ?? false);
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         );
