@@ -180,34 +180,73 @@ class _FindJobScreenState extends State<FindJobScreen>
                       // HEADER
                       // ====================================================
 
-                      Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Filters',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                     Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    const Text(
+      'Filters',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
 
-                          TextButton(
-                            onPressed: () {
-                              setModalState(() {
-                                tempRemote = false;
-                                tempPermanent = false;
-                                tempContract = false;
-                                tempPartTime = false;
-                                tempFullTime = false;
-                                tempInternship = false;
-                                tempThisWeek = false;
-                              });
-                            },
-                            child: const Text('Reset All'),
-                          ),
-                        ],
-                      ),
+       Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Cancel
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+
+                // Reset All
+                TextButton(
+                  onPressed: () {
+                    setModalState(() {
+                      tempRemote = false;
+                      tempPermanent = false;
+                      tempContract = false;
+                      tempPartTime = false;
+                      tempFullTime = false;
+                      tempInternship = false;
+                      tempThisWeek = false;
+                    });
+                  },
+                  child: const Text('Reset All'),
+                ),
+
+                // Apply
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isRemote = tempRemote;
+                      _isPermanent = tempPermanent;
+                      _isContract = tempContract;
+                      _isPartTime = tempPartTime;
+                      _isFullTime = tempFullTime;
+                      _isInternship = tempInternship;
+                      _thisWeek = tempThisWeek;
+                    });
+
+                    Navigator.pop(context);
+
+                    _applyFilters();
+                  },
+                  child: const Text('Apply'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
 
                       const SizedBox(height: 16),
 
@@ -315,76 +354,6 @@ class _FindJobScreenState extends State<FindJobScreen>
                             // BUTTONS
                             // ==================================================
 
-                            Row(
-                              children: [
-                                // CANCEL
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      padding:
-                                          const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: const Text('Cancel'),
-                                  ),
-                                ),
-
-                                const SizedBox(width: 12),
-
-                                // APPLY
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      // Commit temporary values
-                                      setState(() {
-                                        _isRemote = tempRemote;
-                                        _isPermanent =
-                                            tempPermanent;
-                                        _isContract =
-                                            tempContract;
-                                        _isPartTime =
-                                            tempPartTime;
-                                        _isFullTime =
-                                            tempFullTime;
-                                        _isInternship =
-                                            tempInternship;
-                                        _thisWeek =
-                                            tempThisWeek;
-                                      });
-
-                                      Navigator.pop(context);
-
-                                      _applyFilters();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Theme.of(context)
-                                              .primaryColor,
-                                      foregroundColor:
-                                          Colors.white,
-                                      padding:
-                                          const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child:
-                                        const Text('Apply Filters'),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
