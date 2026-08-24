@@ -85,29 +85,35 @@ Future<Map<String, dynamic>> deleteAccount() async {
   ///   "search": "flutter"
   /// }
   /// 
-  Future<Map<String, dynamic>> loadJobs({
-    String? search,
-  }) async {
-    try {
-      final payload = <String, dynamic>{};
-      
-      if (search != null && search.isNotEmpty) {
-        payload['search'] = search;
-      }
-      
-      final response = await _dio.post(
-        ApiConstants.jobs,
-        data: payload,
-      );
-
-      return {
-        'success': true,
-        'data': response.data,
-      };
-    } catch (e) {
-      return _handleError(e);
+Future<Map<String, dynamic>> loadJobs({
+  String? search,
+  Map<String, dynamic>? filters,
+}) async {
+  try {
+    final payload = <String, dynamic>{};
+    
+    if (search != null && search.isNotEmpty) {
+      payload['search'] = search;
     }
+    
+    // Merge filters into payload
+    if (filters != null && filters.isNotEmpty) {
+      payload.addAll(filters);
+    }
+    
+    final response = await _dio.post(
+      ApiConstants.jobs,
+      data: payload,
+    );
+
+    return {
+      'success': true,
+      'data': response.data,
+    };
+  } catch (e) {
+    return _handleError(e);
   }
+}
 
   // ============================================================
   // GET JOB DETAILS
