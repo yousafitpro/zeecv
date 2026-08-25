@@ -325,12 +325,14 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                       color: Colors.grey,
                     ),
                     const SizedBox(width: 4),
-                    Text(
+                    Expanded(
+                      child:Text(
                       job.location,
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
-                      ),
+                      )
+                    )
                     ),
                   ],
                 ),
@@ -427,7 +429,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
         return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
       } else {
         return 'Just now';
-      }
+      }   
     } catch (e) {
       return dateString;
     }
