@@ -319,7 +319,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'No jobs found for "${_searchQuery}"',
+                'No jobs found for "$_searchQuery"',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -401,7 +401,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -459,15 +459,15 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               ],
               if (job.remote == 1) ...[
                 const SizedBox(height: 4),
-                Row(
+                const Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.wifi,
                       size: 16,
                       color: Colors.green,
                     ),
-                    const SizedBox(width: 4),
-                    const Text(
+                    SizedBox(width: 4),
+                    Text(
                       'Remote',
                       style: TextStyle(
                         fontSize: 14,

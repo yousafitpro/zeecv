@@ -33,10 +33,10 @@ class ResumeScreen extends StatelessWidget {
                 ),
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   child: Text(
                     _getInitial(user),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -129,8 +129,8 @@ class ResumeScreen extends StatelessWidget {
     if (user?.name != null && user!.name!.isNotEmpty) {
       return user.name!.substring(0, 1).toUpperCase();
     }
-    if (user?.email != null && user!.email!.isNotEmpty) {
-      return user.email!.substring(0, 1).toUpperCase();
+    if (user?.email != null && user!.email.isNotEmpty) {
+      return user.email.substring(0, 1).toUpperCase();
     }
     return 'U';
   }

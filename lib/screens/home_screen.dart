@@ -1,7 +1,6 @@
 // lib/screens/home_screen.dart
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,9 +13,6 @@ import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
 import 'find_job_screen.dart';
-import 'my_jobs_screen.dart';
-import 'resume_screen.dart';
-import 'profile_screen.dart';
 
 // ============================================================
 // HOME SCREEN

@@ -64,10 +64,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.05),
+                  color: Colors.red.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Colors.red.withOpacity(0.2),
+                    color: Colors.red.withValues(alpha: 0.2),
                   ),
                 ),
                 child: const Row(
@@ -186,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Profile Header with Gradient Background
           Container(
             width: double.infinity,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -250,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -368,7 +368,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -398,7 +398,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         size: 18,
       ),
       onTap: onTap,
-      tileColor: (isLogout || isDanger) ? Colors.red.withOpacity(0.05) : null,
+      tileColor: (isLogout || isDanger) ? Colors.red.withValues(alpha: 0.05) : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -413,8 +413,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user?.name != null && user!.name!.isNotEmpty) {
       return user.name!.substring(0, 1).toUpperCase();
     }
-    if (user?.email != null && user!.email!.isNotEmpty) {
-      return user.email!.substring(0, 1).toUpperCase();
+    if (user?.email != null && user!.email.isNotEmpty) {
+      return user.email.substring(0, 1).toUpperCase();
     }
     return 'U';
   }

@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
@@ -62,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       // Fallback to container with icon if image fails to load
                       return Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.primaryBackground,
                           shape: BoxShape.circle,
                         ),
@@ -76,9 +76,9 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               AppStrings.appName,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> {
               AppStrings.tagline,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
             const SizedBox(height: 48),

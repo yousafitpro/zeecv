@@ -238,7 +238,7 @@ Future<void> _handleUnauthorized() async {
       // 3. Send to your backend API
       try {
         final result = await _apiService.signUpWithGoogle(
-          name: googleUser.displayName ?? googleUser.email?.split('@').first ?? 'User',
+          name: googleUser.displayName ?? googleUser.email.split('@').first ?? 'User',
           email: googleUser.email ?? '',
           idtoken: googleAuth.idToken ?? '',
           accesstoken: googleAuth.accessToken ?? '',
@@ -265,7 +265,7 @@ Future<void> _handleUnauthorized() async {
           _error = result['message'] ?? 'Signup failed';
           _isLoading = false;
           notifyListeners();
-          print('🔴 Backend error: ${_error}');
+          print('🔴 Backend error: $_error');
           return false;
         }
       } catch (e) {

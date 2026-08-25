@@ -528,7 +528,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -572,11 +572,11 @@ class _FindJobScreenState extends State<FindJobScreen>
               ],
               if (job.remote == 1) ...[
                 const SizedBox(height: 4),
-                Row(
+                const Row(
                   children: [
-                    const Icon(Icons.wifi, size: 16, color: Colors.green),
-                    const SizedBox(width: 4),
-                    const Text(
+                    Icon(Icons.wifi, size: 16, color: Colors.green),
+                    SizedBox(width: 4),
+                    Text(
                       'Remote',
                       style: TextStyle(fontSize: 14, color: Colors.green),
                     ),

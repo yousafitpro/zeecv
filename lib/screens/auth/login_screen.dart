@@ -91,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.surface,
                       shape: BoxShape.circle,
                     ),
@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       // Fallback to container with icon if image fails to load
                       return Container(
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.primaryBackground,
                           shape: BoxShape.circle,
                         ),
@@ -185,9 +185,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
+                      color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -239,11 +239,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 
                 // OR Divider
-                Row(
+                const Row(
                   children: [
                     Expanded(child: Divider(color: AppColors.border)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         AppStrings.or,
                         style: TextStyle(color: AppColors.textLight),
@@ -269,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       AppStrings.dontHaveAccount,
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
@@ -325,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const TextSpan(text: 'By continuing, you agree to our '),
                       TextSpan(
                         text: 'Terms & Conditions',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.blue,
                           fontWeight: FontWeight.w500,
                           decoration: TextDecoration.underline,
@@ -337,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const TextSpan(text: ' and '),
                       TextSpan(
                         text: 'Privacy Policy',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.blue,
                           fontWeight: FontWeight.w500,
                           decoration: TextDecoration.underline,

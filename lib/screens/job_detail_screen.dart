@@ -150,7 +150,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                 left: 8,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
@@ -258,7 +258,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -473,7 +473,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   'body': Style(
                     fontSize: FontSize(14),
                     color: Colors.grey[800],
-                    lineHeight: LineHeight(1.6),
+                    lineHeight: const LineHeight(1.6),
                   ),
                   'h3': Style(
                     fontSize: FontSize(18),
@@ -507,32 +507,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
               ),
             ),
           const SizedBox(height: 24),
-
-          // Source Link - Opens in in-app browser
-          if (_job!.url.isNotEmpty)
-            InkWell(
-              onTap: () => _openInAppBrowser(_job!.url),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'View on ${_getDomainName(_job!.url)}',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.open_in_browser,
-                    size: 16,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 16),
         ],
       ),
     );

@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart'; // Required for IOHttpClientAdapter
 import 'package:flutter/services.dart';
 import '../core/constants/api_constants.dart';
-import 'package:flutter/foundation.dart';
 class ApiService {
   // Singleton setup
   static final ApiService _instance = ApiService._internal();

@@ -10,7 +10,6 @@ class AppTheme {
       primary: AppColors.primary,
       secondary: AppColors.primaryLight,
       surface: AppColors.surface,
-      background: AppColors.background,
       error: AppColors.error,
     ),
     fontFamily: GoogleFonts.poppins().fontFamily,

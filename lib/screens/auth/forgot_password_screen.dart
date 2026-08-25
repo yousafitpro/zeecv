@@ -18,7 +18,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  bool _obscurePassword = true;
+  final bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -45,7 +45,7 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.primaryBackground,
                       shape: BoxShape.circle,
                     ),
@@ -88,9 +88,9 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
+                      color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -141,11 +141,11 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: 16),
                 
                 // OR Divider
-                Row(
+                const Row(
                   children: [
                     Expanded(child: Divider(color: AppColors.border)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         AppStrings.orO,
                         style: TextStyle(color: AppColors.textLight),
@@ -161,7 +161,7 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       AppStrings.dontHaveAccount,
                       style: TextStyle(color: AppColors.textSecondary),
                     ),

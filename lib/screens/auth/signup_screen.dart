@@ -188,9 +188,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.1),
+                      color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -261,11 +261,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 16),
                 
                 // OR Divider
-                Row(
+                const Row(
                   children: [
                     Expanded(child: Divider(color: AppColors.border)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         AppStrings.or,
                         style: TextStyle(color: AppColors.textLight),
@@ -291,7 +291,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       AppStrings.alreadyHaveAccount,
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
@@ -341,7 +341,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     const TextSpan(text: 'I agree to the '),
                     TextSpan(
                       text: 'Terms & Conditions',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.w500,
                         decoration: TextDecoration.underline,
@@ -353,7 +353,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     const TextSpan(text: ' and '),
                     TextSpan(
                       text: 'Privacy Policy',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.w500,
                         decoration: TextDecoration.underline,
