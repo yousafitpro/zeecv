@@ -19,14 +19,47 @@ class MyJobsScreen extends StatefulWidget {
 
 class _MyJobsScreenState extends State<MyJobsScreen> {
   List<Job> _jobs = [];
+  List<Job> _filteredJobs = [];
   bool _isLoading = true;
   bool _isFirstLoad = true;
   String? _errorMessage;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _loadMyJobs();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text;
+      _filterJobs();
+    });
+  }
+
+  void _filterJobs() {
+    if (_searchQuery.isEmpty) {
+      _filteredJobs = List.from(_jobs);
+    } else {
+      final query = _searchQuery.toLowerCase().trim();
+      _filteredJobs = _jobs.where((job) {
+        return job.title.toLowerCase().contains(query) ||
+            job.companyName.toLowerCase().contains(query) ||
+            job.location.toLowerCase().contains(query) ||
+            (job.tags.isNotEmpty && job.tags.toLowerCase().contains(query)) ||
+            (job.jobTypes != null && job.jobTypes!.toLowerCase().contains(query));
+      }).toList();
+    }
   }
 
   Future<void> _loadMyJobs() async {
@@ -45,7 +78,9 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
         final List<dynamic> jobList = data['list'] ?? [];
         setState(() {
           _jobs = jobList.map((json) => Job.fromJson(json)).toList();
+          _filteredJobs = List.from(_jobs);
           _isFirstLoad = false;
+          _searchController.clear();
         });
       } else {
         setState(() {
@@ -68,7 +103,67 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildContent(),
+      body: Column(
+        children: [
+          // Search Bar
+          _buildSearchBar(),
+          // Content
+          Expanded(
+            child: _buildContent(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey[300]!,
+            width: 1,
+          ),
+        ),
+        child: TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            hintText: 'Search jobs...',
+            hintStyle: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 14,
+            ),
+            prefixIcon: Icon(
+              Icons.search,
+              color: Colors.grey[600],
+              size: 20,
+            ),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      _searchController.clear();
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
+          ),
+          style: const TextStyle(
+            fontSize: 14,
+          ),
+        ),
+      ),
     );
   }
 
@@ -137,7 +232,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Empty state icon
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -151,8 +245,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
-              // Title
               Text(
                 'No Jobs Found',
                 style: TextStyle(
@@ -162,8 +254,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              
-              // Description
               Text(
                 'Jobs will appear here once you\'ve built your resume with your skills and experience',
                 style: TextStyle(
@@ -174,8 +264,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              
-              // Edit Resume Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -200,8 +288,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              
-              // Or browse jobs
               TextButton(
                 onPressed: widget.onBrowseJobs,
                 child: Text(
@@ -219,20 +305,55 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       );
     }
 
+    if (_filteredJobs.isEmpty && _searchQuery.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No jobs found for "${_searchQuery}"',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Try adjusting your search terms',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _loadMyJobs,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: _jobs.length,
+        itemCount: _filteredJobs.length,
         itemBuilder: (context, index) {
-          return _buildJobCard(_jobs[index]);
+          return _buildJobCard(_filteredJobs[index]);
         },
       ),
     );
   }
 
   Widget _buildJobCard(Job job) {
-    // Parse tags
     final List<String> tagList = job.tags.isNotEmpty 
         ? job.tags.split(',').map((e) => e.trim()).take(3).toList()
         : [];
@@ -245,7 +366,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
             builder: (context) => JobDetailScreen(slug: job.slug),
           ),
         ).then((_) {
-          // Refresh data when coming back from detail
           _loadMyJobs();
         });
       },
@@ -326,13 +446,13 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                     ),
                     const SizedBox(width: 4),
                     Expanded(
-                      child:Text(
-                      job.location,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      )
-                    )
+                      child: Text(
+                        job.location,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ),
                   ],
                 ),
