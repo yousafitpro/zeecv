@@ -503,7 +503,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.go('/home/my-jobs');
                     break;
                   case 2:
-                    context.go('/home/resume');
+                    context.go('/in-app/edit-resume');
                     break;
                   case 3:
                     context.go('/home/profile');
@@ -523,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.description),
-                  label: 'Resume',
+                  label: 'Edit Resume',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person),

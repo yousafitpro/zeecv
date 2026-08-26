@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zeecv/inapp/edit_resume_inapp.dart';
 import '../models/user_model.dart';
 // Import your screens
 import '../screens/auth/forgot_password_screen.dart';
@@ -398,6 +399,11 @@ static void _logout(BuildContext context) {
               final slug = state.pathParameters['slug'] ?? '';
               return JobDetailScreen(slug: slug);
             },
+          ),
+          GoRoute(
+            path: '/in-app/edit-resume',
+            name: 'edit-resume',
+            builder: (context, state) =>EditResumeInapp(),
           ),
           GoRoute(
             path: '/home/profile',

@@ -13,7 +13,7 @@ import '../app/router.dart';
 class AuthProvider extends ChangeNotifier {
   
   final ApiService _apiService = ApiService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+  final GoogleSignIn _googleSignIn = GoogleSignIn(serverClientId:'422107728130-tepgihl1glij1uk719du1ddt35ec0fjk.apps.googleusercontent.com',scopes: ['email', 'profile']);
   
   UserModel? _user;
   bool _isLoading = false;
