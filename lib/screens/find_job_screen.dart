@@ -499,9 +499,7 @@ class _FindJobScreenState extends State<FindJobScreen>
         ? job.tags.split(',').map((e) => e.trim()).take(3).toList()
         : [];
 
-    return GestureDetector(
-      onTap: () => context.go('/job-detail/${job.slug}'),
-      child: Card(
+    return Card(
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
@@ -528,7 +526,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        color: Theme.of(context).primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -572,11 +570,11 @@ class _FindJobScreenState extends State<FindJobScreen>
               ],
               if (job.remote == 1) ...[
                 const SizedBox(height: 4),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.wifi, size: 16, color: Colors.green),
-                    SizedBox(width: 4),
-                    Text(
+                    const Icon(Icons.wifi, size: 16, color: Colors.green),
+                    const SizedBox(width: 4),
+                    const Text(
                       'Remote',
                       style: TextStyle(fontSize: 14, color: Colors.green),
                     ),
@@ -611,21 +609,36 @@ class _FindJobScreenState extends State<FindJobScreen>
                     _formatDate(job.jobCreatedAt),
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                  Text(
+                  Row(children: [
+                    // Container(
+                    //   padding: const EdgeInsets.only(left:10,right:10),
+                    //   child: GestureDetector(
+                    //     onTap: ()=>_toggleSaveJob(jobId:job.id ),
+                    //     child: Icon(
+                    //   Icons.bookmark,
+                    //   color: Colors.grey[600],
+                    //   size: 20,
+                    // ),
+                    //   ),
+                    // ),
+                    GestureDetector(
+                      onTap: () => context.go('/job-detail/${job.slug}'),
+                      child:Text(
                     'View Details →',
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.w600,
+                    )
                     ),
-                  ),
+                  )
+                  ],),
                 ],
               ),
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   String _formatDate(String dateString) {
@@ -652,4 +665,23 @@ class _FindJobScreenState extends State<FindJobScreen>
       return dateString;
     }
   }
+// Inside your StatefulWidget or using Provider/GetX
+void _toggleSaveJob({required int jobId}) async {
+  final jobStore = context.read<JobStore>();
+  try {
+    
+    // Call your API service
+    final response = await jobStore.toggleSaveJob(jobID: jobId);
+    
+  } catch (e) {
+    // Handle exception
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+  }
+}
 }

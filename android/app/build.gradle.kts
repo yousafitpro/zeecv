@@ -23,8 +23,8 @@ android {
         applicationId = "com.zeecv"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.0.7"
+        versionCode = 121
+        versionName = "1.2.1"
     }
 
     signingConfigs {

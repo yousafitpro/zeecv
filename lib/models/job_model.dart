@@ -14,6 +14,8 @@ class Job {
   final String jobCreatedAt;
   final String description;
   final String? type; // Added type property
+  final String? isSaved;
+  final String? isApplied;
 
   Job({
     required this.id,
@@ -29,6 +31,8 @@ class Job {
     required this.jobCreatedAt,
     required this.description,
     this.type,
+    this.isSaved,
+    this.isApplied,
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
@@ -46,6 +50,8 @@ class Job {
       jobCreatedAt: json['job_created_at'] ?? '',
       description: json['description'] ?? '',
       type: json['type'], // Parse type from JSON
+      isApplied: json['isApplied'], 
+      isSaved: json['isSaved'], 
     );
   }
 
@@ -64,6 +70,8 @@ class Job {
       'job_created_at': jobCreatedAt,
       'description': description,
       'type': type,
+      'isApplied': isApplied,
+      'isSaved': isSaved,
     };
   }
 }

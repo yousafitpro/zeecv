@@ -253,13 +253,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
-                        'ID: ${widget.user?.id ?? 'N/A'}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
-                      ),
                     ),
                   ],
                 ),
