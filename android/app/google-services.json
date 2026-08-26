@@ -30,6 +30,22 @@
           }
         },
         {
+          "client_id": "422107728130-s6uqqkbunn3utrviq7r41geo4hn91lu8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zeecv",
+            "certificate_hash": "db51d00ba475f4d48c9aaf7b673cfeda531b0884"
+          }
+        },
+        {
+          "client_id": "422107728130-vkue6q7uo19gn2fm09pe96up7e7bcm56.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zeecv",
+            "certificate_hash": "26d689875f625f04d9095df55c320aaa1af28197"
+          }
+        },
+        {
           "client_id": "422107728130-tepgihl1glij1uk719du1ddt35ec0fjk.apps.googleusercontent.com",
           "client_type": 3
         }
