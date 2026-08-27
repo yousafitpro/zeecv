@@ -503,7 +503,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.go('/home/my-jobs');
                     break;
                   case 2:
-                    context.go('/in-app/edit-resume');
+                    context.go('/home/resume');
                     break;
                   case 3:
                     context.go('/home/profile');
