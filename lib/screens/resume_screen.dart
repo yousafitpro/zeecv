@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zeecv/models/user_model.dart';
 import '../core/constants/app_colors.dart';
-
 class ResumeScreen extends StatelessWidget {
   final UserModel? user;
   final VoidCallback? onEditResume;
@@ -71,7 +71,7 @@ class ResumeScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: onEditResume,
+                  onPressed:()=>onEditResume,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: AppColors.primary,

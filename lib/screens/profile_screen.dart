@@ -313,7 +313,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 
                 const Divider(height: 1),
-                
+                TextButton(
+            onPressed: () => context.go('/debug-logs'), // or context.push('/debug-logs')
+            child: const Text('View Debug Logs'),
+          ),
                 // Logout
                 _buildProfileMenuItem(
                   icon: Icons.logout,
@@ -323,8 +326,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: widget.onLogout,
                   isLogout: true,
                 ),
+                
               ],
             ),
+            
           ),
           
           const SizedBox(height: 24),
@@ -338,6 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           
+                    
           const SizedBox(height: 16),
         ],
       ),

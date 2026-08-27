@@ -12,8 +12,7 @@ class _EditResumeInappState extends State<EditResumeInapp> {
   @override
   Widget build(BuildContext context) {
     final GoRouterState routeState = GoRouterState.of(context);
-    final String? url = routeState.pathParameters['url'];
-    print(url);
+    print("ok");
     return Container(
       
     );

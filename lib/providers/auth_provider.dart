@@ -13,8 +13,8 @@ import '../app/router.dart';
 class AuthProvider extends ChangeNotifier {
   
   final ApiService _apiService = ApiService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
-  
+  final GoogleSignIn _googleSignIn = GoogleSignIn(serverClientId:'779291687230-2tp0skgtpq7p800h6f9clmd2odg87p9r.apps.googleusercontent.com',scopes: ['email', 'profile']);
+  final List<String> infoLogs = [];
   UserModel? _user;
   bool _isLoading = false;
   String? _error;
@@ -30,7 +30,24 @@ class AuthProvider extends ChangeNotifier {
      _apiService.onUnauthorized = _handleUnauthorized;
     _init();
   }
-
+void _addLog(String type, String message) {
+    final timestamp = DateTime.now().toIso8601String();
+    final log = '[$timestamp] $type: $message';
+    
+    // Add to array
+    infoLogs.add(log);
+    
+    // Keep max 200 logs to avoid memory issues
+    if (infoLogs.length > 200) {
+      infoLogs.removeAt(0);
+    }
+    
+    // Print to console
+    print(log);
+    
+    // Notify listeners so the LogsScreen updates in real-time
+    notifyListeners();
+  }
   // ============================================================
   // INIT
   // ============================================================
@@ -209,34 +226,47 @@ Future<void> _handleUnauthorized() async {
   // SIGN IN WITH GOOGLE
   // ============================================================
 
-  Future<bool> signInWithGoogle() async {
-    print('🟡 Google Sign-In started');
+Future<bool> signInWithGoogle() async {
+    _addLog('INFO', 'Google Sign-In started');
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      // 1. Sign in with Google
-      print('🟡 Attempting Google sign-in...');
+      _addLog('INFO', 'Attempting Google sign-in');
+      _addLog('INFO', 'Client ID being used: ${_googleSignIn.serverClientId}');
+      
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
-        print('🔴 User canceled sign-in');
+        _addLog('ERROR', 'User canceled sign-in');
+        _error = 'Google Sign-In was cancelled by the user.';
         _isLoading = false;
         notifyListeners();
-        return false; // User canceled
+        return false; 
       }
 
-      print('🟢 User signed in: ${googleUser.email}');
+      _addLog('INFO', 'User signed in: ${googleUser.email}');
       
-      // 2. Get authentication tokens
       final GoogleSignInAuthentication googleAuth = 
           await googleUser.authentication;
       
-      print('🟢 Got authentication tokens');
+      _addLog('INFO', 'Got authentication tokens');
 
-      // 3. Send to your backend API
+      if (googleAuth.idToken == null || googleAuth.idToken!.isEmpty) {
+        _addLog('ERROR', 'ID Token is NULL or empty!');
+        _error = 'Google authentication failed: ID Token is missing.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+      
+      _addLog('INFO', 'ID Token received: ${googleAuth.idToken!.substring(0, 20)}...');
+      _addLog('INFO', 'Access Token received: ${googleAuth.accessToken}');
+
       try {
+        _addLog('INFO', 'Sending credentials to backend API');
+        
         final result = await _apiService.signUpWithGoogle(
           name: googleUser.displayName ?? googleUser.email.split('@').first ?? 'User',
           email: googleUser.email ?? '',
@@ -257,34 +287,59 @@ Future<void> _handleUnauthorized() async {
             }
           }
           
+          _addLog('SUCCESS', 'Google Sign-In successful!');
           _isLoading = false;
           notifyListeners();
-          print('✅ Google Sign-In successful!');
           return true;
         } else {
-          _error = result['message'] ?? 'Signup failed';
+          _error = result['message'] ?? 'Backend signup failed';
+          _addLog('ERROR', 'Backend error: $_error');
           _isLoading = false;
           notifyListeners();
-          print('🔴 Backend error: $_error');
           return false;
         }
       } catch (e) {
-        _error = e.toString();
+        _error = 'API Error during backend call: $e';
+        _addLog('ERROR', 'API Error: $e');
         _isLoading = false;
         notifyListeners();
-        print('🔴 API Error: $e');
         return false;
       }
 
     } catch (e) {
-      print('🔴 Error during Google Sign-In: $e');
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
+  _addLog('ERROR', 'PlatformException caught!');
 
+  if (e is PlatformException) {
+    // 1. Extract the basic error info
+    final String code = e.code;
+    final String message = e.message ?? 'No message';
+    
+    // 2. Extract the detailed inner exception
+    final String details = e.details?.toString() ?? 'No details';
+    
+    // 3. Build a comprehensive error string
+    _error = 'Google Sign-In Error: Code: $code | Message: $message | Details: $details. '
+             'Check if SHA-1 and Client ID "${_googleSignIn.serverClientId}" are correctly added to Firebase.';
+    
+    // 4. Log everything separately
+    _addLog('ERROR', 'PlatformException Code: $code');
+    _addLog('ERROR', 'PlatformException Message: $message');
+    _addLog('ERROR', 'PlatformException Details: $details');
+    _addLog('ERROR', 'Client ID being used: ${_googleSignIn.serverClientId}');
+    
+    // 5. Print the full error object (NO stackTrace property here!)
+    print('🔴 Full PlatformException: $e');
+    
+  } else {
+    _error = 'Google Sign-In Error: $e';
+    _addLog('ERROR', 'Full Error: $_error');
+  }
+  
+  _isLoading = false;
+  notifyListeners();
+  return false;
+}
+  }
   // ============================================================
   // FORGOT PASSWORD
   // ============================================================

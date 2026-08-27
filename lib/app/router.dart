@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zeecv/inapp/edit_resume_inapp.dart';
+import 'package:zeecv/screens/logs_screen.dart';
 import '../models/user_model.dart';
 // Import your screens
 import '../screens/auth/forgot_password_screen.dart';
@@ -391,6 +392,10 @@ static void _logout(BuildContext context) {
                     : null,
               );
             },
+          ),
+          GoRoute(
+            path: '/debug-logs',
+            builder: (context, state) => const LogsScreen(),
           ),
           GoRoute(
             path: '/job-detail/:slug',
