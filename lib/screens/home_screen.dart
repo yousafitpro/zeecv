@@ -9,6 +9,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:zeecv/models/user_model.dart';
+import 'package:zeecv/widgets/bottom_tabs.dart';
 import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
@@ -144,48 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : null,
       ),
       body: widget.tabNavigator ?? const FindJobScreen(),
-      bottomNavigationBar: isJobDetail
-          ? null // Hide bottom nav on job detail
-          : BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: _selectedIndex,
-              onTap: (index) {
-                switch (index) {
-                  case 0:
-                    context.go('/home/find-jobs');
-                    break;
-                  case 1:
-                    context.go('/home/my-jobs');
-                    break;
-                  case 2:
-                    context.go('/in-app/edit-resume');
-                    break;
-                  case 3:
-                    context.go('/home/profile');
-                    break;
-                }
-              },
-              selectedItemColor: AppColors.primary,
-              unselectedItemColor: Colors.grey,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.search),
-                  label: 'Find Job',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.work),
-                  label: 'My Jobs',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.description),
-                  label: 'Edit Resume',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ],
-            ),
+      bottomNavigationBar:BottomTabs(selectedIndex: _selectedIndex),
     );
   }
 }
