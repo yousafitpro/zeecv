@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -6,44 +5,64 @@ import 'package:zeecv/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 class EditResumeInapp extends StatefulWidget {
-  const EditResumeInapp({ Key? key }) : super(key: key);
-
+  const EditResumeInapp({Key? key}) : super(key: key);
 
   @override
   _EditResumeInappState createState() => _EditResumeInappState();
-
 }
 
 class _EditResumeInappState extends State<EditResumeInapp> {
   bool _showInAppBrowser = false;
   String? _inAppBrowserUrl;
+  String? _downloadUrl;
   InAppWebViewController? _webViewController;
   double _progress = 0;
-
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-          final authProvider = Provider.of<AuthProvider>(context);
-          final user = authProvider.user;
-          if (user?.loginToken != null && user!.loginToken!.isNotEmpty) {
-          setState(() {
-            _inAppBrowserUrl='https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-          });
-          }
+      // Check if widget is still mounted
+      if (!mounted) return;
+      
+      // Use listen: false to avoid unnecessary rebuilds
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final user = authProvider.user;
+      
+      // Safe access to loginToken
+      final token = user?.loginToken;
+      if (token != null && token.isNotEmpty) {
+        setState(() {
+          _showInAppBrowser = true;
+          _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
+          _downloadUrl = 'https://zeecv.com/mobile-app/resume/download/$token';
+        });
+      } else {
+        // Handle case where user is not logged in
+        print('User not logged in or token is missing');
+        // Optionally show a message or navigate to login
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please log in to edit your resume'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
     });
-    }
+  }
+
   void _closeInAppBrowser() {
     setState(() {
       _showInAppBrowser = false;
-      _inAppBrowserUrl ='';
+      _inAppBrowserUrl = '';
       _webViewController = null;
       _progress = 0;
     });
   }
 
-   void _showError(String message) {
+  void _showError(String message) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -53,12 +72,72 @@ class _EditResumeInappState extends State<EditResumeInapp> {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
-    final back_url = extra?['back_url'] as String? ?? '/home/find-jobs';
-    if (_showInAppBrowser && _inAppBrowserUrl != null) {
+    final backUrl = extra?['back_url'] as String? ?? '/home/find-jobs';
+
+    // Show in-app browser if enabled and URL exists
+    if (_showInAppBrowser && _inAppBrowserUrl != null && _inAppBrowserUrl!.isNotEmpty) {
       return Scaffold(
+        appBar: AppBar(
+        title: const Text("Your Resume"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Use the back_url from extra parameters
+            context.go(backUrl);
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () {
+              // Handle download action
+              if (_downloadUrl != null && _downloadUrl!.isNotEmpty) {
+                // You can either open the download URL in the webview or handle download differently
+                // Option 1: Navigate to download URL in the same webview
+                if (_webViewController != null) {
+                  _webViewController?.loadUrl(
+                    urlRequest: URLRequest(
+                      url: WebUri(_downloadUrl!),
+                    ),
+                  );
+                }
+                // Option 2: Show a snackbar with the download link
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Downloading resume...'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                _showError('Download URL not available');
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              // Refresh the web view or reload data
+              if (_webViewController != null) {
+                _webViewController?.reload();
+              } else {
+                // If not in web view, reload the token and show browser
+                final authProvider = context.read<AuthProvider>();
+                final token = authProvider.user?.loginToken;
+                if (token != null && token.isNotEmpty) {
+                  setState(() {
+                    _showInAppBrowser = true;
+                    _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
+                  });
+                }
+              }
+            },
+          ),
+        ],
+      ),
         body: SafeArea(
           child: Stack(
             children: [
@@ -82,25 +161,11 @@ class _EditResumeInappState extends State<EditResumeInapp> {
                 onLoadError: (controller, url, code, message) {
                   _showError('Failed to load page: $message');
                 },
+                onLoadHttpError: (controller, url, statusCode, description) {
+                  _showError('HTTP Error $statusCode: $description');
+                },
               ),
-              // Floating close button
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ),
-                    onPressed: _closeInAppBrowser,
-                  ),
-                ),
-              ),
+              
               // Progress indicator at top
               Positioned(
                 top: 0,
@@ -120,26 +185,11 @@ class _EditResumeInappState extends State<EditResumeInapp> {
         ),
       );
     }
+
+    // Main screen with AppBar
     return Scaffold(
-        appBar: AppBar(
-            title: Text("Your Resume"),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: ()=>{
-                context.go(back_url)
-              },
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () {
-                },
-              ),
-            ],
-          ),
-        body: SafeArea(
-          child: Text("ok")
-        )
-        );
+      body: SafeArea(child: Container(child: Text(''),),
+      ),
+    );
   }
 }
