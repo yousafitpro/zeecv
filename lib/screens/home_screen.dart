@@ -111,27 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
  
-  // ============================================================
-  // OPEN WEBVIEW FOR TERMS & CONDITIONS
-  // ============================================================
-
-  void _openTermsAndConditions() {
-    // _openWebViewForUrl(
-    //   'https://zeecv.com/terms?is_app=yes',
-    //   'Terms & Conditions',
-    // );
-  }
-
-  // ============================================================
-  // OPEN WEBVIEW FOR PRIVACY POLICY
-  // ============================================================
-
-  void _openPrivacyPolicy() {
-    // _openWebViewForUrl(
-    //   'https://zeecv.com/privacy-policy?is_app=yes',
-    //   'Privacy Policy',
-    // );
-  }
 
   // ============================================================
   // LOGOUT
