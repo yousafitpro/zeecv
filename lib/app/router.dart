@@ -23,6 +23,7 @@ import '../providers/auth_provider.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
 import '../screens/job_detail_screen.dart';
+import '../dialogs/logout.dart';
 
 class AppRouter {
   // ============================================================
@@ -391,7 +392,7 @@ static void _logout(BuildContext context) {
               final user = authProvider.user;
               return ProfileScreen(
                 user: user,
-                onLogout: () => _logout(context),
+                onLogout: () => showLogoutDialog(context),
                 onEditResume: (user) => context.go('/in-app/edit-resume'),
                 onTermsAndConditions: () => context.go('/in-app/default',extra: {
                   'url':'https://zeecv.com/terms?is_app=yes',
