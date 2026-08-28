@@ -15,10 +15,6 @@ import '../core/constants/app_colors.dart';
 import '../core/constants/app_strings.dart';
 import 'find_job_screen.dart';
 
-// ============================================================
-// HOME SCREEN
-// ============================================================
-
 class HomeScreen extends StatefulWidget {
   final Widget? tabNavigator;
   const HomeScreen({super.key, this.tabNavigator});
@@ -36,10 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
   WebViewController? _webViewController;
 
   Timer? _openWebViewTimer;
-
-  // ============================================================
-  // GET SELECTED INDEX BASED ON CURRENT ROUTE
-  // ============================================================
 
   int get _selectedIndex {
     try {
