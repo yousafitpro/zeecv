@@ -256,12 +256,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
               },
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () {
-                  _webViewController?.reload();
-                },
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.refresh),
+              //   onPressed: () {
+              //     _webViewController?.reload();
+              //   },
+              // ),
             ],
           ),
         body: SafeArea(

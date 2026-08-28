@@ -14,6 +14,8 @@ class ResumeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final back_url = extra?['back_url'] as String? ?? '/home/find-jobs';
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -35,7 +37,7 @@ class ResumeScreen extends StatelessWidget {
                   radius: 50,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   child: Text(
-                    _getInitial(user),
+                    "ok",
                     style: const TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
@@ -121,17 +123,5 @@ class ResumeScreen extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // USER INITIAL - Get first letter of name or email
-  // ============================================================
 
-  String _getInitial(UserModel? user) {
-    if (user?.name != null && user!.name!.isNotEmpty) {
-      return user.name!.substring(0, 1).toUpperCase();
-    }
-    if (user?.email != null && user!.email.isNotEmpty) {
-      return user.email.substring(0, 1).toUpperCase();
-    }
-    return 'U';
-  }
 }
