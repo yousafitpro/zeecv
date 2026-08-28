@@ -355,7 +355,14 @@ static void _logout(BuildContext context) {
           );
         },
       ),
-      
+      GoRoute(
+            path: '/job-detail/:slug',
+            name: 'job-detail',
+            builder: (context, state) {
+              final slug = state.pathParameters['slug'] ?? '';
+              return JobDetailScreen(slug: slug);
+            },
+          ),
       // Home shell route with tabs
       ShellRoute(
         builder: (context, state, child) {
@@ -396,14 +403,6 @@ static void _logout(BuildContext context) {
           GoRoute(
             path: '/debug-logs',
             builder: (context, state) => const LogsScreen(),
-          ),
-          GoRoute(
-            path: '/job-detail/:slug',
-            name: 'job-detail',
-            builder: (context, state) {
-              final slug = state.pathParameters['slug'] ?? '';
-              return JobDetailScreen(slug: slug);
-            },
           ),
           GoRoute(
             path: '/in-app/edit-resume',

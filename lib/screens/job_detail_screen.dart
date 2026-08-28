@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
-
+import 'package:go_router/go_router.dart';
 class JobDetailScreen extends StatefulWidget {
   final String slug;
 
@@ -114,6 +114,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+    final back_url = extra?['back_url'] as String? ?? '/home/find-jobs';
     // ==========================================================
     // IN-APP BROWSER (WEBVIEW) - WITH SAFE AREA
     // ==========================================================
@@ -187,11 +189,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     // ==========================================================
 
     return Scaffold(
-      body: _buildContent(),
+      body: _buildContent(back_url),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(back_url) {
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -244,7 +246,26 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     final bool isInternal = _job!.type != null && 
         _job!.type!.toLowerCase() == 'internal';
 
-    return SingleChildScrollView(
+    return Scaffold(
+        appBar: AppBar(
+            title: Text("Job Detail"),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: ()=>{
+                context.go(back_url)
+              },
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  _webViewController?.reload();
+                },
+              ),
+            ],
+          ),
+        body: SafeArea(
+          child:SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,6 +530,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           const SizedBox(height: 24),
         ],
       ),
+    )
+    )
     );
   }
 
