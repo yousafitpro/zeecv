@@ -33,20 +33,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Timer? _openWebViewTimer;
 
-  int get _selectedIndex {
-    try {
-      final routerState = GoRouterState.of(context);
-      final location = routerState.matchedLocation;
-      
-      if (location.contains('/home/find-jobs')) return 0;
-      if (location.contains('/home/my-jobs')) return 1;
-      if (location.contains('/home/resume')) return 2;
-      if (location.contains('/home/profile')) return 3;
-    } catch (e) {
-      debugPrint('Error getting route: $e');
-    }
-    return 0;
+ int get _selectedIndex {
+  try {
+    final routerState = GoRouterState.of(context);
+    final location = routerState.matchedLocation;
+
+    if (location.contains('/home/home')) return 0;
+    if (location.contains('/home/find-jobs')) return 1;
+    if (location.contains('/home/my-jobs')) return 3;
+    if (location.contains('/home/profile')) return 4;
+    if (location.contains('/in-app/edit-resume')) return 2;
+  } catch (e) {
+    debugPrint('Error getting route: $e');
   }
+
+  return 0;
+}
 
   // ============================================================
   // CHECK IF ON JOB DETAIL

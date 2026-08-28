@@ -13,16 +13,16 @@ class BottomTabs extends StatelessWidget {
   void _onTap(BuildContext context, int index) {
     switch (index) {
       case 0:
-        context.go('/home/find-jobs');
+        context.go('/home/home');
         break;
       case 1:
-        context.go('/home/my-jobs');
+        context.go('/home/find-jobs');
         break;
       case 2:
         context.go('/in-app/edit-resume');
         break;
       case 3:
-        context.go('/home/receivers'); // placeholder, replace with your route
+        context.go('/home/my-jobs'); // placeholder, replace with your route
         break;
       case 4:
         context.go('/home/profile');
