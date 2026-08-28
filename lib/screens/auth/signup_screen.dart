@@ -37,47 +37,6 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  // ============================================================
-  // LAUNCH URL IN APP WEBVIEW
-  // ============================================================
-
-  Future<void> _launchInAppWebView(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.inAppWebView,
-          webViewConfiguration: const WebViewConfiguration(
-            enableJavaScript: true,
-            enableDomStorage: true,
-          ),
-        );
-      } else {
-        // Fallback to external browser
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(
-            uri,
-            mode: LaunchMode.externalApplication,
-          );
-        }
-      }
-    } catch (e) {
-      // Try external browser as fallback
-      try {
-        final uri = Uri.parse(url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(
-            uri,
-            mode: LaunchMode.externalApplication,
-          );
-        }
-      } catch (_) {
-        // Ignore
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -347,7 +306,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         decoration: TextDecoration.underline,
                       ),
                       recognizer: TapGestureRecognizer()..onTap = () {
-                        _launchInAppWebView('https://zeecv.com/terms?is_app=yes');
+                        context.go('/in-app/default',extra: {
+                            'url':'https://zeecv.com/terms?is_app=yes',
+                            'back_url':'/signup',
+                            'title':'Terms & Conditions'
+                          });
                       },
                     ),
                     const TextSpan(text: ' and '),
@@ -359,7 +322,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         decoration: TextDecoration.underline,
                       ),
                       recognizer: TapGestureRecognizer()..onTap = () {
-                        _launchInAppWebView('https://zeecv.com/privacy-policy?is_app=yes');
+                        context.go('/in-app/default',extra: {
+                            'url':'https://zeecv.com/privacy-policy?is_app=yes',
+                            'back_url':'/signup',
+                            'title':'Privacy Policy'
+                          });
                       },
                     ),
                   ],
