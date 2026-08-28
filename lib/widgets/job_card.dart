@@ -7,163 +7,180 @@ import 'package:go_router/go_router.dart';
 class JobCard extends StatelessWidget {
   final Job job;
   final String back_url;
-  
+
   const JobCard({
-    super.key, 
+    super.key,
     required this.job,
     required this.back_url,
   });
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
     final List<String> tagList = job.tags.isNotEmpty
         ? job.tags.split(',').map((e) => e.trim()).take(3).toList()
         : [];
 
-    return Card(
-        margin: const EdgeInsets.only(bottom: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      job.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE5E5E5), width: 1),
+        // No borderRadius = sharp corners
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.go(
+            '/job-detail/${job.slug}',
+            extra: {'back_url': back_url},
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              height: 1.3,
+                              color: Color(0xFF111111),
+                              letterSpacing: -0.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            job.companyName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF6B6B6B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  if (job.jobTypes != null && job.jobTypes!.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        job.jobTypes!.split(',').first.trim(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.w600,
+                    if (job.jobTypes != null && job.jobTypes!.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: primaryColor, width: 1),
+                        ),
+                        child: Text(
+                          job.jobTypes!.split(',').first.trim().toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: primaryColor,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.business_center, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      job.companyName,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ),
-                ],
-              ),
-              if (job.location.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        job.location,
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ),
                   ],
                 ),
-              ],
-              if (job.remote == 1) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.wifi, size: 16, color: Colors.green),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'Remote',
-                      style: TextStyle(fontSize: 14, color: Colors.green),
-                    ),
-                  ],
-                ),
-              ],
-              if (tagList.isNotEmpty) ...[
-                const SizedBox(height: 8),
+
+                const SizedBox(height: 14),
+
+                // Meta info row — flat, icon + text, no pill backgrounds
                 Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: tagList.map((tag) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(4),
+                  spacing: 16,
+                  runSpacing: 8,
+                  children: [
+                    if (job.location.isNotEmpty)
+                      _MetaItem(
+                        icon: Icons.location_on_outlined,
+                        label: job.location,
                       ),
-                      child: Text(
-                        tag,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    if (job.remote == 1)
+                      const _MetaItem(
+                        icon: Icons.wifi_rounded,
+                        label: 'Remote',
+                        color: Color(0xFF1B8A5A),
                       ),
-                    );
-                  }).toList(),
+                    _MetaItem(
+                      icon: Icons.access_time_rounded,
+                      label: _formatDate(job.jobCreatedAt),
+                    ),
+                  ],
+                ),
+
+                if (tagList.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: tagList.map((tag) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        color: const Color(0xFFF4F4F4),
+                        child: Text(
+                          tag,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF4A4A4A),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+
+                const SizedBox(height: 16),
+                Container(height: 1, color: const Color(0xFFEDEDED)),
+                const SizedBox(height: 14),
+
+                // Footer CTA
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox(height: 16),
+                    Container(height: 1, color: const Color(0xFFEDEDED)),
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'VIEW DETAILS',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: primaryColor,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_rounded,
+                            size: 14, color: primaryColor),
+                      ],
+                    ),
+                  ],
                 ),
               ],
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _formatDate(job.jobCreatedAt),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  Row(children: [
-                    // Container(
-                    //   padding: const EdgeInsets.only(left:10,right:10),
-                    //   child: GestureDetector(
-                    //     onTap: ()=>_toggleSaveJob(jobId:job.id ),
-                    //     child: Icon(
-                    //   Icons.bookmark,
-                    //   color: Colors.grey[600],
-                    //   size: 20,
-                    // ),
-                    //   ),
-                    // ),
-                    GestureDetector(
-                      onTap: () => context.go('/job-detail/${job.slug}',extra: {
-                            'back_url': this.back_url
-                        }),
-                      child:Text(
-                    'View Details →',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.w600,
-                    )
-                    ),
-                  )
-                  ],),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
-      );
+      ),
+    );
   }
-    String _formatDate(String dateString) {
+
+  String _formatDate(String dateString) {
     try {
       final date = DateTime.parse(dateString);
       final now = DateTime.now();
@@ -187,5 +204,41 @@ class JobCard extends StatelessWidget {
       return dateString;
     }
   }
+}
 
+class _MetaItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color? color;
+
+  const _MetaItem({
+    required this.icon,
+    required this.label,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = color ?? const Color(0xFF6B6B6B);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: c),
+        const SizedBox(width: 4),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 150),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: c,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
 }

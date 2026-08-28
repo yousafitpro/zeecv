@@ -109,7 +109,7 @@ class BottomTabs extends StatelessWidget {
                       ],
                     ),
                     child: const Icon(
-                      Icons.description,
+                      Icons.edit,
                       color: Colors.white,
                       size: 26,
                     ),
