@@ -273,9 +273,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: 'Edit Resume',
                   subtitle: 'Update your CV and portfolio',
                   color: AppColors.primary,
-                  onTap: widget.user == null 
-                      ? null 
-                      : () => widget.onEditResume(widget.user!),
+                  onTap:()=>{
+                        context.go(
+                      '/in-app/edit-resume',
+                      extra: {
+                        'back_url': '/home/profile',
+                      },
+                    )
+                  },
                 ),
                 
                 const Divider(height: 1),
