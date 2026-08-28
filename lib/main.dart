@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zeecv/stores/my_job_store.dart';
 import 'app/app.dart';
 import 'providers/auth_provider.dart';
 // 1. Import your ApiService
 import 'services/api_service.dart'; 
 import 'stores/job_store.dart';
+import 'stores/my_job_store.dart';
 void main() async {
   // 2. This is required to allow loading assets (the cert) before runApp
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,9 +21,12 @@ void main() async {
       providers: [
         ChangeNotifierProvider(
           create: (_) => AuthProvider(),
-        ),      // Job Store
+        ),
         ChangeNotifierProvider<JobStore>(
           create: (_) => JobStore(),
+        ),
+        ChangeNotifierProvider<MyJobStore>(
+          create: (_) => MyJobStore(),
         ),
         
       ],

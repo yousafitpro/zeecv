@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:zeecv/stores/my_job_store.dart';
 import 'package:zeecv/widgets/job_card.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
 import 'job_detail_screen.dart';
+import 'package:provider/provider.dart';
 
 class MyJobsScreen extends StatefulWidget {
   final VoidCallback? onEditResume;
@@ -19,19 +21,20 @@ class MyJobsScreen extends StatefulWidget {
 }
 
 class _MyJobsScreenState extends State<MyJobsScreen> {
-  List<Job> _jobs = [];
-  List<Job> _filteredJobs = [];
-  bool _isLoading = true;
-  bool _isFirstLoad = true;
-  String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _loadMyJobs();
     _searchController.addListener(_onSearchChanged);
+    // Load jobs after first build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    final myjobStore = context.read<MyJobStore>();
+      if (mounted && !myjobStore.hasLoadedOnce) {
+        context.read<MyJobStore>().loadJobs();
+      }
+    });
   }
 
   @override
@@ -44,75 +47,35 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
   void _onSearchChanged() {
     setState(() {
       _searchQuery = _searchController.text;
-      _filterJobs();
     });
-  }
-
-  void _filterJobs() {
-    if (_searchQuery.isEmpty) {
-      _filteredJobs = List.from(_jobs);
-    } else {
-      final query = _searchQuery.toLowerCase().trim();
-      _filteredJobs = _jobs.where((job) {
-        return job.title.toLowerCase().contains(query) ||
-            job.companyName.toLowerCase().contains(query) ||
-            job.location.toLowerCase().contains(query) ||
-            (job.tags.isNotEmpty && job.tags.toLowerCase().contains(query)) ||
-            (job.jobTypes != null && job.jobTypes!.toLowerCase().contains(query));
-      }).toList();
-    }
-  }
-
-  Future<void> _loadMyJobs() async {
-    setState(() {
-      _isLoading = true;
-      _isFirstLoad = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final apiService = ApiService();
-      final result = await apiService.loadMyJobs();
-
-      if (result['success']) {
-        final data = result['data'];
-        final List<dynamic> jobList = data['list'] ?? [];
-        setState(() {
-          _jobs = jobList.map((json) => Job.fromJson(json)).toList();
-          _filteredJobs = List.from(_jobs);
-          _isFirstLoad = false;
-          _searchController.clear();
-        });
-      } else {
-        setState(() {
-          _errorMessage = result['message'];
-          _isFirstLoad = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to load my jobs: $e';
-        _isFirstLoad = false;
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // Search Bar
-          _buildSearchBar(),
-          // Content
-          Expanded(
-            child: _buildContent(),
-          ),
-        ],
+      body: Consumer<MyJobStore>(
+        builder: (context, myjobStore, child) {
+          // Filter jobs based on search query
+          final filteredJobs = _searchQuery.isEmpty
+              ? myjobStore.jobs
+              : myjobStore.jobs.where((job) {
+                  final query = _searchQuery.toLowerCase().trim();
+                  return job.title.toLowerCase().contains(query) ||
+                      job.companyName.toLowerCase().contains(query) ||
+                      job.location.toLowerCase().contains(query) ||
+                      (job.tags.isNotEmpty && job.tags.toLowerCase().contains(query)) ||
+                      (job.jobTypes != null && job.jobTypes!.toLowerCase().contains(query));
+                }).toList();
+
+          return Column(
+            children: [
+              _buildSearchBar(),
+              Expanded(
+                child: _buildContent(context, myjobStore, filteredJobs),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -168,14 +131,16 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     );
   }
 
-  Widget _buildContent() {
-    if (_isLoading && _isFirstLoad) {
+  Widget _buildContent(BuildContext context, MyJobStore jobStore, List<Job> filteredJobs) {
+    // Loading state
+    if (jobStore.isLoading && jobStore.isFirstLoad) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    if (_errorMessage != null) {
+    // Error state
+    if (jobStore.errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -198,7 +163,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                _errorMessage!,
+                jobStore.errorMessage!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey[600],
@@ -207,7 +172,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                onPressed: _loadMyJobs,
+                onPressed: () => jobStore.loadJobs(),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Try Again'),
                 style: ElevatedButton.styleFrom(
@@ -226,7 +191,8 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       );
     }
 
-    if (_jobs.isEmpty) {
+    // Empty state
+    if (jobStore.jobs.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -306,7 +272,8 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       );
     }
 
-    if (_filteredJobs.isEmpty && _searchQuery.isNotEmpty) {
+    // No search results
+    if (filteredJobs.isEmpty && _searchQuery.isNotEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -342,17 +309,19 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       );
     }
 
+    // Jobs list
     return RefreshIndicator(
-      onRefresh: _loadMyJobs,
+      onRefresh: () => jobStore.loadJobs(),
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: _filteredJobs.length,
+        itemCount: filteredJobs.length,
         itemBuilder: (context, index) {
-          return JobCard(job:_filteredJobs[index],back_url:'/home/my-jobs');
+          return JobCard(
+            job: filteredJobs[index],
+            back_url: '/home/my-jobs',
+          );
         },
       ),
     );
   }
-
-
 }

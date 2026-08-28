@@ -56,10 +56,7 @@ class MyJobStore extends ChangeNotifier {
 
     try {
       final apiService = ApiService();
-      final result = await apiService.loadJobs(
-        search: searchQuery,
-      );
-
+      final result = await apiService.loadMyJobs();
       if (result['success']) {
         final data = result['data'];
         final List<dynamic> jobList = data['list'] ?? [];
