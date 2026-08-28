@@ -32,14 +32,12 @@ class BottomTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-
     return Container(
       color: Colors.white,
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 98, // bar content height; SafeArea adds the inset below
+          height: 90, // bar content height; SafeArea adds the inset below
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.topCenter,
@@ -68,24 +66,24 @@ class BottomTabs extends StatelessWidget {
                         onTap: () => _onTap(context, 0),
                       ),
                       _NavItem(
-                        icon: Icons.swap_horiz,
+                        icon: Icons.search,
                         label: 'Find Jobs',
                         isSelected: selectedIndex == 1,
                         onTap: () => _onTap(context, 1),
                       ),
                       const SizedBox(width: 64), // space for center button
                       _NavItem(
-                        icon: Icons.swap_horiz,
+                        icon: Icons.work_outline,
                         label: 'My Jobs',
                         isSelected: selectedIndex == 3,
                         onTap: () => _onTap(context, 3),
                       ),
                       _NavItem(
-                        icon: Icons.people_alt_outlined,
+                        icon: Icons.person_outline,
                         label: 'Profile',
                         isSelected: selectedIndex == 4,
                         onTap: () => _onTap(context, 4),
-                      )
+                      ),
                     ],
                   ),
                 ),

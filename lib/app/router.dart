@@ -375,6 +375,11 @@ static void _logout(BuildContext context) {
             builder: (context, state) => const FindJobScreen(),
           ),
           GoRoute(
+            path: '/home/home',
+            name: 'home-home',
+            builder: (context, state) => const FindJobScreen(),
+          ),
+          GoRoute(
             path: '/home/my-jobs',
             name: 'my-jobs',
             builder: (context, state) => const MyJobsScreen(),
