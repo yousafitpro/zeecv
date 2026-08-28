@@ -90,106 +90,106 @@ class _EditResumeInappState extends State<EditResumeInapp> {
 
   // --- NEW DOWNLOAD HANDLING METHODS ---
 
-Future<void> _handleDownload() async {
-  final allowed = await PermissionHelper.requestStoragePermission();
+  Future<void> _handleDownload() async {
+    final allowed = await PermissionHelper.requestStoragePermission();
 
-  if (!allowed) {
-    _showError('Storage permission denied');
-    return;
-  }
-
-  if (_downloadUrl == null || _downloadUrl!.isEmpty) {
-    _showError('Download URL not available');
-    return;
-  }
-
-  if (_isDownloading) {
-    _showError('Download already in progress');
-    return;
-  }
-
-  setState(() => _isDownloading = true);
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Downloading resume...'),
-      backgroundColor: Colors.blue,
-      duration: Duration(seconds: 2),
-    ),
-  );
-
-  try {
-    // Get filename
-    String filename = 'resume.pdf';
-
-    try {
-      final uri = Uri.parse(_downloadUrl!);
-      final segments = uri.path.split('/');
-      final lastSegment = segments.last;
-
-      if (lastSegment.isNotEmpty && lastSegment.contains('.')) {
-        filename = Uri.decodeComponent(lastSegment);
-      }
-    } catch (_) {}
-
-    // Real device Downloads folder
-    final downloadsDir = await PermissionHelper.getDownloadDirectory();
-
-    if (!await downloadsDir.exists()) {
-      await downloadsDir.create(recursive: true);
+    if (!allowed) {
+      _showError('Storage permission denied');
+      return;
     }
 
-    // Download file
-    final client = http.Client();
+    if (_downloadUrl == null || _downloadUrl!.isEmpty) {
+      _showError('Download URL not available');
+      return;
+    }
+
+    if (_isDownloading) {
+      _showError('Download already in progress');
+      return;
+    }
+
+    setState(() => _isDownloading = true);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Downloading resume...'),
+        backgroundColor: Colors.blue,
+        duration: Duration(seconds: 2),
+      ),
+    );
 
     try {
-      final response = await client.get(
-        Uri.parse(_downloadUrl!),
-      );
+      // Get filename
+      String filename = 'resume.pdf';
 
-      if (response.statusCode != 200) {
-        throw Exception(
-          'Download failed: ${response.statusCode}',
+      try {
+        final uri = Uri.parse(_downloadUrl!);
+        final segments = uri.path.split('/');
+        final lastSegment = segments.last;
+
+        if (lastSegment.isNotEmpty && lastSegment.contains('.')) {
+          filename = Uri.decodeComponent(lastSegment);
+        }
+      } catch (_) {}
+
+      // Real device Downloads folder
+      final downloadsDir = await PermissionHelper.getDownloadDirectory();
+
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+
+      // Download file
+      final client = http.Client();
+
+      try {
+        final response = await client.get(
+          Uri.parse(_downloadUrl!),
         );
+
+        if (response.statusCode != 200) {
+          throw Exception(
+            'Download failed: ${response.statusCode}',
+          );
+        }
+
+        if (response.bodyBytes.isEmpty) {
+          throw Exception('Downloaded file is empty');
+        }
+
+        // Prevent overwriting existing files
+        final finalFilename = await _getUniqueFilename(
+          downloadsDir.path,
+          filename,
+        );
+
+        final file = File(
+          '${downloadsDir.path}/$finalFilename',
+        );
+
+        await file.writeAsBytes(response.bodyBytes);
+
+        final sizeInMB =
+            (response.bodyBytes.length / (1024 * 1024))
+                .toStringAsFixed(2);
+
+        _showSuccess(
+          'Resume downloaded: $finalFilename ($sizeInMB MB)',
+        );
+
+        _showDownloadCompleteDialog(file);
+      } finally {
+        client.close();
       }
-
-      if (response.bodyBytes.isEmpty) {
-        throw Exception('Downloaded file is empty');
-      }
-
-      // Prevent overwriting existing files
-      final finalFilename = await _getUniqueFilename(
-        downloadsDir.path,
-        filename,
-      );
-
-      final file = File(
-        '${downloadsDir.path}/$finalFilename',
-      );
-
-      await file.writeAsBytes(response.bodyBytes);
-
-      final sizeInMB =
-          (response.bodyBytes.length / (1024 * 1024))
-              .toStringAsFixed(2);
-
-      _showSuccess(
-        'Resume downloaded: $finalFilename ($sizeInMB MB)',
-      );
-
-      _showDownloadCompleteDialog(file);
+    } catch (e) {
+      _showError('Download failed: $e');
+      print('Download error: $e');
     } finally {
-      client.close();
-    }
-  } catch (e) {
-    _showError('Download failed: $e');
-    print('Download error: $e');
-  } finally {
-    if (mounted) {
-      setState(() => _isDownloading = false);
+      if (mounted) {
+        setState(() => _isDownloading = false);
+      }
     }
   }
-}
   Future<String> _getUniqueFilename(String directory, String baseFilename) async {
     final file = File('$directory/$baseFilename');
     if (!await file.exists()) {
@@ -282,6 +282,36 @@ Future<void> _handleDownload() async {
             },
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.preview),
+              onPressed: () async {
+                if (_previewUrl == null || _previewUrl!.isEmpty) {
+                  _showError('Preview URL not available');
+                  return;
+                }
+
+                await _webViewController?.loadUrl(
+                  urlRequest: URLRequest(
+                    url: WebUri(_previewUrl!),
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () async {
+                if (_inAppBrowserUrl == null || _inAppBrowserUrl!.isEmpty) {
+                  _showError('Preview URL not available');
+                  return;
+                }
+
+                await _webViewController?.loadUrl(
+                  urlRequest: URLRequest(
+                    url: WebUri(_inAppBrowserUrl!),
+                  ),
+                );
+              },
+            ),
             IconButton(
               icon: _isDownloading 
                   ? const SizedBox(
