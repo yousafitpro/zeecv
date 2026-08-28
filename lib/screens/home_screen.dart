@@ -97,116 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
-  // ============================================================
-  // CREATE WEBVIEW CONTROLLER
-  // ============================================================
-
-  WebViewController _createWebViewController() {
-    final controller = WebViewController();
-
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.white)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            debugPrint('WEBVIEW STARTED: $url');
-          },
-          onPageFinished: (String url) {
-            debugPrint('WEBVIEW FINISHED: $url');
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint(
-              'WEBVIEW ERROR: '
-              '${error.errorCode} - '
-              '${error.description}',
-            );
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Load Error: ${error.description}")),
-              );
-            }
-            debugPrint('ERROR URL: ${error.url}');
-          },
-          onNavigationRequest: (NavigationRequest request) async {
-            final url = request.url;
-            debugPrint('NAVIGATION REQUEST: $url');
-
-            if (_isPdfOrDownloadUrl(url)) {
-              debugPrint('PDF/DOWNLOAD URL DETECTED');
-              await _openExternalUrl(url);
-              return NavigationDecision.prevent;
-            }
-
-            return NavigationDecision.navigate;
-          },
-        ),
-      );
-
-    return controller;
-  }
-
-  // ============================================================
-  // CHECK PDF / DOWNLOAD URL
-  // ============================================================
-
-  bool _isPdfOrDownloadUrl(String url) {
-    final lowerUrl = url.toLowerCase();
-    debugPrint('CHECKING URL: $lowerUrl');
-
-    if (lowerUrl.endsWith('.pdf')) {
-      return true;
-    }
-    if (lowerUrl.contains('.pdf?')) {
-      return true;
-    }
-    if (lowerUrl.contains('/resume/download-pdf/')) {
-      return true;
-    }
-    if (lowerUrl.contains('/download/')) {
-      return true;
-    }
-    if (lowerUrl.contains('/download?')) {
-      return true;
-    }
-
-    return false;
-  }
-
-  // ============================================================
-  // OPEN EXTERNAL URL
-  // ============================================================
-
-  Future<void> _openExternalUrl(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      debugPrint('OPENING EXTERNAL URL: $uri');
-
-      final bool launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-
-      debugPrint('LAUNCH RESULT: $launched');
-
-      if (launched) {
-        return;
-      }
-
-      debugPrint('External browser could not be opened.');
-      if (!mounted) return;
-      _showBrowserError();
-    } catch (e, stackTrace) {
-      debugPrint('OPEN EXTERNAL URL ERROR: $e');
-      debugPrint(stackTrace.toString());
-      if (!mounted) return;
-      _showBrowserError();
-    }
-  }
-
-  // ============================================================
-  // SHOW BROWSER ERROR
-  // ============================================================
 
   void _showBrowserError() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -220,63 +110,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ============================================================
-  // OPEN WEBVIEW FOR RESUME
-  // ============================================================
-
-  void _openWebView(UserModel user) {
-    if (user.loginToken == null || user.loginToken!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login token is not available'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    final url = 'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-    
-    setState(() {
-      _isLoading = true;
-      _webViewTitle = 'Edit Resume';
-      _webViewUrl = url;
-    });
-
-    final controller = _createWebViewController();
-    _webViewController = controller;
-
-    controller.loadRequest(Uri.parse(url)).then((_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _showWebView = true;
-        });
-      }
-    }).catchError((error) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    });
-  }
-
+ 
   // ============================================================
   // OPEN WEBVIEW FOR TERMS & CONDITIONS
   // ============================================================
 
   void _openTermsAndConditions() {
-    _openWebViewForUrl(
-      'https://zeecv.com/terms?is_app=yes',
-      'Terms & Conditions',
-    );
+    // _openWebViewForUrl(
+    //   'https://zeecv.com/terms?is_app=yes',
+    //   'Terms & Conditions',
+    // );
   }
 
   // ============================================================
@@ -284,60 +127,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================================================
 
   void _openPrivacyPolicy() {
-    _openWebViewForUrl(
-      'https://zeecv.com/privacy-policy?is_app=yes',
-      'Privacy Policy',
-    );
-  }
-
-  // ============================================================
-  // OPEN WEBVIEW FOR ANY URL
-  // ============================================================
-
-  void _openWebViewForUrl(String url, String title) {
-    setState(() {
-      _isLoading = true;
-      _webViewTitle = title;
-      _webViewUrl = url;
-    });
-
-    final controller = _createWebViewController();
-    _webViewController = controller;
-
-    controller.loadRequest(Uri.parse(url)).then((_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _showWebView = true;
-        });
-      }
-    }).catchError((error) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    });
-  }
-
-  // ============================================================
-  // CLOSE WEBVIEW
-  // ============================================================
-
-  void _closeWebView() {
-    setState(() {
-      _showWebView = false;
-      _webViewController = null;
-      _isLoading = false;
-      _webViewTitle = 'ZEECV';
-      _webViewUrl = '';
-    });
+    // _openWebViewForUrl(
+    //   'https://zeecv.com/privacy-policy?is_app=yes',
+    //   'Privacy Policy',
+    // );
   }
 
   // ============================================================
@@ -437,40 +230,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final user = authProvider.user;
 
-    // ==========================================================
-    // WEBVIEW
-    // ==========================================================
-
-    if (_showWebView && _webViewController != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(_webViewTitle),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: _closeWebView,
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                _webViewController?.reload();
-              },
-            ),
-          ],
-        ),
-        body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : WebViewWidget(
-                controller: _webViewController!,
-              ),
-      );
-    }
-
-    // ==========================================================
-    // BOTTOM NAVIGATION HOME SCREEN
-    // ==========================================================
 
     // Check if on job detail
     final isJobDetail = _isOnJobDetail;

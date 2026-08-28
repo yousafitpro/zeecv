@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zeecv/inapp/default_inapp.dart';
 import 'package:zeecv/inapp/edit_resume_inapp.dart';
 import 'package:zeecv/screens/logs_screen.dart';
 import '../models/user_model.dart';
@@ -126,47 +127,28 @@ class AppRouter {
   // OPEN WEBVIEW FOR RESUME
   // ============================================================
 
-  static void _openEditResumeWebView(BuildContext context, UserModel user) {
-    if (user.loginToken == null || user.loginToken!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login token is not available'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    final url = 'https://zeecv.com/mobile-app/login-using-token/${user.loginToken}';
-    
-    // Navigate to webview screen
-    context.push('/webview', extra: {
-      'url': url,
-      'title': 'Edit Resume',
-    });
-  }
 
   // ============================================================
   // OPEN WEBVIEW FOR TERMS & CONDITIONS
   // ============================================================
 
-  static void _openTermsAndConditions(BuildContext context) {
-    context.push('/webview', extra: {
-      'url': 'https://zeecv.com/terms?is_app=yes',
-      'title': 'Terms & Conditions',
-    });
-  }
+  // static void _openTermsAndConditions(BuildContext context) {
+  //   context.push('/webview', extra: {
+  //     'url': 'https://zeecv.com/terms?is_app=yes',
+  //     'title': 'Terms & Conditions',
+  //   });
+  // }
 
   // ============================================================
   // OPEN WEBVIEW FOR PRIVACY POLICY
   // ============================================================
 
-  static void _openPrivacyPolicy(BuildContext context) {
-    context.push('/webview', extra: {
-      'url': 'https://zeecv.com/privacy-policy?is_app=yes',
-      'title': 'Privacy Policy',
-    });
-  }
+  // static void _openPrivacyPolicy(BuildContext context) {
+  //   context.push('/webview', extra: {
+  //     'url': 'https://zeecv.com/privacy-policy?is_app=yes',
+  //     'title': 'Privacy Policy',
+  //   });
+  // }
 
   // ============================================================
   // LOGOUT
@@ -368,6 +350,11 @@ static void _logout(BuildContext context) {
             name: 'edit-resume',
             builder: (context, state) =>EditResumeInapp(),
           ),
+      GoRoute(
+            path: '/in-app/default',
+            name: 'default-inapp',
+            builder: (context, state) =>DefaultInapp(),
+          ),
       // Home shell route with tabs
       ShellRoute(
         builder: (context, state, child) {
@@ -392,20 +379,6 @@ static void _logout(BuildContext context) {
             builder: (context, state) => const MyJobsScreen(),
           ),
           GoRoute(
-            path: '/home/resume',
-            name: 'resume',
-            builder: (context, state) {
-              final authProvider = Provider.of<AuthProvider>(context);
-              final user = authProvider.user;
-              return ResumeScreen(
-                user: user,
-                onEditResume: user != null 
-                    ? () => _openEditResumeWebView(context, user)
-                    : null,
-              );
-            },
-          ),
-          GoRoute(
             path: '/debug-logs',
             builder: (context, state) => const LogsScreen(),
           ),
@@ -419,9 +392,17 @@ static void _logout(BuildContext context) {
               return ProfileScreen(
                 user: user,
                 onLogout: () => _logout(context),
-                onEditResume: (user) => _openEditResumeWebView(context, user),
-                onTermsAndConditions: () => _openTermsAndConditions(context),
-                onPrivacyPolicy: () => _openPrivacyPolicy(context),
+                onEditResume: (user) => context.go('/in-app/edit-resume'),
+                onTermsAndConditions: () => context.go('/in-app/default',extra: {
+                  'url':'https://zeecv.com/terms?is_app=yes',
+                  'back_url':'/home/profile',
+                  'title':'Terms & Conditions'
+                }),
+                onPrivacyPolicy: () => context.go('/in-app/default',extra: {
+                  'url':'https://zeecv.com/privacy-policy?is_app=yes',
+                  'back_url':'/home/profile',
+                  'title':'Privacy Policy'
+                }),
               );
             },
           ),
