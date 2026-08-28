@@ -358,11 +358,6 @@ class _EditResumeInappState extends State<EditResumeInapp> {
                     _progress = progress / 100;
                   });
                 },
-                onLoadStart: (controller, url) {
-                  setState(() {
-                    _inAppBrowserUrl = url?.toString();
-                  });
-                },
                 onLoadError: (controller, url, code, message) {
                   _showError('Failed to load page: $message');
                 },
