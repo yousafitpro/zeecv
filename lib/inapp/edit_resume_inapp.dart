@@ -90,10 +90,12 @@ class _EditResumeInappState extends State<EditResumeInapp> {
 
 Future<void> _handleDownload() async {
   final allowed = await PermissionHelper.requestStoragePermission();
+
   if (!allowed) {
     _showError('Storage permission denied');
     return;
   }
+
   if (_downloadUrl == null || _downloadUrl!.isEmpty) {
     _showError('Download URL not available');
     return;
@@ -104,10 +106,8 @@ Future<void> _handleDownload() async {
     return;
   }
 
-  // On Android 10+, we'll try to download without requesting storage permission
-  // using the Downloads folder or app-specific directory
   setState(() => _isDownloading = true);
-  
+
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
       content: Text('Downloading resume...'),
@@ -117,55 +117,77 @@ Future<void> _handleDownload() async {
   );
 
   try {
+    // Get filename
     String filename = 'resume.pdf';
+
     try {
       final uri = Uri.parse(_downloadUrl!);
       final segments = uri.path.split('/');
       final lastSegment = segments.last;
+
       if (lastSegment.isNotEmpty && lastSegment.contains('.')) {
-        filename = lastSegment;
+        filename = Uri.decodeComponent(lastSegment);
       }
     } catch (_) {}
 
-    // Use app-specific directory (no permission needed)
-    String directory;
-    if (Platform.isAndroid) {
-      final dir = await getApplicationDocumentsDirectory();
-      directory = dir.path;
-    } else {
-      final dir = await getApplicationDocumentsDirectory();
-      directory = dir.path;
-    }
+    // Real device Downloads folder
+    final downloadsDir = await PermissionHelper.getDownloadDirectory();
 
-    // Create a "Downloads" subfolder in app directory
-    final downloadsDir = Directory('$directory/Downloads');
     if (!await downloadsDir.exists()) {
       await downloadsDir.create(recursive: true);
     }
 
     // Download file
-    final response = await http.Client().get(Uri.parse(_downloadUrl!));
-    
-    if (response.statusCode != 200) {
-      throw Exception('Download failed: ${response.statusCode}');
-    }
+    final client = http.Client();
 
-    String finalFilename = await _getUniqueFilename(downloadsDir.path, filename);
-    final file = File('${downloadsDir.path}/$finalFilename');
-    await file.writeAsBytes(response.bodyBytes);
-    
-    final sizeInMB = (response.bodyBytes.length / (1024 * 1024)).toStringAsFixed(2);
-    _showSuccess('Resume downloaded: $finalFilename ($sizeInMB MB)');
-    _showDownloadCompleteDialog(file);
-    
+    try {
+      final response = await client.get(
+        Uri.parse(_downloadUrl!),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          'Download failed: ${response.statusCode}',
+        );
+      }
+
+      if (response.bodyBytes.isEmpty) {
+        throw Exception('Downloaded file is empty');
+      }
+
+      // Prevent overwriting existing files
+      final finalFilename = await _getUniqueFilename(
+        downloadsDir.path,
+        filename,
+      );
+
+      final file = File(
+        '${downloadsDir.path}/$finalFilename',
+      );
+
+      await file.writeAsBytes(response.bodyBytes);
+
+      final sizeInMB =
+          (response.bodyBytes.length / (1024 * 1024))
+              .toStringAsFixed(2);
+
+      _showSuccess(
+        'Resume downloaded: $finalFilename ($sizeInMB MB)',
+      );
+
+      _showDownloadCompleteDialog(file);
+    } finally {
+      client.close();
+    }
   } catch (e) {
     _showError('Download failed: $e');
     print('Download error: $e');
   } finally {
-    setState(() => _isDownloading = false);
+    if (mounted) {
+      setState(() => _isDownloading = false);
+    }
   }
 }
-  
   Future<String> _getUniqueFilename(String directory, String baseFilename) async {
     final file = File('$directory/$baseFilename');
     if (!await file.exists()) {
