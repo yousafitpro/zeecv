@@ -282,37 +282,7 @@ class _EditResumeInappState extends State<EditResumeInapp> {
             },
           ),
           actions: [
-            
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () async {
-                if (_inAppBrowserUrl == null || _inAppBrowserUrl!.isEmpty) {
-                  _showError('Preview URL not available');
-                  return;
-                }
-                 print(_inAppBrowserUrl);
-                await _webViewController?.loadUrl(
-                  urlRequest: URLRequest(
-                    url: WebUri(_inAppBrowserUrl!),
-                  ),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.preview),
-              onPressed: () async {
-                if (_previewUrl == null || _previewUrl!.isEmpty) {
-                  _showError('Preview URL not available');
-                  return;
-                }
-                 print(_previewUrl);
-                await _webViewController?.loadUrl(
-                  urlRequest: URLRequest(
-                    url: WebUri(_previewUrl!),
-                  ),
-                );
-              },
-            ),
+          
             IconButton(
               icon: _isDownloading 
                   ? const SizedBox(
@@ -375,6 +345,7 @@ class _EditResumeInappState extends State<EditResumeInapp> {
                   return NavigationActionPolicy.ALLOW;
                 },
               ),
+              if (_progress < 1.0)
               Positioned(
                 top: 0,
                 left: 0,
