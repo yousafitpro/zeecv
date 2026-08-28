@@ -282,21 +282,7 @@ class _EditResumeInappState extends State<EditResumeInapp> {
             },
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.preview),
-              onPressed: () async {
-                if (_previewUrl == null || _previewUrl!.isEmpty) {
-                  _showError('Preview URL not available');
-                  return;
-                }
-
-                await _webViewController?.loadUrl(
-                  urlRequest: URLRequest(
-                    url: WebUri(_previewUrl!),
-                  ),
-                );
-              },
-            ),
+            
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () async {
@@ -304,10 +290,25 @@ class _EditResumeInappState extends State<EditResumeInapp> {
                   _showError('Preview URL not available');
                   return;
                 }
-
+                 print(_inAppBrowserUrl);
                 await _webViewController?.loadUrl(
                   urlRequest: URLRequest(
                     url: WebUri(_inAppBrowserUrl!),
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.preview),
+              onPressed: () async {
+                if (_previewUrl == null || _previewUrl!.isEmpty) {
+                  _showError('Preview URL not available');
+                  return;
+                }
+                 print(_previewUrl);
+                await _webViewController?.loadUrl(
+                  urlRequest: URLRequest(
+                    url: WebUri(_previewUrl!),
                   ),
                 );
               },
@@ -345,9 +346,10 @@ class _EditResumeInappState extends State<EditResumeInapp> {
           child: Stack(
             children: [
               InAppWebView(
-                initialUrlRequest: URLRequest(
-                  url: WebUri(_inAppBrowserUrl!),
-                ),
+              key: ValueKey(_inAppBrowserUrl),
+              initialUrlRequest: URLRequest(
+                url: WebUri(_inAppBrowserUrl!),
+              ),
                 onWebViewCreated: (controller) {
                   _webViewController = controller;
                 },
