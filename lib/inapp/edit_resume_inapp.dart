@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:zeecv/core/utils/permission_helper.dart';
 import 'package:zeecv/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class EditResumeInapp extends StatefulWidget {
   const EditResumeInapp({Key? key}) : super(key: key);
@@ -17,30 +22,26 @@ class _EditResumeInappState extends State<EditResumeInapp> {
   String? _downloadUrl;
   InAppWebViewController? _webViewController;
   double _progress = 0;
+  bool _isDownloading = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Check if widget is still mounted
       if (!mounted) return;
       
-      // Use listen: false to avoid unnecessary rebuilds
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final user = authProvider.user;
       
-      // Safe access to loginToken
       final token = user?.loginToken;
       if (token != null && token.isNotEmpty) {
         setState(() {
           _showInAppBrowser = true;
           _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
-          _downloadUrl = 'https://zeecv.com/mobile-app/resume/download/$token';
+          _downloadUrl = 'https://zeecv.com/mobile-app/resume/download-pdf/$token';
         });
       } else {
-        // Handle case where user is not logged in
         print('User not logged in or token is missing');
-        // Optionally show a message or navigate to login
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -73,71 +74,219 @@ class _EditResumeInappState extends State<EditResumeInapp> {
     }
   }
 
+  void _showSuccess(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  // --- NEW DOWNLOAD HANDLING METHODS ---
+
+Future<void> _handleDownload() async {
+  final allowed = await PermissionHelper.requestStoragePermission();
+  if (!allowed) {
+    _showError('Storage permission denied');
+    return;
+  }
+  if (_downloadUrl == null || _downloadUrl!.isEmpty) {
+    _showError('Download URL not available');
+    return;
+  }
+
+  if (_isDownloading) {
+    _showError('Download already in progress');
+    return;
+  }
+
+  // On Android 10+, we'll try to download without requesting storage permission
+  // using the Downloads folder or app-specific directory
+  setState(() => _isDownloading = true);
+  
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Downloading resume...'),
+      backgroundColor: Colors.blue,
+      duration: Duration(seconds: 2),
+    ),
+  );
+
+  try {
+    String filename = 'resume.pdf';
+    try {
+      final uri = Uri.parse(_downloadUrl!);
+      final segments = uri.path.split('/');
+      final lastSegment = segments.last;
+      if (lastSegment.isNotEmpty && lastSegment.contains('.')) {
+        filename = lastSegment;
+      }
+    } catch (_) {}
+
+    // Use app-specific directory (no permission needed)
+    String directory;
+    if (Platform.isAndroid) {
+      final dir = await getApplicationDocumentsDirectory();
+      directory = dir.path;
+    } else {
+      final dir = await getApplicationDocumentsDirectory();
+      directory = dir.path;
+    }
+
+    // Create a "Downloads" subfolder in app directory
+    final downloadsDir = Directory('$directory/Downloads');
+    if (!await downloadsDir.exists()) {
+      await downloadsDir.create(recursive: true);
+    }
+
+    // Download file
+    final response = await http.Client().get(Uri.parse(_downloadUrl!));
+    
+    if (response.statusCode != 200) {
+      throw Exception('Download failed: ${response.statusCode}');
+    }
+
+    String finalFilename = await _getUniqueFilename(downloadsDir.path, filename);
+    final file = File('${downloadsDir.path}/$finalFilename');
+    await file.writeAsBytes(response.bodyBytes);
+    
+    final sizeInMB = (response.bodyBytes.length / (1024 * 1024)).toStringAsFixed(2);
+    _showSuccess('Resume downloaded: $finalFilename ($sizeInMB MB)');
+    _showDownloadCompleteDialog(file);
+    
+  } catch (e) {
+    _showError('Download failed: $e');
+    print('Download error: $e');
+  } finally {
+    setState(() => _isDownloading = false);
+  }
+}
+  
+  Future<String> _getUniqueFilename(String directory, String baseFilename) async {
+    final file = File('$directory/$baseFilename');
+    if (!await file.exists()) {
+      return baseFilename;
+    }
+    
+    final lastDotIndex = baseFilename.lastIndexOf('.');
+    final name = lastDotIndex > 0 ? baseFilename.substring(0, lastDotIndex) : baseFilename;
+    final ext = lastDotIndex > 0 ? baseFilename.substring(lastDotIndex) : '';
+    
+    int counter = 1;
+    while (true) {
+      final newName = '$name ($counter)$ext';
+      final newFile = File('$directory/$newName');
+      if (!await newFile.exists()) {
+        return newName;
+      }
+      counter++;
+    }
+  }
+
+  void _showDownloadCompleteDialog(File file) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Download Complete'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.file_download_done, color: Colors.green, size: 50),
+              const SizedBox(height: 10),
+              Text(
+                'Resume saved successfully!',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                file.path.split('/').last,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CLOSE'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                try {
+                  // Try to open the file
+                  if (Platform.isAndroid) {
+                    // Android: Use intent to open
+                    // You might want to add open_file package
+                    _showSuccess('File saved at: ${file.path}');
+                  } else {
+                    _showSuccess('File saved at: ${file.path}');
+                  }
+                } catch (e) {
+                  _showError('Cannot open file: $e');
+                }
+              },
+              icon: const Icon(Icons.folder_open),
+              label: const Text('VIEW FILE'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // --- END OF NEW DOWNLOAD HANDLING METHODS ---
+
   @override
   Widget build(BuildContext context) {
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final backUrl = extra?['back_url'] as String? ?? '/home/find-jobs';
 
-    // Show in-app browser if enabled and URL exists
     if (_showInAppBrowser && _inAppBrowserUrl != null && _inAppBrowserUrl!.isNotEmpty) {
       return Scaffold(
         appBar: AppBar(
-        title: const Text("Your Resume"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            // Use the back_url from extra parameters
-            context.go(backUrl);
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download),
+          title: const Text("Your Resume"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              // Handle download action
-              if (_downloadUrl != null && _downloadUrl!.isNotEmpty) {
-                // You can either open the download URL in the webview or handle download differently
-                // Option 1: Navigate to download URL in the same webview
+              context.go(backUrl);
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: _isDownloading 
+                  ? const SizedBox(
+                      width: 20, 
+                      height: 20, 
+                      child: CircularProgressIndicator(strokeWidth: 2)
+                    )
+                  : const Icon(Icons.download),
+              onPressed: _isDownloading ? null : _handleDownload, // ← CHANGED THIS
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
                 if (_webViewController != null) {
-                  _webViewController?.loadUrl(
-                    urlRequest: URLRequest(
-                      url: WebUri(_downloadUrl!),
-                    ),
-                  );
+                  _webViewController?.reload();
+                } else {
+                  final authProvider = context.read<AuthProvider>();
+                  final token = authProvider.user?.loginToken;
+                  if (token != null && token.isNotEmpty) {
+                    setState(() {
+                      _showInAppBrowser = true;
+                      _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
+                    });
+                  }
                 }
-                // Option 2: Show a snackbar with the download link
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Downloading resume...'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } else {
-                _showError('Download URL not available');
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              // Refresh the web view or reload data
-              if (_webViewController != null) {
-                _webViewController?.reload();
-              } else {
-                // If not in web view, reload the token and show browser
-                final authProvider = context.read<AuthProvider>();
-                final token = authProvider.user?.loginToken;
-                if (token != null && token.isNotEmpty) {
-                  setState(() {
-                    _showInAppBrowser = true;
-                    _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
-                  });
-                }
-              }
-            },
-          ),
-        ],
-      ),
+              },
+            ),
+          ],
+        ),
         body: SafeArea(
           child: Stack(
             children: [
@@ -164,9 +313,17 @@ class _EditResumeInappState extends State<EditResumeInapp> {
                 onLoadHttpError: (controller, url, statusCode, description) {
                   _showError('HTTP Error $statusCode: $description');
                 },
+                // Add this to handle downloads from within WebView
+                shouldOverrideUrlLoading: (controller, navigationAction) async {
+                  final url = navigationAction.request.url?.toString() ?? '';
+                  // If URL contains download-pdf, handle it as download
+                  if (url.contains('download-pdf')) {
+                    _handleDownload();
+                    return NavigationActionPolicy.CANCEL;
+                  }
+                  return NavigationActionPolicy.ALLOW;
+                },
               ),
-              
-              // Progress indicator at top
               Positioned(
                 top: 0,
                 left: 0,
@@ -186,9 +343,11 @@ class _EditResumeInappState extends State<EditResumeInapp> {
       );
     }
 
-    // Main screen with AppBar
     return Scaffold(
-      body: SafeArea(child: Container(child: Text(''),),
+      body: SafeArea(
+        child: Container(
+          child: const Text(''),
+        ),
       ),
     );
   }
