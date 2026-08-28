@@ -20,6 +20,7 @@ class _EditResumeInappState extends State<EditResumeInapp> {
   bool _showInAppBrowser = false;
   String? _inAppBrowserUrl;
   String? _downloadUrl;
+  String? _previewUrl;
   InAppWebViewController? _webViewController;
   double _progress = 0;
   bool _isDownloading = false;
@@ -39,6 +40,7 @@ class _EditResumeInappState extends State<EditResumeInapp> {
           _showInAppBrowser = true;
           _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
           _downloadUrl = 'https://zeecv.com/mobile-app/resume/download-pdf/$token';
+          _previewUrl = 'https://zeecv.com/mobile-app/resume/preview/$token';
         });
       } else {
         print('User not logged in or token is missing');
