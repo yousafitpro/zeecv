@@ -74,4 +74,66 @@ class Job {
       'isSaved': isSaved,
     };
   }
+    // ✅ COPY WITH METHOD - For updating individual fields
+  Job copyWith({
+    int? id,
+    String? updatedAt,
+    String? slug,
+    String? companyName,
+    String? title,
+    int? remote,
+    String? url,
+    String? tags,
+    String? jobTypes,
+    String? location,
+    String? jobCreatedAt,
+    String? description,
+    String? type,
+    bool? isSaved,
+    bool? isApplied,
+  }) {
+    return Job(
+      id: id ?? this.id,
+      updatedAt: updatedAt ?? this.updatedAt,
+      slug: slug ?? this.slug,
+      companyName: companyName ?? this.companyName,
+      title: title ?? this.title,
+      remote: remote ?? this.remote,
+      url: url ?? this.url,
+      tags: tags ?? this.tags,
+      jobTypes: jobTypes ?? this.jobTypes,
+      location: location ?? this.location,
+      jobCreatedAt: jobCreatedAt ?? this.jobCreatedAt,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      isSaved: isSaved ?? this.isSaved,
+      isApplied: isApplied ?? this.isApplied,
+    );
+  }
+
+  // ✅ Helper methods for updating status
+  // ✅ Helper methods for updating status
+  Job markAsApplied() {
+    return copyWith(isApplied: true);
+  }
+
+  Job markAsNotApplied() {
+    return copyWith(isApplied: false);
+  }
+
+  Job markAsSaved() {
+    return copyWith(isSaved: true);
+  }
+
+  Job markAsNotSaved() {
+    return copyWith(isSaved: false);
+  }
+
+  Job toggleSaved() {
+    return copyWith(isSaved: !(isSaved ?? false));
+  }
+
+  Job toggleApplied() {
+    return copyWith(isApplied: !(isApplied ?? false));
+  }
 }

@@ -111,10 +111,18 @@ class JobStore extends ChangeNotifier {
   Future<void> jobSaved({required String jobId}) async {
 
     try {
+
+        _jobs = _jobs.map((job) {
+          if (job.slug == jobId) {
+            return job.toggleSaved(); // Using helper method
+          }
+          return job;
+        }).toList();
       final apiService = ApiService();
       final result = await apiService.jobSave(job_id: jobId);
 
       if (result['success']) {
+  
       } else {
         _errorMessage = result['message'];
       }
