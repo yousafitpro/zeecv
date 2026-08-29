@@ -14,8 +14,8 @@ class Job {
   final String jobCreatedAt;
   final String description;
   final String? type; // Added type property
-  final String? isSaved;
-  final String? isApplied;
+  final bool? isSaved;
+  final bool? isApplied;
 
   Job({
     required this.id,

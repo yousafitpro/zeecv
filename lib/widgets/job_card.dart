@@ -150,8 +150,79 @@ class JobCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SizedBox(height: 16),
-                    Container(height: 1, color: const Color(0xFFEDEDED)),
+                    Row(
+                      children: [
+  // Applied Badge
+  if (job.isApplied == true)
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.green.shade300, width: 0.5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.check_circle,
+            size: 12,
+            color: Colors.green.shade700,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'Applied',
+            style: TextStyle(
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    ),
+  
+  const SizedBox(width: 8),
+  
+  // Save Button
+  GestureDetector(
+    onTap: () async {
+      final jobStore = Provider.of<JobStore>(context, listen: false);
+      await jobStore.jobSaved(jobId: this.job.slug);
+    },
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: job.isSaved == true ? Colors.blue.shade50 : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: job.isSaved == true ? Colors.blue.shade300 : Colors.grey.shade300,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            job.isSaved == true ? Icons.bookmark : Icons.bookmark_border,
+            size: 14,
+            color: job.isSaved == true ? Colors.blue.shade700 : Colors.grey.shade600,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            job.isSaved == true ? 'Saved' : 'Save',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: job.isSaved == true ? Colors.blue.shade700 : Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+],
+                    ),
                     const SizedBox(height: 14),
                     Row(
                       mainAxisSize: MainAxisSize.min,
