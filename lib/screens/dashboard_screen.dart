@@ -222,7 +222,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisSpacing: 12,
           children: [
             _buildToolItem(Icons.edit, 'Edit Resume', () {
-              context.go('/in-app/edit-resume');
+              context.go('/in-app/edit-resume',extra: {
+                'back_url':'/dashboard'
+              });
             }),
             _buildToolItem(Icons.search, 'Find Jobs', () {
               context.go('/home/find-jobs');
