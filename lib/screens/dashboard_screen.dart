@@ -3,6 +3,7 @@ import 'package:zeecv/design/gradient_background.dart';
 import 'package:provider/provider.dart';
 import 'package:zeecv/models/dashboard_model.dart';
 import '../stores/job_store.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -65,7 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         )
                       else
-                        _buildDashboardContent(dashboard, jobStore),
+                        _buildDashboardContent(dashboard, jobStore,context),
                     ],
                   ),
                 ),
@@ -137,7 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDashboardContent(Dashboard dashboard, JobStore jobStore) {
+  Widget _buildDashboardContent(Dashboard dashboard, JobStore jobStore,BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -205,13 +206,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisSpacing: 12,
           children: [
             _buildToolItem(Icons.search, 'Find Jobs', () {
-              // Navigate to find jobs
+             context.go('/home/find-jobs');
             }),
             _buildToolItem(Icons.note_add, 'Apply', () {
-              // Navigate to apply
+              context.go('/home/find-jobs');
             }),
             _buildToolItem(Icons.save, 'Saved', () {
-              // Navigate to saved
+              context.go('/home/my-jobs');
             }),
             _buildToolItem(Icons.person, 'Profile', () {
               // Navigate to profile
