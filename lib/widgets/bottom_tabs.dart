@@ -37,14 +37,13 @@ class BottomTabs extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 90, // bar content height; SafeArea adds the inset below
+          height: 85, // bar content height; SafeArea adds the inset below
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.topCenter,
             children: [
               // Background bar
               Positioned.fill(
-                top: 20,
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -90,7 +89,7 @@ class BottomTabs extends StatelessWidget {
               ),
               // Floating center button
               Positioned(
-                top: 0,
+                top: 10,
                 child: GestureDetector(
                   onTap: () => _onTap(context, 2),
                   child: Container(
