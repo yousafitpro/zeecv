@@ -1,190 +1,263 @@
 import 'package:flutter/material.dart';
 import 'package:zeecv/design/gradient_background.dart';
 import 'package:provider/provider.dart';
+import 'package:zeecv/models/dashboard_model.dart';
 import '../stores/job_store.dart';
-class DashboardScreen extends StatelessWidget {
+
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final jobStore = context.read<JobStore>();
+      jobStore.loadDashboard();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final store = context.read<JobStore>();
-    
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-    children: [
-      GradientBackground(),
-      SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Consumer<JobStore>(
+      builder: (context, jobStore, child) {
+        final dashboard = jobStore.dashboard;
+        final isLoading = jobStore.isLoading ?? false; // Add this to your JobStore
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: Stack(
             children: [
-              // Header
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.dashboard,
-                      color: Colors.blue.shade700,
-                      size: 28,
-                    ),
+              const GradientBackground(),
+              SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      _buildHeader(),
+                      const SizedBox(height: 24),
+
+                      // Loading State
+                      if (isLoading)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      else if (dashboard == null)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: Text(
+                              'No data available',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        _buildDashboardContent(dashboard, jobStore),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Dashboard',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.notifications_outlined, color: Colors.grey.shade600),
-                  ),
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.blue.shade100,
-                    child: const Text(
-                      'JD',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Welcome back, John!',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-              // Stats Cards
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Total Jobs',
-                      value: '1,234',
-                      icon: Icons.work,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Applications',
-                      value: '56',
-                      icon: Icons.send,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Interviews',
-                      value: '12',
-                      icon: Icons.people,
-                      color: Colors.orange,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      title: 'Saved',
-                      value: '89',
-                      icon: Icons.bookmark,
-                      color: Colors.purple,
-                    ),
-                  ),
-                ],
+              child: Icon(
+                Icons.dashboard,
+                color: Colors.blue.shade700,
+                size: 28,
               ),
-              const SizedBox(height: 24),
-
-              // Quick Actions
-              const Text(
-                'Quick Actions',
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Dashboard',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const Spacer(),
+            IconButton(
+              onPressed: () {
+                // Handle notification tap
+              },
+              icon: Icon(Icons.notifications_outlined, color: Colors.grey.shade600),
+            ),
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: Colors.blue.shade100,
+              child: const Text(
+                'JD',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
                 ),
               ),
-              const SizedBox(height: 16),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 4,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                children: [
-                  _buildToolItem(Icons.search, 'Find Jobs'),
-                  _buildToolItem(Icons.note_add, 'Apply'),
-                  _buildToolItem(Icons.save, 'Saved'),
-                  _buildToolItem(Icons.person, 'Profile'),
-                ],
-              ),
-              const SizedBox(height: 24),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Welcome back, John!',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
 
-              // Recent Activity
-              const Text(
-                'Recent Activity',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildActivityItem(
-                title: 'Applied to Google',
-                subtitle: 'Frontend Developer • 2 hours ago',
-                icon: Icons.work_outlined,
+  Widget _buildDashboardContent(Dashboard dashboard, JobStore jobStore) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Stats Cards - Using actual data from Dashboard model
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                title: 'Total Jobs',
+                value: dashboard.myjobsCount.toString(),
+                icon: Icons.work,
                 color: Colors.blue,
               ),
-              _buildActivityItem(
-                title: 'Interview Scheduled',
-                subtitle: 'Amazon • Product Manager • 1 day ago',
-                icon: Icons.event,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                title: 'Applications',
+                value: dashboard.appliedCount.toString(),
+                icon: Icons.send,
                 color: Colors.green,
               ),
-              _buildActivityItem(
-                title: 'Resume Updated',
-                subtitle: 'Added new skills • 3 days ago',
-                icon: Icons.description,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                title: 'Interviews',
+                value: dashboard.interviewsCount.toString(),
+                icon: Icons.people,
                 color: Colors.orange,
               ),
-              _buildActivityItem(
-                title: 'Job Saved',
-                subtitle: 'Netflix • Senior Engineer • 5 days ago',
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                title: 'Saved',
+                value: dashboard.savedCount.toString(),
                 icon: Icons.bookmark,
                 color: Colors.purple,
               ),
-              const SizedBox(height: 30),
-            ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Quick Actions
+        const Text(
+          'Quick Actions',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
           ),
         ),
-      )
-      ]
-      ),
+        const SizedBox(height: 16),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 4,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          children: [
+            _buildToolItem(Icons.search, 'Find Jobs', () {
+              // Navigate to find jobs
+            }),
+            _buildToolItem(Icons.note_add, 'Apply', () {
+              // Navigate to apply
+            }),
+            _buildToolItem(Icons.save, 'Saved', () {
+              // Navigate to saved
+            }),
+            _buildToolItem(Icons.person, 'Profile', () {
+              // Navigate to profile
+            }),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Recent Activity - Using data from RecentActivity model
+        const Text(
+          'Recent Activity',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (dashboard.recentActivities.isNotEmpty)
+          ...dashboard.recentActivities.map((activity) =>
+            _buildActivityItem(
+              title: activity.title,
+              subtitle: '${activity.activityLabel} • ${activity.formattedDate}',
+              icon: _getIconForActivity(activity.type),
+              color: _getColorForActivity(activity.type),
+              onTap: () {
+                // Handle activity tap
+                print('Tapped: ${activity.title}');
+              },
+            ),
+          )
+        else
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: Text(
+                'No recent activities',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        const SizedBox(height: 30),
+      ],
     );
   }
 
@@ -210,7 +283,7 @@ class DashboardScreen extends StatelessWidget {
               const Spacer(),
               Text(
                 value,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -231,9 +304,9 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildToolItem(IconData icon, String label) {
+  Widget _buildToolItem(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -272,51 +345,80 @@ class DashboardScreen extends StatelessWidget {
     required String subtitle,
     required IconData icon,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 20),
             ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Icon(Icons.chevron_right, color: Colors.grey.shade400),
-        ],
+            Icon(Icons.chevron_right, color: Colors.grey.shade400),
+          ],
+        ),
       ),
     );
+  }
+
+  // Helper methods for activity types
+  IconData _getIconForActivity(String type) {
+    switch (type) {
+      case 'apply':
+        return Icons.work_outlined;
+      case 'save':
+        return Icons.bookmark;
+      default:
+        return Icons.circle_notifications;
+    }
+  }
+
+  Color _getColorForActivity(String type) {
+    switch (type) {
+      case 'apply':
+        return Colors.blue;
+      case 'save':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
   }
 }

@@ -122,7 +122,6 @@ Future<Map<String, dynamic>> loadDashboard() async {
       ApiConstants.dashboard,
       data: payload,
     );
-
     return {
       'success': true,
       'data': response.data,

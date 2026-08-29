@@ -39,6 +39,7 @@ class JobStore extends ChangeNotifier {
   // ============================================================
   
   List<Job> get jobs => _jobs;
+  Dashboard? get dashboard => _dashboard;
   bool get isLoading => _isLoading;
   bool get isFirstLoad => _isFirstLoad;
   String? get errorMessage => _errorMessage;
@@ -110,9 +111,8 @@ class JobStore extends ChangeNotifier {
         _errorMessage = result['message'];
       }
     } catch (e) {
-      _errorMessage = 'Failed to load jobs: $e';
+      print(e);
     } finally {
-      notifyListeners();
     }
   }
   Future<void> applied({required String jobId}) async {
