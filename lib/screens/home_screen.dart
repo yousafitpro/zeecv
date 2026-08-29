@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
 appBar: AppBar(
   title: Text(isJobDetail ? 'Job Detail' : _getTitle(_selectedIndex)),
   elevation: 0,
-  backgroundColor: Colors.grey.shade200, // Light gray
+  backgroundColor: const Color.fromARGB(255, 252, 251, 251), // Light gray
   foregroundColor: Colors.black87,
   leading: isJobDetail
       ? IconButton(

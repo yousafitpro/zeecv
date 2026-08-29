@@ -379,6 +379,10 @@ class _FindJobScreenState extends State<FindJobScreen>
               ),
               minimumSize: const Size(50, 50),
               padding: const EdgeInsets.all(0),
+              side: BorderSide(
+              color: Theme.of(context).primaryColor, // Change outline color here
+              width: 2, // Optional: change border width
+            ),
             ),
             child: Stack(
               children: [
