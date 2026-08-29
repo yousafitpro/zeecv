@@ -1,6 +1,7 @@
 // lib/stores/job_store.dart
 
 import 'package:flutter/material.dart';
+import 'package:zeecv/models/dashboard_model.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
 
@@ -18,6 +19,7 @@ class JobStore extends ChangeNotifier {
   // ============================================================
   
   List<Job> _jobs = [];
+  Dashboard? _dashboard;
   bool _isLoading = false;
   bool _isFirstLoad = true;
   String? _errorMessage;
@@ -90,6 +92,26 @@ class JobStore extends ChangeNotifier {
       _jobs = [];
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+  Future<void> loadDashboard() async {
+    try {
+      final apiService = ApiService();
+      final result = await apiService.loadDashboard();
+
+      if (result['success']) {
+        final data = result['data'];
+       final Map<String, dynamic> dashboardData = data['data'] ?? {};
+        
+        _dashboard = Dashboard.fromJson(dashboardData);
+        notifyListeners();
+      } else {
+        _errorMessage = result['message'];
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to load jobs: $e';
+    } finally {
       notifyListeners();
     }
   }

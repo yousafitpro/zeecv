@@ -12,6 +12,7 @@ class ApiConstants {
   static const String jobs = '$baseUrl/jobs';
   static const String jobApplied = '$baseUrl/jobs/apply';
   static const String jobSave = '$baseUrl/jobs/save';
+  static const String dashboard = '$baseUrl/jobs/dashboard';
   static const String toggleSaveJob = '$baseUrl/toggle-save-job';
   static const String myJobs = '$baseUrl/myjobs';
   static const String deleteAccount = '$baseUrl/delete-account';

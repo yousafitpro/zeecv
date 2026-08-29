@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:zeecv/design/gradient_background.dart';
-
+import 'package:provider/provider.dart';
+import '../stores/job_store.dart';
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final store = context.read<JobStore>();
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
