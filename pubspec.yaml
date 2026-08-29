@@ -35,6 +35,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+    - assets/icon/edit.png
     - assets/icon/icon.png
     - assets/images/google_logo.png
     - assets/certs/root_ca.pem

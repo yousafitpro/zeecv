@@ -7,6 +7,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zeecv/inapp/default_inapp.dart';
 import 'package:zeecv/inapp/edit_resume_inapp.dart';
+import 'package:zeecv/screens/dashboard_screen.dart';
 import 'package:zeecv/screens/logs_screen.dart';
 import '../models/user_model.dart';
 // Import your screens
@@ -364,6 +365,11 @@ static void _logout(BuildContext context) {
           );
         },
         routes: [
+          GoRoute(
+            path: '/dashboard',
+            name: 'dashboard',
+            builder: (context, state) => const DashboardScreen()
+            ),
           GoRoute(
             path: '/home',
             name: 'home',

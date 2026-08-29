@@ -93,6 +93,33 @@ class JobStore extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<void> applied({required String jobId}) async {
+
+    try {
+      final apiService = ApiService();
+      final result = await apiService.jobApplied(job_id: jobId);
+
+      if (result['success']) {
+        final data = result['data'];
+        final List<dynamic> jobList = data['list'] ?? [];
+        
+        _jobs = jobList.map((json) => Job.fromJson(json)).toList();
+        _isFirstLoad = false;
+        _errorMessage = null;
+      } else {
+        _errorMessage = result['message'];
+        _isFirstLoad = false;
+        _jobs = [];
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to load jobs: $e';
+      _isFirstLoad = false;
+      _jobs = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
   Future<void> toggleSaveJob({int? jobID}) async {
      
     try {

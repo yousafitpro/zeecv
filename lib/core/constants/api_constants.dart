@@ -10,6 +10,7 @@ class ApiConstants {
   static const String forgotPassword = '$baseUrl/forgot-password';
   static const String resetPassword = '$baseUrl/reset-password';
   static const String jobs = '$baseUrl/jobs';
+  static const String jobApplied = '$baseUrl/jobs/apply';
   static const String toggleSaveJob = '$baseUrl/toggle-save-job';
   static const String myJobs = '$baseUrl/myjobs';
   static const String deleteAccount = '$baseUrl/delete-account';

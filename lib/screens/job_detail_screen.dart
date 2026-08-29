@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:zeecv/dialogs/are_applied_dialog.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
 import 'package:go_router/go_router.dart';
@@ -92,13 +93,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   // CLOSE IN-APP BROWSER
   // ============================================================
 
-  void _closeInAppBrowser() {
+  void _closeInAppBrowser(slug) {
     setState(() {
       _showInAppBrowser = false;
       _inAppBrowserUrl = null;
       _webViewController = null;
       _progress = 0;
     });
+    AreAppliedDialog(context,slug);
   }
 
   void _showError(String message) {
@@ -160,7 +162,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                       Icons.close,
                       color: Colors.white,
                     ),
-                    onPressed: _closeInAppBrowser,
+                    onPressed: () => _closeInAppBrowser(widget.slug),
                   ),
                 ),
               ),

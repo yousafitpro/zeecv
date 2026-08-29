@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final routerState = GoRouterState.of(context);
     final location = routerState.matchedLocation;
 
-    if (location.contains('/home/home')) return 0;
+    if (location.contains('/home/dashboard')) return 0;
     if (location.contains('/home/find-jobs')) return 1;
     if (location.contains('/home/my-jobs')) return 3;
     if (location.contains('/home/profile')) return 4;
@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _getTitle(int index) {
     switch (index) {
       case 0:
-        return 'Find Jobs';
+        return 'Home';
       case 1:
         return 'Find Jobs';
       case 2:
@@ -124,23 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = authProvider.user;
 
 
-    // Check if on job detail
-    final isJobDetail = _isOnJobDetail;
 
     return Scaffold(
 appBar: AppBar(
-  title: Text(isJobDetail ? 'Job Detail' : _getTitle(_selectedIndex)),
+  title: Text(_getTitle(_selectedIndex)),
   elevation: 0,
   backgroundColor: const Color.fromARGB(255, 252, 251, 251), // Light gray
   foregroundColor: Colors.black87,
-  leading: isJobDetail
-      ? IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            context.go('/home/find-jobs');
-          },
-        )
-      : null,
 ),
       body: widget.tabNavigator ?? const FindJobScreen(),
       bottomNavigationBar:BottomTabs(selectedIndex: _selectedIndex),

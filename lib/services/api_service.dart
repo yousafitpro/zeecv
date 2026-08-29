@@ -113,6 +113,26 @@ Future<Map<String, dynamic>> loadJobs({
     return _handleError(e);
   }
 }
+Future<Map<String, dynamic>> jobApplied({required String job_id}) async {
+  try {
+    final payload = <String, dynamic>{};
+    
+    if (job_id != null ) {
+      payload['job_id'] = job_id;
+    }
+    final response = await _dio.post(
+      ApiConstants.jobApplied,
+      data: payload,
+    );
+    return {
+      'success': true,
+      'data': response.data,
+    };
+  } catch (e) {
+    print(e);
+    return _handleError(e);
+  }
+}
 Future<Map<String, dynamic>> toggleSaveJob({
   int? jobID,
 }) async {
