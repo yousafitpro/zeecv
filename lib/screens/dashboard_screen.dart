@@ -27,7 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Consumer<JobStore>(
       builder: (context, jobStore, child) {
         final dashboard = jobStore.dashboard;
-        final isLoading = jobStore.isLoading ?? false; // Add this to your JobStore
+        final isLoading = jobStore.isLoading ?? false;
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -40,10 +40,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header
-                      _buildHeader(),
-                      const SizedBox(height: 24),
-
                       // Loading State
                       if (isLoading)
                         const Center(
@@ -66,7 +62,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         )
                       else
-                        _buildDashboardContent(dashboard, jobStore,context),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header
+                            _buildHeader(dashboard),
+                            const SizedBox(height: 24),
+                            _buildDashboardContent(dashboard),
+                          ],
+                        ),
                     ],
                   ),
                 ),
@@ -78,7 +82,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(Dashboard dashboard) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -97,8 +101,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
-              'Dashboard',
+             Text(
+              '${dashboard.userFullName}',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -115,9 +119,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             CircleAvatar(
               radius: 18,
               backgroundColor: Colors.blue.shade100,
-              child: const Text(
-                'JD',
-                style: TextStyle(
+              child: Text(
+                dashboard.userNameTwo,  // Now this works with lowercase 'u'
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
@@ -127,9 +131,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Welcome back, John!',
-          style: TextStyle(
+        Text(
+          'Welcome back',
+          style: const TextStyle(
             fontSize: 16,
             color: Colors.grey,
           ),
@@ -138,11 +142,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDashboardContent(Dashboard dashboard, JobStore jobStore,BuildContext context) {
+  Widget _buildDashboardContent(Dashboard dashboard) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Stats Cards - Using actual data from Dashboard model
+        // Stats Cards
         Row(
           children: [
             Expanded(
@@ -151,6 +155,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: dashboard.myjobsCount.toString(),
                 icon: Icons.work,
                 color: Colors.blue,
+                onTap: () {
+                  context.go('/home/my-jobs');
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -160,6 +167,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: dashboard.appliedCount.toString(),
                 icon: Icons.send,
                 color: Colors.green,
+                onTap: () {
+                  context.go('/home/my-jobs?tab=applications');
+                },
               ),
             ),
           ],
@@ -173,6 +183,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: dashboard.interviewsCount.toString(),
                 icon: Icons.people,
                 color: Colors.orange,
+                onTap: () {
+                  context.go('/home/my-jobs?tab=interviews');
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -182,6 +195,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: dashboard.savedCount.toString(),
                 icon: Icons.bookmark,
                 color: Colors.purple,
+                onTap: () {
+                  context.go('/home/saved');
+                },
               ),
             ),
           ],
@@ -206,7 +222,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisSpacing: 12,
           children: [
             _buildToolItem(Icons.search, 'Find Jobs', () {
-             context.go('/home/find-jobs');
+              context.go('/home/find-jobs');
             }),
             _buildToolItem(Icons.note_add, 'Apply', () {
               context.go('/home/find-jobs');
@@ -215,13 +231,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               context.go('/home/my-jobs');
             }),
             _buildToolItem(Icons.person, 'Profile', () {
-              // Navigate to profile
+              context.go('/home/profile');
             }),
           ],
         ),
         const SizedBox(height: 24),
 
-        // Recent Activity - Using data from RecentActivity model
+        // Recent Activity
         const Text(
           'Recent Activity',
           style: TextStyle(
@@ -239,8 +255,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: _getIconForActivity(activity.type),
               color: _getColorForActivity(activity.type),
               onTap: () {
-                // Handle activity tap
                 print('Tapped: ${activity.title}');
+                context.go('/home/my-jobs');
               },
             ),
           )
@@ -267,40 +283,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required String value,
     required IconData icon,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 20),
-              const Spacer(),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 20),
+                const Spacer(),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -400,7 +420,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Helper methods for activity types
   IconData _getIconForActivity(String type) {
     switch (type) {
       case 'apply':

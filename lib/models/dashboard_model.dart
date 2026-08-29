@@ -1,5 +1,7 @@
 class Dashboard {
   final int appliedCount;
+  final String userFullName;
+  final String userNameTwo;  // Changed to lowercase 'u' to match Dart naming conventions
   final int savedCount;
   final int myjobsCount;
   final int interviewsCount;
@@ -11,6 +13,8 @@ class Dashboard {
     required this.myjobsCount,
     required this.interviewsCount,
     required this.recentActivities,
+    required this.userFullName,
+    required this.userNameTwo,  // Changed to lowercase 'u'
   });
 
   factory Dashboard.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class Dashboard {
               ?.map((e) => RecentActivity.fromJson(e))
               .toList() ??
           [],
+      userFullName: json['user_full_name'] ?? 'User',  // String, not 0
+      userNameTwo: json['user_name_two'] ?? 'U',       // String, not 0
     );
   }
 
@@ -33,6 +39,8 @@ class Dashboard {
       'myjobs_count': myjobsCount,
       'interviews_count': interviewsCount,
       'recent_activities': recentActivities.map((e) => e.toJson()).toList(),
+      'user_full_name': userFullName,
+      'user_name_two': userNameTwo,
     };
   }
 
@@ -42,6 +50,8 @@ class Dashboard {
     int? myjobsCount,
     int? interviewsCount,
     List<RecentActivity>? recentActivities,
+    String? userFullName,
+    String? userNameTwo,
   }) {
     return Dashboard(
       appliedCount: appliedCount ?? this.appliedCount,
@@ -49,6 +59,8 @@ class Dashboard {
       myjobsCount: myjobsCount ?? this.myjobsCount,
       interviewsCount: interviewsCount ?? this.interviewsCount,
       recentActivities: recentActivities ?? this.recentActivities,
+      userFullName: userFullName ?? this.userFullName,
+      userNameTwo: userNameTwo ?? this.userNameTwo,
     );
   }
 }
