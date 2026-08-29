@@ -242,18 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.white70,
                         fontSize: 16,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
+                    )
                   ],
                 ),
               ),

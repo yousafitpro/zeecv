@@ -274,7 +274,7 @@ class _EditResumeInappState extends State<EditResumeInapp> {
     if (_showInAppBrowser && _inAppBrowserUrl != null && _inAppBrowserUrl!.isNotEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text("Your Resume"),
+          title: const Text("Edit Resume"),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {

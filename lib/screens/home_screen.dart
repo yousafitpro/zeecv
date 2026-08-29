@@ -73,10 +73,12 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return 'Find Jobs';
       case 1:
-        return 'My Jobs';
+        return 'Find Jobs';
       case 2:
-        return 'Resume';
+        return '';
       case 3:
+        return 'My Jobs';
+      case 4:
         return 'Profile';
       default:
         return AppStrings.appName;
@@ -126,18 +128,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final isJobDetail = _isOnJobDetail;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isJobDetail ? 'Job Detail' : _getTitle(_selectedIndex)),
-        elevation: 0,
-        leading: isJobDetail
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  context.go('/home/find-jobs');
-                },
-              )
-            : null,
-      ),
+appBar: AppBar(
+  title: Text(isJobDetail ? 'Job Detail' : _getTitle(_selectedIndex)),
+  elevation: 0,
+  backgroundColor: Colors.grey.shade200, // Light gray
+  foregroundColor: Colors.black87,
+  leading: isJobDetail
+      ? IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/home/find-jobs');
+          },
+        )
+      : null,
+),
       body: widget.tabNavigator ?? const FindJobScreen(),
       bottomNavigationBar:BottomTabs(selectedIndex: _selectedIndex),
     );

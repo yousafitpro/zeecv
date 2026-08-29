@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zeecv/design/gradient_background.dart';
 import 'package:zeecv/widgets/job_card.dart';
 import 'dart:async';
 import '../stores/job_store.dart';
@@ -310,7 +311,10 @@ class _FindJobScreenState extends State<FindJobScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      body: Consumer<JobStore>(
+      body: Stack(
+    children: [
+      GradientBackground(),
+      Consumer<JobStore>(
         builder: (context, jobStore, child) {
           return Column(
             children: [
@@ -321,6 +325,8 @@ class _FindJobScreenState extends State<FindJobScreen>
             ],
           );
         },
+      )
+      ]
       ),
     );
   }

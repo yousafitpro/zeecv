@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zeecv/design/gradient_background.dart';
 import 'package:zeecv/stores/my_job_store.dart';
 import 'package:zeecv/widgets/job_card.dart';
 import '../services/api_service.dart';
@@ -53,7 +54,10 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<MyJobStore>(
+      body: Stack(
+    children: [
+      GradientBackground(),
+      Consumer<MyJobStore>(
         builder: (context, myjobStore, child) {
           // Filter jobs based on search query
           final filteredJobs = _searchQuery.isEmpty
@@ -76,6 +80,8 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
             ],
           );
         },
+      )
+      ]
       ),
     );
   }

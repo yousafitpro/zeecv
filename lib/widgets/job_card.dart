@@ -26,7 +26,7 @@ class JobCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color(0xFFE5E5E5), width: 1),
-        // No borderRadius = sharp corners
+         borderRadius: BorderRadius.circular(12)
       ),
       child: Material(
         color: Colors.transparent,
