@@ -151,7 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Expanded(
               child: _buildStatCard(
-                title: 'Total Jobs',
+                title: 'My Jobs',
                 value: dashboard.myjobsCount.toString(),
                 icon: Icons.work,
                 color: Colors.blue,

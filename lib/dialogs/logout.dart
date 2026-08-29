@@ -20,17 +20,17 @@ void showLogoutDialog(BuildContext context) {
             onPressed: () {
               Navigator.of(context).pop();
               
-              ScaffoldMessenger.of(context).showSnackBar(
+
+              
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              authProvider.logout();
+              context.go('/login');
+                ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Logged out successfully'),
                   backgroundColor: Colors.green,
                 ),
               );
-              
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              authProvider.logout();
-              
-              context.go('/login');
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
