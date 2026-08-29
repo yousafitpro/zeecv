@@ -110,12 +110,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const Spacer(),
-            IconButton(
-              onPressed: () {
-                // Handle notification tap
-              },
-              icon: Icon(Icons.notifications_outlined, color: Colors.grey.shade600),
-            ),
+            // IconButton(
+            //   onPressed: () {
+            //     // Handle notification tap
+            //   },
+            //   icon: Icon(Icons.notifications_outlined, color: Colors.grey.shade600),
+            // ),
             CircleAvatar(
               radius: 18,
               backgroundColor: Colors.blue.shade100,
@@ -221,6 +221,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           children: [
+            _buildToolItem(Icons.edit, 'Edit Resume', () {
+              context.go('/in-app/edit-resume');
+            }),
             _buildToolItem(Icons.search, 'Find Jobs', () {
               context.go('/home/find-jobs');
             }),
@@ -229,10 +232,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }),
             _buildToolItem(Icons.save, 'Saved', () {
               context.go('/home/my-jobs');
-            }),
-            _buildToolItem(Icons.person, 'Profile', () {
-              context.go('/home/profile');
-            }),
+            })
           ],
         ),
         const SizedBox(height: 24),
