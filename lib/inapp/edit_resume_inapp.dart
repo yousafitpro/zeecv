@@ -162,7 +162,7 @@ Future<void> _handleDownload() async {
       if (savedPath != null) {
         final sizeInMB = (response.bodyBytes.length / (1024 * 1024)).toStringAsFixed(2);
         _showSuccess('Resume downloaded: $finalFilename ($sizeInMB MB)');
-        _showDownloadCompleteDialog(savedPath); // Pass the path string instead of File
+        // _showDownloadCompleteDialog(savedPath); // Pass the path string instead of File
       } else {
         _showError('Download cancelled');
       }
@@ -213,7 +213,7 @@ Future<void> _handleDownload() async {
         return AlertDialog(
           title: const Text('Download Complete'),
           content: Text(
-            'Resume saved successfully!\n\nLocation: $savedPath',
+            'Resume saved successfully!',
           ),
           actions: <Widget>[
             TextButton(
