@@ -125,7 +125,7 @@ class JobStore extends ChangeNotifier {
           return job;
         }).toList();
          notifyListeners(); // Add this to update UI
-        MyJobStore().applied(jobId: jobId);
+      
       final apiService = ApiService();
       final result = await apiService.jobApplied(job_id: jobId);
 
@@ -149,7 +149,7 @@ class JobStore extends ChangeNotifier {
           return job;
         }).toList();
          notifyListeners(); // Add this to update UI
-        MyJobStore().jobSaved(jobId: jobId);
+       
       final apiService = ApiService();
       final result = await apiService.jobSave(job_id: jobId);
 
@@ -308,5 +308,13 @@ class JobStore extends ChangeNotifier {
 bool isApplied(String slug) {
   return _jobs.any((job) => job.slug == slug && (job.isApplied ?? false));
 }
-
+void addJob(Job job) {
+  // Check if job already exists to avoid duplicates
+  final exists = _jobs.any((j) => j.slug == job.slug);
+  
+  if (!exists) {
+    _jobs.add(job);
+    notifyListeners();
+  }
+}
 }

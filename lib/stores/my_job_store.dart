@@ -77,24 +77,5 @@ class MyJobStore extends ChangeNotifier {
       notifyListeners();
     }
   }
-    Future<void> jobSaved({required String jobId}) async {
-        _jobs = _jobs.map((job) {
-          if (job.slug == jobId) {
-            return job.toggleSaved(); // Using helper method
-          }
-          return job;
-        }).toList();
-        notifyListeners(); // Add this to update UI
-    
-  }
-    Future<void> applied({required String jobId}) async {
-        _jobs = _jobs.map((job) {
-          if (job.slug == jobId) {
-            return job.toggleApplied(); // Using helper method
-          }
-          return job;
-        }).toList();
-        notifyListeners(); // Add this to update UI
-    
-  }
+   
   }

@@ -55,7 +55,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         if (jobData != null) {
           setState(() {
             _job = Job.fromJson(jobData);
-            isApplied = _job?.isApplied ?? false; 
+            JobStore().addJob(Job.fromJson(jobData));
+            // isApplied = _job?.isApplied ?? false; 
           });
         } else {
           setState(() {
@@ -255,7 +256,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
 
     return Consumer<JobStore>(
       builder: (context, jobStore, child) {
-        //  final bool isApplied = jobStore.isApplied(widget.slug);
+          isApplied=jobStore.isApplied(widget.slug);
+      
         return Scaffold(
         appBar: AppBar(
             title: Text("Job Detail"),
