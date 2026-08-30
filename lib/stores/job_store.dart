@@ -111,13 +111,18 @@ class JobStore extends ChangeNotifier {
         _errorMessage = result['message'];
       }
     } catch (e) {
-      print(e);
     } finally {
     }
   }
   Future<void> applied({required String jobId}) async {
 
     try {
+              _jobs = _jobs.map((job) {
+          if (job.slug == jobId) {
+            return job.toggleApplied(); // Using helper method
+          }
+          return job;
+        }).toList();
       final apiService = ApiService();
       final result = await apiService.jobApplied(job_id: jobId);
 
