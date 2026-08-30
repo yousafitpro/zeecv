@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zeecv/dialogs/logout.dart';
 
 import 'package:zeecv/models/user_model.dart';
 import '../providers/auth_provider.dart';
@@ -317,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: 'Logout',
                   subtitle: 'Sign out from your account',
                   color: Colors.red,
-                  onTap: widget.onLogout,
+                  onTap:()=>{showLogoutDialog(context)},
                   isLogout: true,
                 ),
                 
