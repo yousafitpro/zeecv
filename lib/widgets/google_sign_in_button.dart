@@ -23,7 +23,7 @@ class GoogleSignInButton extends StatelessWidget {
                 backgroundColor: Colors.green,
               ),
             );
-            context.go('/home'); // Navigate to home
+            context.go('/dashboard'); // Navigate to home
           } else if (!success && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

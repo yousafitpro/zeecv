@@ -269,12 +269,12 @@ static void _logout(BuildContext context) {
 
       // If on splash screen
       if (isSplash) {
-        return isAuthenticated ? '/home/find-jobs' : '/login';
+        return isAuthenticated ? '/home/dashboard' : '/login';
       }
 
       // If authenticated and trying to access auth screens
       if (isAuthenticated && (isLogin || isSignup)) {
-        return '/home/find-jobs';
+        return '/home/dashboard';
       }
 
       // If not authenticated and trying to access home
@@ -373,7 +373,7 @@ static void _logout(BuildContext context) {
           GoRoute(
             path: '/home',
             name: 'home',
-            builder: (context, state) => const FindJobScreen(),
+            builder: (context, state) => const DashboardScreen(),
           ),
           GoRoute(
             path: '/home/find-jobs',

@@ -209,7 +209,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           password: _passwordController.text,
                         );
                         if (loginSuccess && mounted) {
-                          context.go('/home');
+                          context.go('/dashboard');
                         }
                       }
                     }

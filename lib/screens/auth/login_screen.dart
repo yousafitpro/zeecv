@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             backgroundColor: AppColors.success,
                           ),
                         );
-                        context.go('/home');
+                        context.go('/dashboard');
                       }
                     }
                   },

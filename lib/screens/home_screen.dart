@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _getTitle(int index) {
     switch (index) {
       case 0:
-        return 'Home';
+        return 'Zeecv';
       case 1:
         return 'Find Jobs';
       case 2:
