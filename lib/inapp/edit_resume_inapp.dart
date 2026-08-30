@@ -8,7 +8,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-
+import 'package:permission_handler/permission_handler.dart'; 
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 class EditResumeInapp extends StatefulWidget {
   const EditResumeInapp({Key? key}) : super(key: key);
 
@@ -88,108 +89,101 @@ class _EditResumeInappState extends State<EditResumeInapp> {
     }
   }
 
-  // --- NEW DOWNLOAD HANDLING METHODS ---
+Future<void> _handleDownload() async {
+  // Remove this line (No permissions needed on Android 16)
+  // final allowed = await PermissionHelper.requestStoragePermission();
 
-  Future<void> _handleDownload() async {
-    // final allowed = await PermissionHelper.requestStoragePermission();
+  if (_downloadUrl == null || _downloadUrl!.isEmpty) {
+    _showError('Download URL not available');
+    return;
+  }
 
-    // if (!allowed) {
-    //   _showError('Storage permission denied');
-    //   return;
-    // }
+  if (_isDownloading) {
+    _showError('Download already in progress');
+    return;
+  }
 
-    if (_downloadUrl == null || _downloadUrl!.isEmpty) {
-      _showError('Download URL not available');
-      return;
-    }
+  setState(() => _isDownloading = true);
 
-    if (_isDownloading) {
-      _showError('Download already in progress');
-      return;
-    }
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Downloading resume...'),
+      backgroundColor: Colors.blue,
+      duration: Duration(seconds: 2),
+    ),
+  );
 
-    setState(() => _isDownloading = true);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Downloading resume...'),
-        backgroundColor: Colors.blue,
-        duration: Duration(seconds: 2),
-      ),
-    );
+  try {
+    // Get filename
+    String filename = 'resume.pdf';
 
     try {
-      // Get filename
-      String filename = 'resume.pdf';
+      final uri = Uri.parse(_downloadUrl!);
+      final segments = uri.path.split('/');
+      final lastSegment = segments.last;
 
-      try {
-        final uri = Uri.parse(_downloadUrl!);
-        final segments = uri.path.split('/');
-        final lastSegment = segments.last;
+      if (lastSegment.isNotEmpty && lastSegment.contains('.')) {
+        filename = Uri.decodeComponent(lastSegment);
+      }
+    } catch (_) {}
 
-        if (lastSegment.isNotEmpty && lastSegment.contains('.')) {
-          filename = Uri.decodeComponent(lastSegment);
-        }
-      } catch (_) {}
+    // Download file
+    final client = http.Client();
 
-      // Real device Downloads folder
-      final downloadsDir = await PermissionHelper.getDownloadDirectory();
+    try {
+      final response = await client.get(Uri.parse(_downloadUrl!));
 
-      if (!await downloadsDir.exists()) {
-        await downloadsDir.create(recursive: true);
+      if (response.statusCode != 200) {
+        throw Exception('Download failed: ${response.statusCode}');
       }
 
-      // Download file
-      final client = http.Client();
-
-      try {
-        final response = await client.get(
-          Uri.parse(_downloadUrl!),
-        );
-
-        if (response.statusCode != 200) {
-          throw Exception(
-            'Download failed: ${response.statusCode}',
-          );
-        }
-
-        if (response.bodyBytes.isEmpty) {
-          throw Exception('Downloaded file is empty');
-        }
-
-        // Prevent overwriting existing files
-        final finalFilename = await _getUniqueFilename(
-          downloadsDir.path,
-          filename,
-        );
-
-        final file = File(
-          '${downloadsDir.path}/$finalFilename',
-        );
-
-        await file.writeAsBytes(response.bodyBytes);
-
-        final sizeInMB =
-            (response.bodyBytes.length / (1024 * 1024))
-                .toStringAsFixed(2);
-
-        _showSuccess(
-          'Resume downloaded: $finalFilename ($sizeInMB MB)',
-        );
-
-        _showDownloadCompleteDialog(file);
-      } finally {
-        client.close();
+      if (response.bodyBytes.isEmpty) {
+        throw Exception('Downloaded file is empty');
       }
-    } catch (e) {
-      _showError('Download failed: $e');
-      print('Download error: $e');
+
+      // Prevent overwriting existing files by adding a timestamp
+      // (Since MediaStore doesn't easily check for existing files)
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final finalFilename = filename.replaceAll('.pdf', '_$timestamp.pdf');
+
+      // 1. Save the file to the app's temporary directory FIRST
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/$finalFilename');
+      await tempFile.writeAsBytes(response.bodyBytes, flush: true);
+
+      // 2. Use FlutterFileDialog to move it to the public Downloads folder via MediaStore
+      final params = SaveFileDialogParams(
+        sourceFilePath: tempFile.path,
+        fileName: finalFilename,
+      );
+      
+      final savedPath = await FlutterFileDialog.saveFile(params: params);
+
+      if (savedPath != null) {
+        final sizeInMB = (response.bodyBytes.length / (1024 * 1024)).toStringAsFixed(2);
+        _showSuccess('Resume downloaded: $finalFilename ($sizeInMB MB)');
+        _showDownloadCompleteDialog(savedPath); // Pass the path string instead of File
+      } else {
+        _showError('Download cancelled');
+      }
+
+      // Clean up temp file (optional but good practice)
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
+
     } finally {
-      if (mounted) {
-        setState(() => _isDownloading = false);
-      }
+      client.close();
+    }
+  } catch (e) {
+    _showError('Download failed: $e');
+    print('Download error: $e');
+  } finally {
+    if (mounted) {
+      setState(() => _isDownloading = false);
     }
   }
+}
   Future<String> _getUniqueFilename(String directory, String baseFilename) async {
     final file = File('$directory/$baseFilename');
     if (!await file.exists()) {
@@ -211,59 +205,28 @@ class _EditResumeInappState extends State<EditResumeInapp> {
     }
   }
 
-  void _showDownloadCompleteDialog(File file) {
+  // Change the parameter from File to String
+  void _showDownloadCompleteDialog(String savedPath) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Download Complete'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.file_download_done, color: Colors.green, size: 50),
-              const SizedBox(height: 10),
-              Text(
-                'Resume saved successfully!',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                file.path.split('/').last,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-            ],
+          content: Text(
+            'Resume saved successfully!\n\nLocation: $savedPath',
           ),
-          actions: [
+          actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('CLOSE'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                Navigator.pop(context);
-                try {
-                  // Try to open the file
-                  if (Platform.isAndroid) {
-                    // Android: Use intent to open
-                    // You might want to add open_file package
-                    _showSuccess('File saved at: ${file.path}');
-                  } else {
-                    _showSuccess('File saved at: ${file.path}');
-                  }
-                } catch (e) {
-                  _showError('Cannot open file: $e');
-                }
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
               },
-              icon: const Icon(Icons.folder_open),
-              label: const Text('VIEW FILE'),
             ),
           ],
         );
       },
     );
   }
-
   // --- END OF NEW DOWNLOAD HANDLING METHODS ---
 
   @override
