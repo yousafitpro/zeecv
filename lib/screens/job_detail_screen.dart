@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:zeecv/dialogs/are_applied_dialog.dart';
+import 'package:zeecv/stores/job_store.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
 import 'package:go_router/go_router.dart';
@@ -248,7 +250,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     final bool isInternal = _job!.type != null && 
         _job!.type!.toLowerCase() == 'internal';
 
-    return Scaffold(
+    return Consumer<JobStore>(
+      builder: (context, jobStore, child) {
+         final bool isApplied = jobStore.isApplied(widget.slug);
+        return Scaffold(
         appBar: AppBar(
             title: Text("Job Detail"),
             leading: IconButton(
@@ -414,7 +419,35 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           const SizedBox(height: 24),
 
           // Apply Now Button - ALWAYS opens in in-app browser
-          if (_job!.url.isNotEmpty)
+          if (isApplied)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.green.shade300, width: 0.5),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 12,
+                                  color: Colors.green.shade700,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Applied',
+                                  style: TextStyle(
+                                    color: Colors.green.shade700,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+          if (_job!.url.isNotEmpty && !isApplied )
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -534,6 +567,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       ),
     )
     )
+    );
+      }
     );
   }
 

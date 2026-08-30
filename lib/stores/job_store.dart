@@ -299,4 +299,9 @@ class JobStore extends ChangeNotifier {
       await loadJobs();
     }
   }
+
+bool isApplied(String slug) {
+  return _jobs.any((job) => job.slug == slug && (job.isApplied ?? false));
+}
+
 }
