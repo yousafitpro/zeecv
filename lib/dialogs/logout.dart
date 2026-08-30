@@ -33,8 +33,7 @@ class _LogoutDialogState extends State<LogoutDialog> {
       await authProvider.logout();
       
       if (mounted) {
-        // Close dialog first
-        Navigator.of(context).pop();
+       
         
         // Show snackbar
         ScaffoldMessenger.of(context).showSnackBar(
@@ -48,6 +47,8 @@ class _LogoutDialogState extends State<LogoutDialog> {
         await Future.delayed(const Duration(milliseconds: 300));
         
         if (mounted) {
+           // Close dialog first
+        Navigator.of(context).pop();
           context.go('/login');
         }
       }

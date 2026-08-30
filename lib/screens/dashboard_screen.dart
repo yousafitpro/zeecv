@@ -89,15 +89,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(0),
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                Icons.dashboard,
-                color: Colors.blue.shade700,
-                size: 28,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  'assets/icon/icon.png',
+                  height: 40,
+                  width: 40,
+                ),
               ),
             ),
             const SizedBox(width: 12),
