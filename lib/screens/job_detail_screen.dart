@@ -27,9 +27,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
 
   // InAppWebView state
   bool _showInAppBrowser = false;
+  bool isApplied = false;
   String? _inAppBrowserUrl;
   InAppWebViewController? _webViewController;
   double _progress = 0;
+  
 
   @override
   void initState() {
@@ -53,6 +55,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         if (jobData != null) {
           setState(() {
             _job = Job.fromJson(jobData);
+            isApplied = _job?.isApplied ?? false; 
           });
         } else {
           setState(() {
@@ -252,7 +255,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
 
     return Consumer<JobStore>(
       builder: (context, jobStore, child) {
-         final bool isApplied = jobStore.isApplied(widget.slug);
+        //  final bool isApplied = jobStore.isApplied(widget.slug);
         return Scaffold(
         appBar: AppBar(
             title: Text("Job Detail"),

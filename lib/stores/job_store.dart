@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:zeecv/models/dashboard_model.dart';
+import 'package:zeecv/stores/my_job_store.dart';
 import '../services/api_service.dart';
 import '../models/job_model.dart';
 
@@ -123,6 +124,8 @@ class JobStore extends ChangeNotifier {
           }
           return job;
         }).toList();
+         notifyListeners(); // Add this to update UI
+        MyJobStore().applied(jobId: jobId);
       final apiService = ApiService();
       final result = await apiService.jobApplied(job_id: jobId);
 
@@ -145,6 +148,8 @@ class JobStore extends ChangeNotifier {
           }
           return job;
         }).toList();
+         notifyListeners(); // Add this to update UI
+        MyJobStore().jobSaved(jobId: jobId);
       final apiService = ApiService();
       final result = await apiService.jobSave(job_id: jobId);
 

@@ -269,12 +269,12 @@ static void _logout(BuildContext context) {
 
       // If on splash screen
       if (isSplash) {
-        return isAuthenticated ? '/home/dashboard' : '/login';
+        return isAuthenticated ? '/dashboard' : '/login';
       }
 
       // If authenticated and trying to access auth screens
       if (isAuthenticated && (isLogin || isSignup)) {
-        return '/home/dashboard';
+        return '/dashboard';
       }
 
       // If not authenticated and trying to access home
