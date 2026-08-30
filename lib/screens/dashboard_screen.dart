@@ -156,7 +156,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.work,
                 color: Colors.blue,
                 onTap: () {
-                  context.go('/home/my-jobs');
+                  context.go('/home/my-jobs',extra: {
+                    'type':'My Jobs'
+                  });
                 },
               ),
             ),
@@ -168,7 +170,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.send,
                 color: Colors.green,
                 onTap: () {
-                  context.go('/home/my-jobs?tab=applications');
+                  context.go('/home/my-jobs',extra: {
+                    'type':'Applied'
+                  });
                 },
               ),
             ),
@@ -184,7 +188,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.people,
                 color: Colors.orange,
                 onTap: () {
-                  context.go('/home/my-jobs?tab=interviews');
+                  context.go('/home/my-jobs');
                 },
               ),
             ),
@@ -196,7 +200,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.bookmark,
                 color: Colors.purple,
                 onTap: () {
-                  context.go('/home/saved');
+                  context.go('/home/my-jobs',extra: {
+                    'type':'Saved'
+                  });
                 },
               ),
             ),
@@ -230,10 +236,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               context.go('/home/find-jobs');
             }),
             _buildToolItem(Icons.note_add, 'Apply', () {
-              context.go('/home/find-jobs');
+             context.go('/home/my-jobs',extra: {
+                    'type':'Applied'
+                  });
             }),
             _buildToolItem(Icons.save, 'Saved', () {
-              context.go('/home/my-jobs');
+              context.go('/home/my-jobs',extra: {
+                    'type':'Saved'
+                  });
             })
           ],
         ),

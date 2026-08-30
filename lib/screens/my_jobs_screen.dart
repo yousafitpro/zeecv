@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zeecv/design/gradient_background.dart';
 import 'package:zeecv/stores/my_job_store.dart';
 import 'package:zeecv/widgets/job_card.dart';
@@ -32,8 +33,17 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     _searchController.addListener(_onSearchChanged);
     // Load jobs after first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+        final filterType = extra?['type'] as String? ?? 'My Jobs';
+        final oldFilterType = _selectedFilter;
+    // Update state and rebuild UI
+    setState(() {
+      _selectedFilter = filterType;
+    });
     final myjobStore = context.read<MyJobStore>();
-      if (mounted && !myjobStore.hasLoadedOnce) {
+      if (mounted && (!myjobStore.hasLoadedOnce || filterType!=oldFilterType)) {
+        print(filterType);
+        print(oldFilterType);
         context.read<MyJobStore>().loadJobs(
           {'type': _selectedFilter},
           _searchQuery,
@@ -53,11 +63,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     setState(() {
       _searchQuery = _searchController.text;
     });
-    // Update search when user types
-    context.read<MyJobStore>().loadJobs(
-      {'type': _selectedFilter},
-      _searchQuery,
-    );
+    // Frontend search only - no API call
   }
 
   void _onFilterSelected(String filter) {

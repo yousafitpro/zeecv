@@ -254,7 +254,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: ()=>{
-                context.go(back_url)
+                 Navigator.pop(context)
               },
             ),
             actions: [

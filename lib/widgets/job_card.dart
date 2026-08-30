@@ -156,10 +156,10 @@ class _JobCardState extends State<JobCard> {
       child: Material(
         color: Colors.transparent,
         child: GestureDetector(
-          onTap: () => context.go(
-            '/job-detail/${widget.job.slug}',
-            extra: {'back_url': widget.back_url}, // ✅ FIXED HERE
-          ),
+          onTap: () => context.push(
+  '/job-detail/${widget.job.slug}',
+  extra: {'back_url': widget.back_url},
+),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(

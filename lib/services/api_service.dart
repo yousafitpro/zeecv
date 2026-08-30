@@ -387,6 +387,7 @@ Future<Map<String, dynamic>> toggleSaveJob({
   }
   /// Load my jobs (saved/applied jobs)
   Future<Map<String, dynamic>> loadMyJobs(Map<String,dynamic> filter) async {
+    print(filter);
     try {
       final response = await _dio.post(
         ApiConstants.myJobs,
