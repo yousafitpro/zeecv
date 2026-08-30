@@ -205,6 +205,7 @@ class _JobCardState extends State<JobCard> {
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           border: Border.all(color: primaryColor, width: 1),
+                          borderRadius: BorderRadius.circular(5)
                         ),
                         child: Text(
                           widget.job.jobTypes!.split(',').first.trim().toUpperCase(),
@@ -251,9 +252,16 @@ class _JobCardState extends State<JobCard> {
                     runSpacing: 8,
                     children: tagList.map((tag) {
                       return Container(
+                        decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5), // Fixed: removed 'all' and used circular()
+                        border: Border.all(
+                          color: Colors.grey.shade300, // Add border if needed
+                          width: 1,
+                        ),
+                      ),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
-                        color: const Color(0xFFF4F4F4),
+                        
                         child: Text(
                           tag,
                           style: const TextStyle(
