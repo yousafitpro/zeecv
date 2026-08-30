@@ -91,12 +91,12 @@ class _EditResumeInappState extends State<EditResumeInapp> {
   // --- NEW DOWNLOAD HANDLING METHODS ---
 
   Future<void> _handleDownload() async {
-    final allowed = await PermissionHelper.requestStoragePermission();
+    // final allowed = await PermissionHelper.requestStoragePermission();
 
-    if (!allowed) {
-      _showError('Storage permission denied');
-      return;
-    }
+    // if (!allowed) {
+    //   _showError('Storage permission denied');
+    //   return;
+    // }
 
     if (_downloadUrl == null || _downloadUrl!.isEmpty) {
       _showError('Download URL not available');
