@@ -24,6 +24,7 @@ class MyJobsScreen extends StatefulWidget {
 class _MyJobsScreenState extends State<MyJobsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedFilter = 'My Jobs'; // Default active filter
 
   @override
   void initState() {
@@ -33,7 +34,10 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
     final myjobStore = context.read<MyJobStore>();
       if (mounted && !myjobStore.hasLoadedOnce) {
-        context.read<MyJobStore>().loadJobs();
+        context.read<MyJobStore>().loadJobs(
+          {'type': _selectedFilter},
+          _searchQuery,
+        );
       }
     });
   }
@@ -49,6 +53,22 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     setState(() {
       _searchQuery = _searchController.text;
     });
+    // Update search when user types
+    context.read<MyJobStore>().loadJobs(
+      {'type': _selectedFilter},
+      _searchQuery,
+    );
+  }
+
+  void _onFilterSelected(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+    });
+    // Pass filter map to loadJobs
+    context.read<MyJobStore>().loadJobs(
+      {'type': filter},
+      _searchQuery,
+    );
   }
 
   @override
@@ -59,7 +79,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       GradientBackground(),
       Consumer<MyJobStore>(
         builder: (context, myjobStore, child) {
-          // Filter jobs based on search query
+          // Filter jobs locally based on search query
           final filteredJobs = _searchQuery.isEmpty
               ? myjobStore.jobs
               : myjobStore.jobs.where((job) {
@@ -74,6 +94,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
           return Column(
             children: [
               _buildSearchBar(),
+              _buildFilterPills(),
               Expanded(
                 child: _buildContent(context, myjobStore, filteredJobs),
               ),
@@ -137,6 +158,52 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     );
   }
 
+  Widget _buildFilterPills() {
+    final filters = ['My Jobs', 'Applied', 'Saved'];
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: filters.map((filter) {
+          final isSelected = _selectedFilter == filter;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: Text(
+                filter,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey[700],
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  _onFilterSelected(filter);
+                }
+              },
+              backgroundColor: Colors.grey[100],
+              selectedColor: Theme.of(context).primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected 
+                      ? Theme.of(context).primaryColor 
+                      : Colors.grey[300]!,
+                  width: 1,
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              elevation: 0,
+              pressElevation: 0,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildContent(BuildContext context, MyJobStore jobStore, List<Job> filteredJobs) {
     // Loading state
     if (jobStore.isLoading && jobStore.isFirstLoad) {
@@ -178,7 +245,10 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                onPressed: () => jobStore.loadJobs(),
+                onPressed: () => jobStore.loadJobs(
+                  {'type': _selectedFilter},
+                  _searchQuery,
+                ),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Try Again'),
                 style: ElevatedButton.styleFrom(
@@ -317,7 +387,10 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
 
     // Jobs list
     return RefreshIndicator(
-      onRefresh: () => jobStore.loadJobs(),
+      onRefresh: () => jobStore.loadJobs(
+        {'type': _selectedFilter},
+        _searchQuery,
+      ),
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: filteredJobs.length,

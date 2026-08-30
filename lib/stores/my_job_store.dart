@@ -47,16 +47,15 @@ class MyJobStore extends ChangeNotifier {
   // ACTIONS
   // ============================================================
 
-  Future<void> loadJobs({String? searchQuery}) async {
+  Future<void> loadJobs(Map<String,dynamic> filter,String? searchQuery) async {
     _isLoading = true;
     _isFirstLoad = true;
     _errorMessage = null;
     _currentSearchQuery = searchQuery;
     notifyListeners();
-
     try {
       final apiService = ApiService();
-      final result = await apiService.loadMyJobs();
+      final result = await apiService.loadMyJobs(filter);
       if (result['success']) {
         final data = result['data'];
         final List<dynamic> jobList = data['list'] ?? [];

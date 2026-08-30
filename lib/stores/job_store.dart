@@ -117,7 +117,7 @@ class JobStore extends ChangeNotifier {
   Future<void> applied({required String jobId}) async {
 
     try {
-              _jobs = _jobs.map((job) {
+        _jobs = _jobs.map((job) {
           if (job.slug == jobId) {
             return job.toggleApplied(); // Using helper method
           }
