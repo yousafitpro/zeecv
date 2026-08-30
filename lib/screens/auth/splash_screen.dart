@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zeecv/dialogs/downloadApp.dart';
+import 'package:zeecv/services/api_service.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
-
+import 'package:package_info_plus/package_info_plus.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -17,11 +19,19 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Wait a moment then let the router handle navigation
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () async{
       if (mounted) {
+         PackageInfo packageInfo = await PackageInfo.fromPlatform();
+         String appVersion = packageInfo.version; 
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final ApiService apiService = ApiService();
+        final Map<String, dynamic> result = await apiService.checkVersion(appVersion);
+        if(result['data']['download']){
+          downloadApp(context,result['data']['link'],result['data']['message']);
+          return;
+        }
         if (authProvider.isAuthenticated) {
-           context.go('/login');
+           context.go('/dashboard');
         } else {
           context.go('/login');
         }

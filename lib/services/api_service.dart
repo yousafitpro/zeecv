@@ -387,11 +387,27 @@ Future<Map<String, dynamic>> toggleSaveJob({
   }
   /// Load my jobs (saved/applied jobs)
   Future<Map<String, dynamic>> loadMyJobs(Map<String,dynamic> filter) async {
-    print(filter);
     try {
       final response = await _dio.post(
         ApiConstants.myJobs,
         data: filter,
+      );
+
+      return {
+        'success': true,
+        'data': response.data,
+      };
+    } catch (e) {
+      return _handleError(e);
+    }
+  }
+  Future<Map<String, dynamic>> checkVersion(appVersion) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.version,
+        data: {
+          'appVersion':appVersion
+        },
       );
 
       return {

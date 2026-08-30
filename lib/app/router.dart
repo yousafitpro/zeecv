@@ -267,15 +267,15 @@ static void _logout(BuildContext context) {
       final isLogin = state.matchedLocation == '/login';
       final isSignup = state.matchedLocation == '/signup';
 
-      // If on splash screen
-      if (isSplash) {
-        return isAuthenticated ? '/dashboard' : '/login';
-      }
+      // // If on splash screen
+      // if (isSplash) {
+      //   return isAuthenticated ? '/dashboard' : '/login';
+      // }
 
-      // If authenticated and trying to access auth screens
-      if (isAuthenticated && (isLogin || isSignup)) {
-        return '/dashboard';
-      }
+      // // If authenticated and trying to access auth screens
+      // if (isAuthenticated && (isLogin || isSignup)) {
+      //   return '/dashboard';
+      // }
 
       // If not authenticated and trying to access home
       if (!isAuthenticated && state.matchedLocation.startsWith('/home')) {

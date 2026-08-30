@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zeecv/stores/job_store.dart';
-
 void AreAppliedDialog(BuildContext context, String jobId) {
   showDialog(
     context: context,
@@ -122,6 +121,7 @@ void AreAppliedDialog(BuildContext context, String jobId) {
     },
   );
 }
+
 
 void _showAppliedSuccess(BuildContext context) {
   

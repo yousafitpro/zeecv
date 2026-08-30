@@ -16,6 +16,7 @@ class ApiConstants {
   static const String toggleSaveJob = '$baseUrl/toggle-save-job';
   static const String myJobs = '$baseUrl/myjobs';
   static const String deleteAccount = '$baseUrl/delete-account';
+  static const String version = '$baseUrl/jobs/version';
   
   // Headers
   static const String contentType = 'application/json';
