@@ -195,10 +195,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   isLoading: authProvider.isLoading,
                 ),
-                TextButton(
-                    onPressed: () => context.push('/debug-logs'), // or context.push('/debug-logs')
-                    child: const Text('View Debug Logs'),
-                  ),
                 const SizedBox(height: 16),
                 
                 // OR Divider
