@@ -357,6 +357,11 @@ static void _logout(BuildContext context) {
             name: 'default-inapp',
             builder: (context, state) =>DefaultInapp(),
           ),
+      GoRoute(
+            path: '/in-app/signin',
+            name: 'signin-inapp',
+            builder: (context, state) =>DefaultInapp(),
+          ),
       // Home shell route with tabs
       ShellRoute(
         builder: (context, state, child) {

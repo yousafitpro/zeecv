@@ -1,7 +1,7 @@
 name: zeecv
 description: "A professional resume maker app"
 publish_to: 'none'
-version: 2.0.5
+version: 2.0.7
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -40,6 +40,7 @@ flutter:
     - assets/icon/edit.png
     - assets/icon/icon.png
     - assets/images/google_logo.png
+    - assets/images/linkedin.png
     - assets/certs/root_ca.pem
 
 flutter_launcher_icons:
