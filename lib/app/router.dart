@@ -7,6 +7,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zeecv/inapp/default_inapp.dart';
 import 'package:zeecv/inapp/edit_resume_inapp.dart';
+import 'package:zeecv/inapp/signin_inapp.dart';
 import 'package:zeecv/screens/dashboard_screen.dart';
 import 'package:zeecv/screens/logs_screen.dart';
 import '../models/user_model.dart';
@@ -360,7 +361,7 @@ static void _logout(BuildContext context) {
       GoRoute(
             path: '/in-app/signin',
             name: 'signin-inapp',
-            builder: (context, state) =>DefaultInapp(),
+            builder: (context, state) =>SinginInapp(),
           ),
       // Home shell route with tabs
       ShellRoute(
