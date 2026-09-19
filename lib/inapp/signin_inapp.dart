@@ -1,173 +1,355 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:zeecv/providers/auth_provider.dart';
-import 'package:provider/provider.dart';
 
 class SinginInapp extends StatefulWidget {
   const SinginInapp({Key? key}) : super(key: key);
 
   @override
-  _SinginInappState createState() => _SinginInappState();
+  State<SinginInapp> createState() => _SinginInappState();
 }
 
 class _SinginInappState extends State<SinginInapp> {
-  bool _showInAppBrowser = false;
   String? _url;
   InAppWebViewController? _webViewController;
+
   double _progress = 0;
-  bool _isDownloading = false;
+
+  // Prevents the token from being processed twice
+  bool _tokenHandled = false;
 
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+
+      _showSnackBar('INIT STATE / POST FRAME');
+
+      final extra =
+          GoRouterState.of(context).extra as Map<String, dynamic>?;
+
       final url = extra?['url'] as String? ?? '';
 
-      if (url.isNotEmpty) {
-        setState(() {
-          _url = url;
-          _showInAppBrowser = true;
-        });
+      _showSnackBar('URL: $url');
+
+      if (url.isEmpty) {
+        _showSnackBar(
+          'ERROR: URL is empty',
+          color: Colors.red,
+        );
+        return;
       }
-            
 
+      setState(() {
+        _url = url;
+      });
+
+      _showSnackBar(
+        'WebView URL initialized',
+        color: Colors.green,
+      );
     });
   }
 
-  void _closeInAppBrowser() {
-    setState(() {
-      _showInAppBrowser = false;
-      _webViewController = null;
-      _progress = 0;
-    });
+  void _showSnackBar(
+    String message, {
+    Color? color,
+  }) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        backgroundColor: color ?? Colors.blue,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+  // ---------------------------------------------------------------------------
+  // LOGIN SUCCESS HELPERS
+  // ---------------------------------------------------------------------------
+
+  /// True when URL contains `mobile-app-login-successful` anywhere in path/host.
+  bool _isLoginSuccessUrl(WebUri uri) {
+    return uri.path.contains('mobile-app-login-successful') ||
+        uri.host.contains('mobile-app-login-successful');
   }
 
-  void _showSuccess(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 4),
-        ),
-      );
+  /// Extracts the token from the success URL.
+  /// Supports:
+  ///   https://zeecv.com/mobile-app-login-successful/<token>
+  ///   https://zeecv.com/mobile-app-login-successful?token=<token>
+  ///   zeecv://mobile-app-login-successful/<token>
+  String _extractToken(WebUri uri) {
+    // 1) Token as path segment after the marker
+    final segments = uri.pathSegments;
+    final idx = segments.indexWhere(
+      (s) => s.contains('mobile-app-login-successful'),
+    );
+    if (idx != -1 && idx + 1 < segments.length) {
+      return Uri.decodeComponent(segments[idx + 1]);
     }
+
+    // 2) Token as query param
+    final qToken = uri.queryParameters['token'];
+    if (qToken != null && qToken.isNotEmpty) return qToken;
+
+    // 3) Fallback: last non-empty path segment
+    if (segments.isNotEmpty) {
+      return Uri.decodeComponent(segments.last);
+    }
+
+    return '';
+  }
+
+  /// Called when the WebView hits the login-success URL.
+  Future<void> _handleSuccessfulLogin(WebUri uri, String backUrl) async {
+    if (_tokenHandled) return;
+    _tokenHandled = true;
+
+    final token = _extractToken(uri);
+
+    debugPrint('🚀 mobile-app-login-successful');
+    debugPrint('🚀 URL:   $uri');
+    debugPrint('🚀 TOKEN: $token');
+
+    if (token.isEmpty) {
+      _showSnackBar(
+        'Login failed: missing token',
+        color: Colors.red,
+      );
+      return;
+    }
+
+    _showSnackBar(
+      'Login successful\nToken: $token',
+      color: Colors.green,
+    );
+
+    // -------------------------------------------------------------------------
+    // TODO: persist the token here.
+    // Example:
+    //   final authProvider = context.read<AuthProvider>();
+    //   await authProvider.loginWithToken(token);
+    // -------------------------------------------------------------------------
+
+    // Stop the WebView from loading the token URL.
+    _webViewController?.stopLoading();
+
+    // Give the snackbar a moment, then leave the WebView.
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (mounted) context.go(backUrl);
   }
 
   @override
   Widget build(BuildContext context) {
-    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
-    final backUrl = extra?['back_url'] as String? ?? '/home/find-jobs';
-    final title = extra?['title'] as String? ?? 'Zeecv';
+    final extra =
+        GoRouterState.of(context).extra as Map<String, dynamic>?;
 
-    if (_showInAppBrowser && _url != null && _url!.isNotEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title:  Text(title),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+    final backUrl =
+        extra?['back_url'] as String? ?? '/home/find-jobs';
+
+    final title =
+        extra?['title'] as String? ?? 'Zeecv';
+
+    if (_url == null || _url!.isEmpty) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go(backUrl);
+          },
+        ),
+
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
             onPressed: () {
-              context.go(backUrl);
+              if (_webViewController != null) {
+                _showSnackBar(
+                  'Reloading WebView...',
+                  color: Colors.orange,
+                );
+
+                _webViewController!.reload();
+              } else {
+                _showSnackBar(
+                  'WebView controller is NULL',
+                  color: Colors.red,
+                );
+              }
             },
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                if (_webViewController != null) {
-                  _webViewController?.reload();
-                } else {
-                  final authProvider = context.read<AuthProvider>();
-                  final token = authProvider.user?.loginToken;
-                  if (token != null && token.isNotEmpty) {
-                    setState(() {
-                      _showInAppBrowser = true;
-                    });
-                  }
-                }
-              },
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: Stack(
-            children: [
-              InAppWebView(
-              key: ValueKey(_url),
+        ],
+      ),
+
+      body: SafeArea(
+        child: Stack(
+          children: [
+            InAppWebView(
               initialUrlRequest: URLRequest(
                 url: WebUri(_url!),
               ),
-                onWebViewCreated: (controller) {
-                  _webViewController = controller;
-                },
-                onProgressChanged: (controller, progress) {
-                  setState(() {
-                    _progress = progress / 100;
-                  });
-                },
-                onLoadError: (controller, url, code, message) {
-                  _showError('Failed to load page: $message');
-                },
-                onLoadHttpError: (controller, url, statusCode, description) {
-                  _showError('HTTP Error $statusCode: $description');
-                },
-                // Add this to handle downloads from within WebView
-                shouldOverrideUrlLoading: (controller, navigationAction) async {
-                  final uri = navigationAction.request.url;
-                      if (uri != null && _isLoginSuccessUrl(uri)) {
-                      final token = _extractToken(uri);
-                      // 🖨️ Print token in logs
-                      debugPrint('🚀 mobile-app-login-successful → token: $token');
-                      print('TOKEN: $token'); // also visible in release logs if you want
 
-                      // Optional: persist it or notify the AuthProvider
-                      // context.read<AuthProvider>().setLoginToken(token);
-
-                      // Stop the WebView from navigating to that URL
-                      _closeInAppBrowser();
-                      return NavigationActionPolicy.CANCEL;
-                    }
-                  return NavigationActionPolicy.ALLOW;
-                },
+              initialSettings: InAppWebViewSettings(
+                javaScriptEnabled: true,
+                useShouldOverrideUrlLoading: true,
               ),
-              if (_progress < 1.0)
+
+              // ==============================
+              // WEBVIEW CREATED
+              // ==============================
+
+              onWebViewCreated: (controller) {
+                _webViewController = controller;
+              },
+
+              // ==============================
+              // LOAD START  ← SUCCESS LOGIN HERE
+              // ==============================
+
+              onLoadStart: (controller, url) {
+                setState(() {
+                  _progress = 0;
+                });
+
+                if (url == null) return;
+
+                debugPrint('🌐 onLoadStart: $url');
+
+                // ✅ Detect the login-success URL
+                if (_isLoginSuccessUrl(url)) {
+                  _handleSuccessfulLogin(url, backUrl);
+                }
+              },
+
+              // ==============================
+              // LOAD STOP
+              // ==============================
+
+              onLoadStop: (controller, url) {
+                setState(() {
+                  _progress = 1;
+                });
+
+                if (url == null) return;
+
+                // ✅ Fallback: some platforms trigger this instead of onLoadStart
+                if (_isLoginSuccessUrl(url)) {
+                  _handleSuccessfulLogin(url, backUrl);
+                }
+              },
+
+              // ==============================
+              // PROGRESS
+              // ==============================
+
+              onProgressChanged: (controller, progress) {
+                setState(() {
+                  _progress = progress / 100;
+                });
+              },
+
+              // ==============================
+              // URL HISTORY
+              // ==============================
+
+              onUpdateVisitedHistory:
+                  (controller, url, isReload) {
+                // Uncomment if you want noisy logs:
+                // _showSnackBar(
+                //   'HISTORY UPDATED\n$url',
+                //   color: Colors.purple,
+                // );
+
+                if (url != null && _isLoginSuccessUrl(url)) {
+                  _handleSuccessfulLogin(url, backUrl);
+                }
+              },
+
+              // ==============================
+              // NAVIGATION
+              // ==============================
+
+              shouldOverrideUrlLoading:
+                  (controller, navigationAction) async {
+                final uri = navigationAction.request.url;
+                final url = uri?.toString() ?? '';
+
+                debugPrint('➡️ shouldOverrideUrlLoading: $url');
+
+                // ✅ Intercept the success URL before it loads
+                if (uri != null && _isLoginSuccessUrl(uri)) {
+                  await _handleSuccessfulLogin(uri, backUrl);
+                  return NavigationActionPolicy.CANCEL;
+                }
+
+                return NavigationActionPolicy.ALLOW;
+              },
+
+              // ==============================
+              // WEBVIEW ERROR
+              // ==============================
+
+              onReceivedError:
+                  (controller, request, error) {
+                _showSnackBar(
+                  'WEBVIEW ERROR\n'
+                  '${request.url}\n'
+                  '${error.description}',
+                  color: Colors.red,
+                );
+              },
+
+              // ==============================
+              // HTTP ERROR
+              // ==============================
+
+              onReceivedHttpError:
+                  (controller, request, response) {
+                _showSnackBar(
+                  'HTTP ERROR\n'
+                  '${request.url}\n'
+                  'Status: ${response.statusCode}',
+                  color: Colors.red,
+                );
+              },
+            ),
+
+            // ==============================
+            // PROGRESS BAR
+            // ==============================
+
+            if (_progress < 1.0)
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
                 child: LinearProgressIndicator(
                   value: _progress,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).primaryColor,
-                  ),
                   minHeight: 3,
                 ),
               ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          child: const Text(''),
+          ],
         ),
       ),
     );
