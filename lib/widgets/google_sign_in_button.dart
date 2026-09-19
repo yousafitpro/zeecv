@@ -57,25 +57,7 @@ class GoogleSignInButton extends StatelessWidget {
                   ),
                 );
               },
-            ),
-            const SizedBox(width: 12),
-            Text(
-              authProvider.isLoading ? 'Signing in...' : 'Sign in with Google',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (authProvider.isLoading) ...[
-              const SizedBox(width: 12),
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
-              ),
-            ],
+            )
           ],
         ),
       ),

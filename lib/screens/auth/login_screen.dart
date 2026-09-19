@@ -140,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
                 
                 // Error Message
                 if (authProvider.error != null) ...[
@@ -172,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                 ],
                 
                 // Sign In Button
@@ -214,14 +214,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
-                // Google Sign In Button
-                const GoogleSignInButton(),
-                const SizedBox(height: 5),
-                const LinkedinSignInButton(),
-                const SizedBox(height: 5),
-                const FacebookSignInButton(),
+                  Row(
+                    children: const [
+                      Expanded(child: GoogleSignInButton()),
+                      SizedBox(width: 8),
+                      Expanded(child: LinkedinSignInButton()),
+                      SizedBox(width: 8),
+                      Expanded(child: FacebookSignInButton()),
+                    ],
+                  ),
                 
                 const SizedBox(height: 16),
                 

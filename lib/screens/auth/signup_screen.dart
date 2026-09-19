@@ -235,14 +235,17 @@ class _SignupScreenState extends State<SignupScreen> {
                   ],
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
-                // Google Sign In Button
-                const GoogleSignInButton(),
-                const SizedBox(height: 5),
-                const LinkedinSignInButton(),
-                const SizedBox(height: 5),
-                const FacebookSignInButton(),
+                  Row(
+                    children: const [
+                      Expanded(child: GoogleSignInButton()),
+                      SizedBox(width: 8),
+                      Expanded(child: LinkedinSignInButton()),
+                      SizedBox(width: 8),
+                      Expanded(child: FacebookSignInButton()),
+                    ],
+                  ),
                 
                 const SizedBox(height: 16),
                 

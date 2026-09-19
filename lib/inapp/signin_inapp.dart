@@ -206,23 +206,7 @@ class _SinginInappState extends State<SinginInapp> {
           },
         ),
 
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              if (_webViewController != null) {
-
-
-                _webViewController!.reload();
-              } else {
-                _showSnackBar(
-                  'WebView controller is NULL',
-                  color: Colors.red,
-                );
-              }
-            },
-          ),
-        ],
+        
       ),
 
       body: SafeArea(
@@ -340,12 +324,12 @@ class _SinginInappState extends State<SinginInapp> {
 
               onReceivedError:
                   (controller, request, error) {
-                _showSnackBar(
-                  'WEBVIEW ERROR\n'
-                  '${request.url}\n'
-                  '${error.description}',
-                  color: Colors.red,
-                );
+                // _showSnackBar(
+                //   'WEBVIEW ERROR\n'
+                //   '${request.url}\n'
+                //   '${error.description}',
+                //   color: Colors.red,
+                // );
               },
 
               // ==============================
@@ -354,12 +338,12 @@ class _SinginInappState extends State<SinginInapp> {
 
               onReceivedHttpError:
                   (controller, request, response) {
-                _showSnackBar(
-                  'HTTP ERROR\n'
-                  '${request.url}\n'
-                  'Status: ${response.statusCode}',
-                  color: Colors.red,
-                );
+                // _showSnackBar(
+                //   'HTTP ERROR\n'
+                //   '${request.url}\n'
+                //   'Status: ${response.statusCode}',
+                //   color: Colors.red,
+                // );
               },
             ),
 
