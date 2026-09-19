@@ -221,6 +221,41 @@ Future<void> _handleUnauthorized() async {
       return false;
     }
   }
+  Future<bool> signInWithToken({required String token
+  }) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final result = await _apiService.signInWithToken(
+        token: token,
+      );
+
+      if (result['success']) {
+        final data = result['data'];
+        
+        final user = UserModel.fromJson(data);
+        _user = user;
+        
+        if (user.token != null) {
+          _apiService.setAuthToken(user.token!);
+          await _saveToStorage(user.token!, user);
+        }
+        
+        _setLoading(false);
+        notifyListeners();
+        return true;
+      } else {
+        _setError(result['message'] ?? 'Invalid credentials');
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
 
   // ============================================================
   // SIGN IN WITH GOOGLE

@@ -10,7 +10,8 @@ import '../../core/constants/app_strings.dart';
 import '../../core/utils/validators.dart';
 import '../../widgets/auth_text_field.dart';
 import '../../widgets/auth_button.dart';
-
+import 'package:zeecv/widgets/linkedin_sign_in_button.dart';
+import 'package:zeecv/widgets/facebook_sign_in_button.dart';
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -238,6 +239,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 
                 // Google Sign In Button
                 const GoogleSignInButton(),
+                const SizedBox(height: 5),
+                const LinkedinSignInButton(),
+                const SizedBox(height: 5),
+                const FacebookSignInButton(),
                 
                 const SizedBox(height: 16),
                 

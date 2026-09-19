@@ -5,6 +5,7 @@ class ApiConstants {
   static const String signup = '$baseUrl/auth/register';
   static const String signupwithgoogle = '$baseUrl/google/register';
   static const String signin = '$baseUrl/auth/login';
+  static const String signin_with_token = '$baseUrl/auth/login-with-token';
   static const String signout = '$baseUrl/logout';
   static const String verifyToken = '$baseUrl/verify-token';
   static const String forgotPassword = '$baseUrl/forgot-password';

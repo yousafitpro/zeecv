@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zeecv/widgets/google_sign_in_button.dart';
 import 'package:zeecv/widgets/linkedin_sign_in_button.dart';
+import 'package:zeecv/widgets/facebook_sign_in_button.dart';
 import 'package:flutter/gestures.dart'; 
 import '../../providers/auth_provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -219,6 +220,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 const GoogleSignInButton(),
                 const SizedBox(height: 5),
                 const LinkedinSignInButton(),
+                const SizedBox(height: 5),
+                const FacebookSignInButton(),
                 
                 const SizedBox(height: 16),
                 

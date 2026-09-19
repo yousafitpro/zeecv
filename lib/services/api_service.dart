@@ -346,6 +346,31 @@ Future<Map<String, dynamic>> toggleSaveJob({
       return _handleError(e);
     }
   }
+  Future<Map<String, dynamic>> signInWithToken({
+    required String token
+  }) async {
+    try {
+      final response = await _dio.post(
+        ApiConstants.signin_with_token,
+        data: {
+          'apptoken': token,
+        },
+      );
+
+      final data = response.data;
+      if (data['token'] != null) {
+        setAuthToken(data['token']);
+      }
+
+      return {
+        'success': true,
+        'data': data,
+      };
+    } catch (e) {
+        print(e.toString());
+      return _handleError(e);
+    }
+  }
 
   Future<Map<String, dynamic>> forgotPassword({
     required String email

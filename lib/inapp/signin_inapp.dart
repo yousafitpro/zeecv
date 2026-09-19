@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-
+import 'package:provider/provider.dart';
+import 'package:zeecv/core/constants/app_colors.dart';
+import 'package:zeecv/core/constants/app_strings.dart';
+import '../../providers/auth_provider.dart';
 class SinginInapp extends StatefulWidget {
   const SinginInapp({Key? key}) : super(key: key);
 
@@ -25,14 +28,14 @@ class _SinginInappState extends State<SinginInapp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      _showSnackBar('INIT STATE / POST FRAME');
+
 
       final extra =
           GoRouterState.of(context).extra as Map<String, dynamic>?;
 
       final url = extra?['url'] as String? ?? '';
 
-      _showSnackBar('URL: $url');
+  
 
       if (url.isEmpty) {
         _showSnackBar(
@@ -46,10 +49,6 @@ class _SinginInappState extends State<SinginInapp> {
         _url = url;
       });
 
-      _showSnackBar(
-        'WebView URL initialized',
-        color: Colors.green,
-      );
     });
   }
 
@@ -80,8 +79,14 @@ class _SinginInappState extends State<SinginInapp> {
 
   /// True when URL contains `mobile-app-login-successful` anywhere in path/host.
   bool _isLoginSuccessUrl(WebUri uri) {
-    return uri.path.contains('mobile-app-login-successful') ||
+     final is_success=uri.path.contains('mobile-app-login-successful') ||
         uri.host.contains('mobile-app-login-successful');
+    return is_success;
+  }
+  bool _isJobsUrl(WebUri uri) {
+     final is_success=uri.path.contains('jobs') ||
+        uri.host.contains('jobs');
+    return is_success;
   }
 
   /// Extracts the token from the success URL.
@@ -112,15 +117,28 @@ class _SinginInappState extends State<SinginInapp> {
   }
 
   /// Called when the WebView hits the login-success URL.
+  Future<void> _handleCloseWebview(String backUrl) async {
+         if (!mounted) return;
+
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Login cancelled'),
+      backgroundColor: Colors.orange,
+      duration: Duration(seconds: 2),
+    ),
+  );
+
+  await Future.delayed(const Duration(milliseconds: 500));
+  if (!mounted) return;
+
+  context.go(backUrl);
+  }
   Future<void> _handleSuccessfulLogin(WebUri uri, String backUrl) async {
     if (_tokenHandled) return;
     _tokenHandled = true;
 
     final token = _extractToken(uri);
-
-    debugPrint('🚀 mobile-app-login-successful');
-    debugPrint('🚀 URL:   $uri');
-    debugPrint('🚀 TOKEN: $token');
 
     if (token.isEmpty) {
       _showSnackBar(
@@ -130,10 +148,7 @@ class _SinginInappState extends State<SinginInapp> {
       return;
     }
 
-    _showSnackBar(
-      'Login successful\nToken: $token',
-      color: Colors.green,
-    );
+
 
     // -------------------------------------------------------------------------
     // TODO: persist the token here.
@@ -147,7 +162,18 @@ class _SinginInappState extends State<SinginInapp> {
 
     // Give the snackbar a moment, then leave the WebView.
     await Future.delayed(const Duration(milliseconds: 500));
-    if (mounted) context.go(backUrl);
+    if (!mounted) return; // ⬅️ critical: context may be gone after await
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+     final success = await authProvider.signInWithToken(token:token);
+                      if (success && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(AppStrings.loginSuccess),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                        context.go('/dashboard');
+                      }
   }
 
   @override
@@ -185,10 +211,7 @@ class _SinginInappState extends State<SinginInapp> {
             icon: const Icon(Icons.refresh),
             onPressed: () {
               if (_webViewController != null) {
-                _showSnackBar(
-                  'Reloading WebView...',
-                  color: Colors.orange,
-                );
+
 
                 _webViewController!.reload();
               } else {
@@ -240,6 +263,9 @@ class _SinginInappState extends State<SinginInapp> {
                 if (_isLoginSuccessUrl(url)) {
                   _handleSuccessfulLogin(url, backUrl);
                 }
+                if (_isJobsUrl(url)) {
+                  _handleCloseWebview(backUrl);
+                }
               },
 
               // ==============================
@@ -253,10 +279,6 @@ class _SinginInappState extends State<SinginInapp> {
 
                 if (url == null) return;
 
-                // ✅ Fallback: some platforms trigger this instead of onLoadStart
-                if (_isLoginSuccessUrl(url)) {
-                  _handleSuccessfulLogin(url, backUrl);
-                }
               },
 
               // ==============================
@@ -284,6 +306,9 @@ class _SinginInappState extends State<SinginInapp> {
                 if (url != null && _isLoginSuccessUrl(url)) {
                   _handleSuccessfulLogin(url, backUrl);
                 }
+                if (url != null && _isJobsUrl(url)) {
+                  _handleCloseWebview(backUrl);
+                }
               },
 
               // ==============================
@@ -301,6 +326,9 @@ class _SinginInappState extends State<SinginInapp> {
                 if (uri != null && _isLoginSuccessUrl(uri)) {
                   await _handleSuccessfulLogin(uri, backUrl);
                   return NavigationActionPolicy.CANCEL;
+                }
+                if (uri != null && _isJobsUrl(uri)) {
+                  _handleCloseWebview(backUrl);
                 }
 
                 return NavigationActionPolicy.ALLOW;

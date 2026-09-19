@@ -41,6 +41,7 @@ flutter:
     - assets/icon/icon.png
     - assets/images/google_logo.png
     - assets/images/linkedin.png
+    - assets/images/facebook.png
     - assets/certs/root_ca.pem
 
 flutter_launcher_icons:
