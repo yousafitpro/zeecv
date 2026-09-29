@@ -39,9 +39,9 @@ class _EditResumeInappState extends State<EditResumeInapp> {
       if (token != null && token.isNotEmpty) {
         setState(() {
           _showInAppBrowser = true;
-          _inAppBrowserUrl = 'https://glassever/mobile-app/login-using-token/$token';
-          _downloadUrl = 'https://glassever/mobile-app/resume/download-pdf/$token';
-          _previewUrl = 'https://glassever/mobile-app/resume/preview/$token';
+          _inAppBrowserUrl = 'https://glassever.com/mobile-app/login-using-token/$token';
+          _downloadUrl = 'https://glassever.com/mobile-app/resume/download-pdf/$token';
+          _previewUrl = 'https://glassever.com/mobile-app/resume/preview/$token';
         });
       } else {
         print('User not logged in or token is missing');

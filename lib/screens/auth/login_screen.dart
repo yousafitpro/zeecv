@@ -301,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         recognizer: TapGestureRecognizer()..onTap = () {
                           context.go('/in-app/default',extra: {
-                            'url':'https://zeecv.com/terms?is_app=yes',
+                            'url':'https://glassever.com/terms?is_app=yes',
                             'back_url':'/login',
                             'title':'Terms & Conditions'
                           });
@@ -317,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         recognizer: TapGestureRecognizer()..onTap = () {
                           context.go('/in-app/default',extra: {
-                            'url':'https://zeecv.com/privacy-policy?is_app=yes',
+                            'url':'https://glassever.com/privacy-policy?is_app=yes',
                             'back_url':'/login',
                             'title':'Privacy Policy'
                           });

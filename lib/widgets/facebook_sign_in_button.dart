@@ -15,7 +15,7 @@ class FacebookSignInButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: authProvider.isLoading ? null : () async {
           context.go('/in-app/signin',extra: {
-                            'url':'https://zeecv.com/facebook/auth?is_app=yes',
+                            'url':'https://glassever.com/facebook/auth?is_app=yes',
                             'back_url':'/login',
                             'title':'Facebook Signin'
                           });

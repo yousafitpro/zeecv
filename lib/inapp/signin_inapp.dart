@@ -91,8 +91,8 @@ class _SinginInappState extends State<SinginInapp> {
 
   /// Extracts the token from the success URL.
   /// Supports:
-  ///   https://zeecv.com/mobile-app-login-successful/<token>
-  ///   https://zeecv.com/mobile-app-login-successful?token=<token>
+  ///   https://glassever.com/mobile-app-login-successful/<token>
+  ///   https://glassever.com/mobile-app-login-successful?token=<token>
   ///   zeecv://mobile-app-login-successful/<token>
   String _extractToken(WebUri uri) {
     // 1) Token as path segment after the marker

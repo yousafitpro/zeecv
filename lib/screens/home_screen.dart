@@ -124,7 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     return Scaffold(
-      body: SafeArea( child:widget.tabNavigator ?? const FindJobScreen()),
+appBar: AppBar(
+  title: Text(_getTitle(_selectedIndex)),
+  elevation: 0,
+  backgroundColor: const Color.fromARGB(255, 252, 251, 251), // Light gray
+  foregroundColor: Colors.black87,
+),
+      body: widget.tabNavigator ?? const FindJobScreen(),
       bottomNavigationBar:BottomTabs(selectedIndex: _selectedIndex),
     );
   }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config>
-        <domain includeSubdomains="true">zeecv.com</domain>
+        <domain includeSubdomains="true">glassever.com</domain>
         <trust-anchors>
             <!-- Trust the system certificates -->
             <certificates src="system" />

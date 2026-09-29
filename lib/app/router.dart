@@ -137,7 +137,7 @@ class AppRouter {
 
   // static void _openTermsAndConditions(BuildContext context) {
   //   context.push('/webview', extra: {
-  //     'url': 'https://zeecv.com/terms?is_app=yes',
+  //     'url': 'https://glassever.com/terms?is_app=yes',
   //     'title': 'Terms & Conditions',
   //   });
   // }
@@ -148,7 +148,7 @@ class AppRouter {
 
   // static void _openPrivacyPolicy(BuildContext context) {
   //   context.push('/webview', extra: {
-  //     'url': 'https://zeecv.com/privacy-policy?is_app=yes',
+  //     'url': 'https://glassever.com/privacy-policy?is_app=yes',
   //     'title': 'Privacy Policy',
   //   });
   // }
@@ -315,7 +315,7 @@ static void _logout(BuildContext context) {
         name: 'webview',
         builder: (context, state) {
           final extra = state.extra as Map<String, String>?;
-          final url = extra?['url'] ?? 'https://zeecv.com';
+          final url = extra?['url'] ?? 'https://glassever.com';
           final title = extra?['title'] ?? 'WebView';
           
           // Create webview controller
@@ -412,12 +412,12 @@ static void _logout(BuildContext context) {
                 onLogout: () => showLogoutDialog(context),
                 onEditResume: (user) => context.go('/in-app/edit-resume'),
                 onTermsAndConditions: () => context.go('/in-app/default',extra: {
-                  'url':'https://zeecv.com/terms?is_app=yes',
+                  'url':'https://glassever.com/terms?is_app=yes',
                   'back_url':'/home/profile',
                   'title':'Terms & Conditions'
                 }),
                 onPrivacyPolicy: () => context.go('/in-app/default',extra: {
-                  'url':'https://zeecv.com/privacy-policy?is_app=yes',
+                  'url':'https://glassever.com/privacy-policy?is_app=yes',
                   'back_url':'/home/profile',
                   'title':'Privacy Policy'
                 }),
