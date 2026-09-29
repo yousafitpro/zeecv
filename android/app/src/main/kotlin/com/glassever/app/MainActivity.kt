@@ -1,4 +1,4 @@
-package com.zeecv
+package com.glassever.app
 
 import io.flutter.embedding.android.FlutterActivity
 

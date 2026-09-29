@@ -1,7 +1,7 @@
 name: zeecv
 description: "Find Your Next Job With GlassEver"
 publish_to: 'none'
-version: 2.1.1
+version: 0.0.1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -32,6 +32,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^3.0.1
   flutter_launcher_icons: ^0.13.1
+  change_app_package_name: ^1.4.0
 
 flutter:
   uses-material-design: true

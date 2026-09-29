@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = "com.zeecv"
+    namespace = "com.glassever.app"
     compileSdk = 36
 
     compileOptions {
@@ -21,11 +21,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.zeecv"
+        applicationId = "com.glassever.app"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = 211
-        versionName = "2.1.1"
+        versionCode = 1
+        versionName = "0.0.1"
     }
 
     signingConfigs {
