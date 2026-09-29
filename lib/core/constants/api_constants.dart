@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'https://zeecv.com/api';
+  static const String baseUrl = 'https://glassever.com/api';
   
   // Auth endpoints
   static const String signup = '$baseUrl/auth/register';

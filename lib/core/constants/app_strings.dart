@@ -1,10 +1,10 @@
 class AppStrings {
   // App
-  static const String appName = 'ZeeCV';
-  static const String tagline = 'AI Resume Builder + Find Jobs';
+  static const String appName = 'GlassEver';
+  static const String tagline = 'Find Your Next Job';
   
   // Auth
-  static const String welcome = 'Welcome to ZeeCV';
+  static const String welcome = 'Welcome to GlassEver';
   static const String welcomeSubtitle = 'Create professional resumes in minutes';
   static const String alreadyHaveAccount = 'Already have an account?';
   static const String dontHaveAccount = "Don't have an account?";

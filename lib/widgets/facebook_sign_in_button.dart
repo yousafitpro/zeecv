@@ -36,7 +36,7 @@ class FacebookSignInButton extends StatelessWidget {
               width: 24,
               errorBuilder: (context, error, stackTrace) {
                 return const Text(
-                  'G',
+                  'F',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

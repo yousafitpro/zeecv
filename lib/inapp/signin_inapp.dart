@@ -135,6 +135,7 @@ class _SinginInappState extends State<SinginInapp> {
   context.go(backUrl);
   }
   Future<void> _handleSuccessfulLogin(WebUri uri, String backUrl) async {
+    print("llllllllllllllllllllllllllllll");
     if (_tokenHandled) return;
     _tokenHandled = true;
 

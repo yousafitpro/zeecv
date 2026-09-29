@@ -19,12 +19,9 @@ class BottomTabs extends StatelessWidget {
         context.go('/home/find-jobs');
         break;
       case 2:
-        context.go('/in-app/edit-resume');
-        break;
-      case 3:
         context.go('/home/my-jobs'); // placeholder, replace with your route
         break;
-      case 4:
+      case 3:
         context.go('/home/profile');
         break;
     }
@@ -70,52 +67,23 @@ class BottomTabs extends StatelessWidget {
                         isSelected: selectedIndex == 1,
                         onTap: () => _onTap(context, 1),
                       ),
-                      const SizedBox(width: 64), // space for center button
+                    
                       _NavItem(
                         icon: Icons.work_outline,
                         label: 'My Jobs',
-                        isSelected: selectedIndex == 3,
-                        onTap: () => _onTap(context, 3),
+                        isSelected: selectedIndex == 2,
+                        onTap: () => _onTap(context, 2),
                       ),
                       _NavItem(
                         icon: Icons.person_outline,
                         label: 'Profile',
-                        isSelected: selectedIndex == 4,
-                        onTap: () => _onTap(context, 4),
+                        isSelected: selectedIndex == 3,
+                        onTap: () => _onTap(context, 3),
                       ),
                     ],
                   ),
                 ),
-              ),
-              // Floating center button
-              Positioned(
-                top: 5,
-                child: GestureDetector(
-                  onTap: () => _onTap(context, 2),
-                  child: Container(
-                    height: 60,
-                    width: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primary,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.35),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.edit,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              )],
           ),
         ),
       ),

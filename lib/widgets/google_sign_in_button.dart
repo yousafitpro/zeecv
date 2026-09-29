@@ -14,24 +14,11 @@ class GoogleSignInButton extends StatelessWidget {
       height: 50,
       child: OutlinedButton(
         onPressed: authProvider.isLoading ? null : () async {
-          final success = await authProvider.signInWithGoogle();
-          
-          if (success && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Signed in with Google successfully!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            context.go('/dashboard'); // Navigate to home
-          } else if (!success && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(authProvider.error ?? 'Google sign-in failed'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+          context.go('/in-app/signin',extra: {
+                            'url':'https://glassever.com/google/loginWithUrl?is_app=yes',
+                            'back_url':'/login',
+                            'title':'Google Signin'
+                          });
         },
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.grey),

@@ -26,7 +26,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _showWebView = false;
   bool _isLoading = false;
-  String _webViewTitle = 'ZEECV';
+  String _webViewTitle = 'GlassEver';
   String _webViewUrl = '';
 
   WebViewController? _webViewController;
@@ -40,8 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (location.contains('/home/dashboard')) return 0;
     if (location.contains('/home/find-jobs')) return 1;
-    if (location.contains('/home/my-jobs')) return 3;
-    if (location.contains('/home/profile')) return 4;
+    if (location.contains('/home/my-jobs')) return 2;
+    if (location.contains('/home/profile')) return 3;
     if (location.contains('/in-app/edit-resume')) return 2;
   } catch (e) {
     debugPrint('Error getting route: $e');
@@ -71,14 +71,12 @@ class _HomeScreenState extends State<HomeScreen> {
   String _getTitle(int index) {
     switch (index) {
       case 0:
-        return 'Zeecv';
+        return 'GlassEver';
       case 1:
         return 'Find Jobs';
       case 2:
-        return '';
-      case 3:
         return 'My Jobs';
-      case 4:
+      case 3:
         return 'Profile';
       default:
         return AppStrings.appName;
@@ -126,13 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     return Scaffold(
-appBar: AppBar(
-  title: Text(_getTitle(_selectedIndex)),
-  elevation: 0,
-  backgroundColor: const Color.fromARGB(255, 252, 251, 251), // Light gray
-  foregroundColor: Colors.black87,
-),
-      body: widget.tabNavigator ?? const FindJobScreen(),
+      body: SafeArea( child:widget.tabNavigator ?? const FindJobScreen()),
       bottomNavigationBar:BottomTabs(selectedIndex: _selectedIndex),
     );
   }

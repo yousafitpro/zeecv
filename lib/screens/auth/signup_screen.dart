@@ -242,8 +242,8 @@ class _SignupScreenState extends State<SignupScreen> {
                       Expanded(child: GoogleSignInButton()),
                       SizedBox(width: 8),
                       Expanded(child: LinkedinSignInButton()),
-                      SizedBox(width: 8),
-                      Expanded(child: FacebookSignInButton()),
+                      // SizedBox(width: 8),
+                      // Expanded(child: FacebookSignInButton()),
                     ],
                   ),
                 

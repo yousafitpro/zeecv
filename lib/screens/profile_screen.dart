@@ -193,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 end: Alignment.bottomRight,
                 colors: [
                   AppColors.primary,
-                  AppColors.primaryDark,
+                  AppColors.primaryLight,
                 ],
               ),
             ),

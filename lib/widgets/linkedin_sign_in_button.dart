@@ -15,7 +15,7 @@ class LinkedinSignInButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: authProvider.isLoading ? null : () async {
           context.go('/in-app/signin',extra: {
-                            'url':'https://zeecv.com/linkedin/auth?is_app=yes',
+                            'url':'https://glassever.com/linkedin/auth?is_app=yes',
                             'back_url':'/login',
                             'title':'Linkedin Signin'
                           });
@@ -36,7 +36,7 @@ class LinkedinSignInButton extends StatelessWidget {
               width: 24,
               errorBuilder: (context, error, stackTrace) {
                 return const Text(
-                  'G',
+                  'L',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
