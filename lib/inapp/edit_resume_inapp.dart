@@ -39,9 +39,9 @@ class _EditResumeInappState extends State<EditResumeInapp> {
       if (token != null && token.isNotEmpty) {
         setState(() {
           _showInAppBrowser = true;
-          _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
-          _downloadUrl = 'https://zeecv.com/mobile-app/resume/download-pdf/$token';
-          _previewUrl = 'https://zeecv.com/mobile-app/resume/preview/$token';
+          _inAppBrowserUrl = 'https://glassever/mobile-app/login-using-token/$token';
+          _downloadUrl = 'https://glassever/mobile-app/resume/download-pdf/$token';
+          _previewUrl = 'https://glassever/mobile-app/resume/preview/$token';
         });
       } else {
         print('User not logged in or token is missing');
@@ -267,7 +267,7 @@ Future<void> _handleDownload() async {
                   if (token != null && token.isNotEmpty) {
                     setState(() {
                       _showInAppBrowser = true;
-                      _inAppBrowserUrl = 'https://zeecv.com/mobile-app/login-using-token/$token';
+                      _inAppBrowserUrl = 'https://glassever/mobile-app/login-using-token/$token';
                     });
                   }
                 }
