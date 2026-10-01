@@ -126,12 +126,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     return Scaffold(
-appBar: AppBar(
-  title: Text(_getTitle(_selectedIndex)),
-  elevation: 0,
-  backgroundColor: const Color.fromARGB(255, 252, 251, 251), // Light gray
-  foregroundColor: Colors.black87,
-),
+      appBar: AppBar(
+        title: _selectedIndex == 0
+            ? Align(
+                alignment: Alignment.centerLeft, 
+                child: Image.asset(
+                  'assets/icon/bar-icon.png', 
+                  height: 40, 
+                  fit: BoxFit.contain,
+                ),
+              )
+            : Text(_getTitle(_selectedIndex)),
+        centerTitle: true, // 
+        elevation: 0,
+        backgroundColor: const Color.fromARGB(255, 252, 251, 251), // Light gray
+        foregroundColor: Colors.black87,
+      ),
       body: widget.tabNavigator ?? const FindJobScreen(),
       bottomNavigationBar:BottomTabs(selectedIndex: _selectedIndex),
     );
