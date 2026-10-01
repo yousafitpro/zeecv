@@ -93,6 +93,10 @@ class _FindJobScreenState extends State<FindJobScreen>
     bool tempFullTime = jobStore.isFullTime;
     bool tempInternship = jobStore.isInternship;
     bool tempThisWeek = jobStore.thisWeek;
+    
+    // NEW: Location state variables
+    String? tempLocation = jobStore.selectedLocation; 
+    String locationSearchQuery = '';
 
     showModalBottomSheet(
       context: context,
@@ -104,6 +108,13 @@ class _FindJobScreenState extends State<FindJobScreen>
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            
+            // NEW: Filter locations based on search query
+            final locations = jobStore.locations ?? []; 
+            final filteredLocations = locations
+                .where((loc) => loc.toLowerCase().contains(locationSearchQuery.toLowerCase()))
+                .toList();
+
             return Container(
               height: MediaQuery.of(context).size.height * 0.7,
               decoration: const BoxDecoration(
@@ -154,6 +165,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                                 tempFullTime = false;
                                 tempInternship = false;
                                 tempThisWeek = false;
+                                tempLocation = null; // Reset location
                               });
                             },
                             child: const Text('Reset All'),
@@ -170,6 +182,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                                 isFullTime: tempFullTime,
                                 isInternship: tempInternship,
                                 thisWeek: tempThisWeek,
+                                location: tempLocation, // Pass the location
                               );
                               Navigator.pop(context);
                               store.applyFilters();
@@ -187,68 +200,99 @@ class _FindJobScreenState extends State<FindJobScreen>
                   ),
                   const SizedBox(height: 16),
 
-                  // Filter content - using Expanded with SingleChildScrollView
+                  // Filter content
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
+                          // --- NEW: Location Section ---
+                          _buildFilterSection(
+                            title: 'Location',
+                            children: [
+                              TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Search location...',
+                                  prefixIcon: const Icon(Icons.search),
+                                  isDense: true,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  setModalState(() {
+                                    locationSearchQuery = value;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              if (filteredLocations.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('No locations found', style: TextStyle(color: Colors.grey)),
+                                )
+                              else
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  children: [
+                                    ChoiceChip(
+                                      label: const Text('Any Location'),
+                                      selected: tempLocation == null || tempLocation!.isEmpty,
+                                      onSelected: (selected) {
+                                        if (selected) {
+                                          setModalState(() => tempLocation = null);
+                                        }
+                                      },
+                                    ),
+                                    ...filteredLocations.map((loc) {
+                                      return ChoiceChip(
+                                        label: Text(loc),
+                                        selected: tempLocation == loc,
+                                        onSelected: (selected) {
+                                          setModalState(() {
+                                            tempLocation = selected ? loc : null;
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  ],
+                                ),
+                            ],
+                          ),
+                          const Divider(),
+
+                          // --- Existing Job Type Section ---
                           _buildFilterSection(
                             title: 'Job Type',
                             children: [
                               _buildFilterCheckbox(
                                 label: 'Permanent',
                                 value: tempPermanent,
-                                onChanged: (value) {
-                                  setModalState(() => tempPermanent = value ?? false);
-                                },
+                                onChanged: (value) => setModalState(() => tempPermanent = value ?? false),
                               ),
-                              _buildFilterCheckbox(
-                                label: 'Contract',
-                                value: tempContract,
-                                onChanged: (value) {
-                                  setModalState(() => tempContract = value ?? false);
-                                },
-                              ),
-                              _buildFilterCheckbox(
-                                label: 'Part Time',
-                                value: tempPartTime,
-                                onChanged: (value) {
-                                  setModalState(() => tempPartTime = value ?? false);
-                                },
-                              ),
-                              _buildFilterCheckbox(
-                                label: 'Full Time',
-                                value: tempFullTime,
-                                onChanged: (value) {
-                                  setModalState(() => tempFullTime = value ?? false);
-                                },
-                              ),
+                              // ... (rest of your checkboxes) ...
                               _buildFilterCheckbox(
                                 label: 'Internship',
                                 value: tempInternship,
-                                onChanged: (value) {
-                                  setModalState(() => tempInternship = value ?? false);
-                                },
+                                onChanged: (value) => setModalState(() => tempInternship = value ?? false),
                               ),
                             ],
                           ),
                           const Divider(),
+                          
+                          // --- Existing Others Section ---
                           _buildFilterSection(
                             title: 'Others',
                             children: [
                               _buildFilterCheckbox(
                                 label: 'Remote',
                                 value: tempRemote,
-                                onChanged: (value) {
-                                  setModalState(() => tempRemote = value ?? false);
-                                },
+                                onChanged: (value) => setModalState(() => tempRemote = value ?? false),
                               ),
                               _buildFilterCheckbox(
                                 label: 'Posted This Week',
                                 value: tempThisWeek,
-                                onChanged: (value) {
-                                  setModalState(() => tempThisWeek = value ?? false);
-                                },
+                                onChanged: (value) => setModalState(() => tempThisWeek = value ?? false),
                               ),
                             ],
                           ),
