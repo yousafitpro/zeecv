@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 👈 Added for Clipboard
 import 'package:zeecv/models/job_model.dart';
 import 'package:zeecv/stores/job_store.dart';
 import 'package:provider/provider.dart';
@@ -139,6 +140,28 @@ class _JobCardState extends State<JobCard> {
     }
   }
 
+  // ============================================================
+  // HANDLE SHARE
+  // ============================================================
+  
+  Future<void> _handleShare() async {
+    // Note: Replace 'https://glassever.com/job/' with your actual web link format
+    final String jobUrl = 'https://glassever.com/jobs/${widget.job.slug}'; 
+    final String shareText = 'Check out this job: ${widget.job.title} at ${widget.job.companyName}\n\n$jobUrl';
+
+    await Clipboard.setData(ClipboardData(text: shareText));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🔗 Job link copied to clipboard!'),
+          backgroundColor: Colors.blueGrey,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
@@ -157,9 +180,9 @@ class _JobCardState extends State<JobCard> {
         color: Colors.transparent,
         child: GestureDetector(
           onTap: () => context.push(
-  '/job-detail/${widget.job.slug}',
-  extra: {'back_url': widget.back_url},
-),
+            '/job-detail/${widget.job.slug}',
+            extra: {'back_url': widget.back_url},
+          ),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -253,12 +276,12 @@ class _JobCardState extends State<JobCard> {
                     children: tagList.map((tag) {
                       return Container(
                         decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5), // Fixed: removed 'all' and used circular()
-                        border: Border.all(
-                          color: Colors.grey.shade300, // Add border if needed
-                          width: 1,
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
                         ),
-                      ),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         
@@ -360,6 +383,44 @@ class _JobCardState extends State<JobCard> {
                                   ),
                           ),
                         ),
+
+                        const SizedBox(width: 8), // Space between Save and Share
+
+                        // 👇 NEW: Share Button 👇
+                        GestureDetector(
+                          onTap: _handleShare,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.share_outlined,
+                                  size: 14,
+                                  color: Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Share',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // 👆 END NEW SHARE BUTTON 👆
                       ],
                     ),
                     
