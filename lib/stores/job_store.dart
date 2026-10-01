@@ -21,6 +21,7 @@ class JobStore extends ChangeNotifier {
   
   List<Job> _jobs = [];
   Dashboard? _dashboard;
+  List<String> locations = ['New York', 'London', 'Remote', 'San Francisco'];
   bool _isLoading = false;
   bool _isFirstLoad = true;
   String? _errorMessage;
@@ -34,7 +35,7 @@ class JobStore extends ChangeNotifier {
   bool _isFullTime = false;
   bool _isInternship = false;
   bool _thisWeek = false;
-
+  String? selectedLocation;
   // ============================================================
   // GETTERS
   // ============================================================
@@ -45,7 +46,6 @@ class JobStore extends ChangeNotifier {
   bool get isFirstLoad => _isFirstLoad;
   String? get errorMessage => _errorMessage;
   String? get currentSearchQuery => _currentSearchQuery;
-  
   bool get isRemote => _isRemote;
   bool get isPermanent => _isPermanent;
   bool get isContract => _isContract;
@@ -237,6 +237,7 @@ class JobStore extends ChangeNotifier {
     bool? isFullTime,
     bool? isInternship,
     bool? thisWeek,
+    String? location,
   }) {
     _isRemote = isRemote ?? _isRemote;
     _isPermanent = isPermanent ?? _isPermanent;
@@ -245,6 +246,11 @@ class JobStore extends ChangeNotifier {
     _isFullTime = isFullTime ?? _isFullTime;
     _isInternship = isInternship ?? _isInternship;
     _thisWeek = thisWeek ?? _thisWeek;
+     if (location != null) {
+    selectedLocation = location;
+  } else {
+    selectedLocation = null; // Handle "Any Location"
+  }
     notifyListeners();
   }
 

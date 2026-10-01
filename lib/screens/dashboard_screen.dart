@@ -300,7 +300,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Row(
               children: [
-                Icon(icon, color: color, size: 20),
+                Icon(icon, color: color, size: 30),
                 const Spacer(),
                 Text(
                   value,
