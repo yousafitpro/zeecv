@@ -88,22 +88,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(0),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  'assets/icon/icon.png',
-                  height: 40,
-                  width: 40,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
              Expanded(
               child:Text(
               '${dashboard.userFullName}',
