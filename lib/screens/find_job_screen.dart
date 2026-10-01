@@ -94,7 +94,7 @@ class _FindJobScreenState extends State<FindJobScreen>
     bool tempInternship = jobStore.isInternship;
     bool tempThisWeek = jobStore.thisWeek;
     
-    // NEW: Location state variables
+    // Location state variables
     String? tempLocation = jobStore.selectedLocation; 
     String locationSearchQuery = '';
 
@@ -109,11 +109,16 @@ class _FindJobScreenState extends State<FindJobScreen>
         return StatefulBuilder(
           builder: (context, setModalState) {
             
-            // NEW: Filter locations based on search query
+            // 1. Get all locations and filter based on search
             final locations = jobStore.locations ?? []; 
             final filteredLocations = locations
                 .where((loc) => loc.toLowerCase().contains(locationSearchQuery.toLowerCase()))
                 .toList();
+
+            // 2. NEW: Limit to 4 locations if the user isn't actively searching
+            final displayLocations = locationSearchQuery.isEmpty
+                ? filteredLocations.take(4).toList()
+                : filteredLocations;
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.7,
@@ -165,14 +170,13 @@ class _FindJobScreenState extends State<FindJobScreen>
                                 tempFullTime = false;
                                 tempInternship = false;
                                 tempThisWeek = false;
-                                tempLocation = null; // Reset location
+                                tempLocation = null; 
                               });
                             },
                             child: const Text('Reset All'),
                           ),
                           TextButton(
                             onPressed: () {
-                              // Update store with new filter values
                               final store = context.read<JobStore>();
                               store.setFilters(
                                 isRemote: tempRemote,
@@ -182,7 +186,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                                 isFullTime: tempFullTime,
                                 isInternship: tempInternship,
                                 thisWeek: tempThisWeek,
-                                location: tempLocation, // Pass the location
+                                location: tempLocation, 
                               );
                               Navigator.pop(context);
                               store.applyFilters();
@@ -205,7 +209,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
-                          // --- NEW: Location Section ---
+                          // --- Location Section ---
                           _buildFilterSection(
                             title: 'Location',
                             children: [
@@ -231,37 +235,57 @@ class _FindJobScreenState extends State<FindJobScreen>
                                   child: Text('No locations found', style: TextStyle(color: Colors.grey)),
                                 )
                               else
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 4,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    ChoiceChip(
-                                      label: const Text('Any Location'),
-                                      selected: tempLocation == null || tempLocation!.isEmpty,
-                                      onSelected: (selected) {
-                                        if (selected) {
-                                          setModalState(() => tempLocation = null);
-                                        }
-                                      },
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 4,
+                                      children: [
+                                        ChoiceChip(
+                                          label: const Text('Any Location'),
+                                          selected: tempLocation == null || tempLocation!.isEmpty,
+                                          onSelected: (selected) {
+                                            if (selected) {
+                                              setModalState(() => tempLocation = null);
+                                            }
+                                          },
+                                        ),
+                                        // Use displayLocations here instead of filteredLocations
+                                        ...displayLocations.map((loc) {
+                                          return ChoiceChip(
+                                            label: Text(loc),
+                                            selected: tempLocation == loc,
+                                            onSelected: (selected) {
+                                              setModalState(() {
+                                                tempLocation = selected ? loc : null;
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                      ],
                                     ),
-                                    ...filteredLocations.map((loc) {
-                                      return ChoiceChip(
-                                        label: Text(loc),
-                                        selected: tempLocation == loc,
-                                        onSelected: (selected) {
-                                          setModalState(() {
-                                            tempLocation = selected ? loc : null;
-                                          });
-                                        },
-                                      );
-                                    }).toList(),
+                                    
+                                    // 3. NEW: Helpful hint text if there are more locations hidden
+                                    if (locationSearchQuery.isEmpty && filteredLocations.length > 4)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 12.0),
+                                        child: Text(
+                                          'Showing 4 of ${filteredLocations.length} locations. Type above to search for more.',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                             ],
                           ),
                           const Divider(),
 
-                          // --- Existing Job Type Section ---
+                          // --- Job Type Section ---
                           _buildFilterSection(
                             title: 'Job Type',
                             children: [
@@ -270,7 +294,21 @@ class _FindJobScreenState extends State<FindJobScreen>
                                 value: tempPermanent,
                                 onChanged: (value) => setModalState(() => tempPermanent = value ?? false),
                               ),
-                              // ... (rest of your checkboxes) ...
+                              _buildFilterCheckbox(
+                                label: 'Contract',
+                                value: tempContract,
+                                onChanged: (value) => setModalState(() => tempContract = value ?? false),
+                              ),
+                              _buildFilterCheckbox(
+                                label: 'Part Time',
+                                value: tempPartTime,
+                                onChanged: (value) => setModalState(() => tempPartTime = value ?? false),
+                              ),
+                              _buildFilterCheckbox(
+                                label: 'Full Time',
+                                value: tempFullTime,
+                                onChanged: (value) => setModalState(() => tempFullTime = value ?? false),
+                              ),
                               _buildFilterCheckbox(
                                 label: 'Internship',
                                 value: tempInternship,
@@ -280,7 +318,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                           ),
                           const Divider(),
                           
-                          // --- Existing Others Section ---
+                          // --- Others Section ---
                           _buildFilterSection(
                             title: 'Others',
                             children: [
