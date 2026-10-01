@@ -115,10 +115,21 @@ class _FindJobScreenState extends State<FindJobScreen>
                 .where((loc) => loc.toLowerCase().contains(locationSearchQuery.toLowerCase()))
                 .toList();
 
-            // 2. NEW: Limit to 4 locations if the user isn't actively searching
-            final displayLocations = locationSearchQuery.isEmpty
-                ? filteredLocations.take(4).toList()
-                : filteredLocations;
+            // 2. NEW LOGIC: Ensure the selected location is always at the front
+            List<String> displayLocations = List.from(filteredLocations);
+            
+            // If not searching, and a location is selected, move it to the top
+            if (locationSearchQuery.isEmpty && tempLocation != null && tempLocation!.isNotEmpty) {
+              // Remove it from its original position
+              displayLocations.remove(tempLocation);
+              // Insert it at the very beginning
+              displayLocations.insert(0, tempLocation!);
+            }
+
+            // 3. Limit to 4 locations if the user isn't actively searching
+            if (locationSearchQuery.isEmpty) {
+              displayLocations = displayLocations.take(4).toList();
+            }
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.7,
@@ -251,7 +262,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                                             }
                                           },
                                         ),
-                                        // Use displayLocations here instead of filteredLocations
+                                        // Use displayLocations here 
                                         ...displayLocations.map((loc) {
                                           return ChoiceChip(
                                             label: Text(loc),
@@ -266,7 +277,7 @@ class _FindJobScreenState extends State<FindJobScreen>
                                       ],
                                     ),
                                     
-                                    // 3. NEW: Helpful hint text if there are more locations hidden
+                                    // Helpful hint text if there are more locations hidden
                                     if (locationSearchQuery.isEmpty && filteredLocations.length > 4)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 12.0),
