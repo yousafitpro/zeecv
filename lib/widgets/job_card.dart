@@ -308,7 +308,7 @@ class _JobCardState extends State<JobCard> {
                   children: [
                     Row(
                       children: [
-                        // Applied Badge
+                        // Applied Badge 
                         if (_isApplied)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
