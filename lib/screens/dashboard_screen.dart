@@ -185,7 +185,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
-                title: 'Saved',
+                title: 'Saved Jobs',
                 value: dashboard.savedCount.toString(),
                 icon: 'assets/svgs/save.svg',
                 color: Colors.purple,
