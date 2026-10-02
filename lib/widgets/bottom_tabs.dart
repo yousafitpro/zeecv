@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../core/constants/app_colors.dart';
@@ -59,26 +60,26 @@ class BottomTabs extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _NavItem(
-                        icon: Icons.home_filled,
+                        icon: 'assets/svgs/home.svg',
                         label: 'Home',
                         isSelected: selectedIndex == 0,
                         onTap: () => _onTap(context, 0),
                       ),
                       _NavItem(
-                        icon: Icons.search,
+                        icon: 'assets/svgs/find_jobs.svg',
                         label: 'Find Jobs',
                         isSelected: selectedIndex == 1,
                         onTap: () => _onTap(context, 1),
                       ),
                       const SizedBox(width: 64), // space for center button
                       _NavItem(
-                        icon: Icons.work_outline,
+                        icon: 'assets/svgs/my_jobs.svg',
                         label: 'My Jobs',
                         isSelected: selectedIndex == 3,
                         onTap: () => _onTap(context, 3),
                       ),
                       _NavItem(
-                        icon: Icons.person_outline,
+                        icon: 'assets/svgs/profile.svg',
                         label: 'Profile',
                         isSelected: selectedIndex == 4,
                         onTap: () => _onTap(context, 4),
@@ -124,7 +125,7 @@ class BottomTabs extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -147,7 +148,15 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 30),
+            SvgPicture.asset(
+            icon,
+            width: 30,
+            height: 30,
+            colorFilter: ColorFilter.mode(
+              color,
+              BlendMode.srcIn,
+            ),
+          ),
             const SizedBox(height: 4),
             Text(
               label,

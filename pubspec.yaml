@@ -27,6 +27,7 @@ dependencies:
   open_file: ^3.3.2   
   flutter_file_dialog: ^3.0.2 
   package_info_plus: ^8.0.0
+  flutter_svg: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -38,6 +39,13 @@ flutter:
   assets:
     - assets/icon/
     - assets/icon/bar-icon.png
+    - assets/svgs/home.svg
+    - assets/svgs/find_jobs.svg
+    - assets/svgs/my_jobs.svg
+    - assets/svgs/profile.svg
+    - assets/svgs/save.svg
+    - assets/svgs/interviews.svg
+    - assets/svgs/applications.svg
     - assets/icon/edit.png
     - assets/icon/icon.png
     - assets/images/google_logo.png

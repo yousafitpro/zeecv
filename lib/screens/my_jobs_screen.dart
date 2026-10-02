@@ -168,7 +168,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     final filters = ['My Jobs', 'Applied', 'Saved'];
     
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       child: Row(
         children: filters.map((filter) {
           final isSelected = _selectedFilter == filter;
@@ -180,7 +180,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.grey[700],
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  fontSize: 13,
+                  fontSize: 10,
                 ),
               ),
               selected: isSelected,
@@ -192,7 +192,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               backgroundColor: Colors.grey[100],
               selectedColor: Theme.of(context).primaryColor,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(10),
                 side: BorderSide(
                   color: isSelected 
                       ? Theme.of(context).primaryColor 
