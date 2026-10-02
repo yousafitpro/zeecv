@@ -151,15 +151,15 @@ class _JobCardState extends State<JobCard> {
 
     await Clipboard.setData(ClipboardData(text: shareText));
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('🔗 Job link copied to clipboard!'),
-          backgroundColor: Colors.blueGrey,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    // if (mounted) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('🔗 Job link copied to clipboard!'),
+    //       backgroundColor: Colors.blueGrey,
+    //       duration: Duration(seconds: 2),
+    //     ),
+    //   );
+    // }
   }
 
   @override
@@ -283,12 +283,12 @@ class _JobCardState extends State<JobCard> {
                           ),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                            horizontal: 6, vertical: 3),
                         
                         child: Text(
                           tag,
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 9,
                             color: Color(0xFF4A4A4A),
                             fontWeight: FontWeight.w600,
                           ),
@@ -403,7 +403,7 @@ class _JobCardState extends State<JobCard> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  Icons.share_outlined,
+                                  Icons.copy_outlined,
                                   size: 14,
                                   color: Colors.grey.shade600,
                                 ),
