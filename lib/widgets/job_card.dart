@@ -25,7 +25,7 @@ class _JobCardState extends State<JobCard> {
   late bool _isSaved;
   bool _isSaving = false;
   bool _isApplying = false;
-
+  bool _shareBlink = false;
   @override
   void initState() {
     super.initState();
@@ -311,10 +311,10 @@ class _JobCardState extends State<JobCard> {
                         // Applied Badge
                         if (_isApplied)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
                               color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(color: Colors.green.shade300, width: 0.5),
                             ),
                             child: Row(
@@ -344,7 +344,7 @@ class _JobCardState extends State<JobCard> {
                         GestureDetector(
                           onTap: _isSaving ? null : _handleSave,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                             decoration: BoxDecoration(
                               color: _isSaved ? Colors.blue.shade50 : Colors.grey.shade50,
                               borderRadius: BorderRadius.circular(6),
@@ -386,41 +386,62 @@ class _JobCardState extends State<JobCard> {
 
                         const SizedBox(width: 8), // Space between Save and Share
 
-                        // 👇 NEW: Share Button 👇
-                        GestureDetector(
-                          onTap: _handleShare,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: Colors.grey.shade300,
-                                width: 0.5,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.copy_outlined,
-                                  size: 14,
-                                  color: Colors.grey.shade600,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Share',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // 👆 END NEW SHARE BUTTON 👆
+                        // 👇 Share Button 👇
+GestureDetector(
+  onTap: () async {
+    setState(() {
+      _shareBlink = true;
+    });
+
+    _handleShare();
+
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    if (mounted) {
+      setState(() {
+        _shareBlink = false;
+      });
+    }
+  },
+  child: AnimatedOpacity(
+    duration: const Duration(milliseconds: 100),
+    opacity: _shareBlink ? 0.4 : 1.0,
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 6,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.copy_outlined,
+            size: 14,
+            color: Colors.grey.shade600,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'Share',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
+// 👆 END SHARE BUTTON 👆
                       ],
                     ),
                     
