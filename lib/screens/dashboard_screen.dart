@@ -68,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             // Header
                             _buildHeader(dashboard),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 10),
                             _buildDashboardContent(dashboard),
                           ],
                         ),
@@ -120,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 2),
         Text(
           'Welcome back',
           style: const TextStyle(
@@ -198,7 +198,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 10),
 
         // Quick Actions
         const Text(
@@ -237,7 +237,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             })
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 10),
 
         // Recent Activity
         const Text(

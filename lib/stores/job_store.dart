@@ -56,7 +56,7 @@ class JobStore extends ChangeNotifier {
   bool get thisWeek => _thisWeek;
   
   bool get hasActiveFilters => _isRemote || _isPermanent || _isContract || 
-                               _isPartTime || _isFullTime || _isInternship || _thisWeek;
+                               _isPartTime || _isFullTime || _isInternship || _thisWeek || (selectedLocation?.isNotEmpty ?? false);
   
   bool get hasLoadedOnce => _jobs.isNotEmpty || !_isFirstLoad;
 
