@@ -260,8 +260,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Edit Resume
                 _buildProfileMenuItem(
                   icon: Icons.edit_document,
-                  title: 'Edit Resume',
-                  subtitle: 'Update your CV and portfolio',
+                  title: 'Edit Profile',
+                  subtitle: 'Update your portfolio',
                   color: AppColors.primary,
                   onTap:()=>{
                         context.go(
