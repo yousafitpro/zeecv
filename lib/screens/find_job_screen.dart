@@ -1,6 +1,7 @@
 // lib/screens/find_job_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zeecv/design/gradient_background.dart';
@@ -484,7 +485,15 @@ class _FindJobScreenState extends State<FindJobScreen>
             ),
             child: Stack(
               children: [
-                const Icon(Icons.filter_list, size: 25),
+                 SvgPicture.asset(
+                    'assets/svgs/filter.svg',
+                    width: 25,
+                    height: 25,
+                    colorFilter: ColorFilter.mode(
+                    Theme.of(context).primaryColor,
+                    BlendMode.srcIn,
+                  )
+                  ),
                 if (jobStore.hasActiveFilters)
                   Positioned(
                     right: 0,
@@ -514,7 +523,7 @@ class _FindJobScreenState extends State<FindJobScreen>
     if (jobStore.errorMessage != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

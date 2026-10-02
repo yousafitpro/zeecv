@@ -217,20 +217,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           children: [
-            _buildToolItem(Icons.edit, 'Edit Resume', () {
+            _buildToolItem('assets/svgs/edit_profile.svg', 'Edit Profile', () {
               context.go('/in-app/edit-resume',extra: {
                 'back_url':'/dashboard'
               });
             }),
-            _buildToolItem(Icons.search, 'Find Jobs', () {
+            _buildToolItem('assets/svgs/find_jobs.svg', 'Find Jobs', () {
               context.go('/home/find-jobs');
             }),
-            _buildToolItem(Icons.note_add, 'Apply', () {
+            _buildToolItem('assets/svgs/applications.svg', 'Apply', () {
              context.go('/home/my-jobs',extra: {
                     'type':'Applied'
                   });
             }),
-            _buildToolItem(Icons.save, 'Saved', () {
+            _buildToolItem('assets/svgs/save.svg', 'Saved', () {
               context.go('/home/my-jobs',extra: {
                     'type':'Saved'
                   });
@@ -335,24 +335,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildToolItem(IconData icon, String label, VoidCallback onTap) {
+  Widget _buildToolItem(String icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: Icon(
+            child: SvgPicture.asset(
               icon,
-              color: Colors.blue.shade700,
-              size: 28,
-            ),
+              width: 30,
+              height: 30,
+              colorFilter: ColorFilter.mode(
+                Colors.grey.shade700,
+                BlendMode.srcIn,
+              ),
+          ),
           ),
           const SizedBox(height: 6),
           Text(

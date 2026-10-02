@@ -115,7 +115,12 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.only(
+        top: 8.0,
+        bottom: 0.0,
+        left: 16.0,
+        right: 16.0,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.grey[100],
@@ -222,7 +227,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     if (jobStore.errorMessage != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

@@ -46,6 +46,8 @@ flutter:
     - assets/svgs/save.svg
     - assets/svgs/interviews.svg
     - assets/svgs/applications.svg
+    - assets/svgs/filter.svg
+    - assets/svgs/edit_profile.svg
     - assets/icon/edit.png
     - assets/icon/icon.png
     - assets/images/google_logo.png

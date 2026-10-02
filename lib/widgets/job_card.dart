@@ -347,7 +347,7 @@ class _JobCardState extends State<JobCard> {
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: _isSaved ? Colors.blue.shade50 : Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: _isSaved ? Colors.blue.shade300 : Colors.grey.shade300,
                                 width: 0.5,
@@ -393,7 +393,7 @@ class _JobCardState extends State<JobCard> {
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: Colors.grey.shade300,
                                 width: 0.5,
