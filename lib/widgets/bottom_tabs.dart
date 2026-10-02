@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../core/constants/app_colors.dart';
@@ -19,9 +20,12 @@ class BottomTabs extends StatelessWidget {
         context.go('/home/find-jobs');
         break;
       case 2:
-        context.go('/home/my-jobs'); // placeholder, replace with your route
+        context.go('/in-app/edit-resume');
         break;
       case 3:
+        context.go('/home/my-jobs'); // placeholder, replace with your route
+        break;
+      case 4:
         context.go('/home/profile');
         break;
     }
@@ -56,34 +60,63 @@ class BottomTabs extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _NavItem(
-                        icon: Icons.home_filled,
+                        icon: 'assets/svgs/home.svg',
                         label: 'Home',
                         isSelected: selectedIndex == 0,
                         onTap: () => _onTap(context, 0),
                       ),
                       _NavItem(
-                        icon: Icons.search,
+                        icon: 'assets/svgs/find_jobs.svg',
                         label: 'Find Jobs',
                         isSelected: selectedIndex == 1,
                         onTap: () => _onTap(context, 1),
                       ),
-                    
+                      const SizedBox(width: 64), // space for center button
                       _NavItem(
-                        icon: Icons.work_outline,
+                        icon: 'assets/svgs/my_jobs.svg',
                         label: 'My Jobs',
-                        isSelected: selectedIndex == 2,
-                        onTap: () => _onTap(context, 2),
-                      ),
-                      _NavItem(
-                        icon: Icons.person_outline,
-                        label: 'Profile',
                         isSelected: selectedIndex == 3,
                         onTap: () => _onTap(context, 3),
+                      ),
+                      _NavItem(
+                        icon: 'assets/svgs/profile.svg',
+                        label: 'Profile',
+                        isSelected: selectedIndex == 4,
+                        onTap: () => _onTap(context, 4),
                       ),
                     ],
                   ),
                 ),
-              )],
+              ),
+              // Floating center button
+              Positioned(
+                top: 5,
+                child: GestureDetector(
+                  onTap: () => _onTap(context, 2),
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary,
+                      border: Border.all(color: Colors.white, width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -92,7 +125,7 @@ class BottomTabs extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -115,7 +148,15 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 30),
+            SvgPicture.asset(
+            icon,
+            width: 30,
+            height: 30,
+            colorFilter: ColorFilter.mode(
+              color,
+              BlendMode.srcIn,
+            ),
+          ),
             const SizedBox(height: 4),
             Text(
               label,

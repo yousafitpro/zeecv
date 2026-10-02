@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:zeecv/design/gradient_background.dart';
 import 'package:provider/provider.dart';
 import 'package:zeecv/models/dashboard_model.dart';
@@ -142,7 +143,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 title: 'My Jobs',
                 value: dashboard.myjobsCount.toString(),
-                icon: Icons.work,
+                icon: 'assets/svgs/find_jobs.svg',
                 color: Colors.blue,
                 onTap: () {
                   context.go('/home/my-jobs',extra: {
@@ -156,7 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 title: 'Applications',
                 value: dashboard.appliedCount.toString(),
-                icon: Icons.send,
+                icon: 'assets/svgs/applications.svg',
                 color: Colors.green,
                 onTap: () {
                   context.go('/home/my-jobs',extra: {
@@ -174,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 title: 'Interviews',
                 value: dashboard.interviewsCount.toString(),
-                icon: Icons.people,
+                icon: 'assets/svgs/interviews.svg',
                 color: Colors.orange,
                 onTap: () {
                   context.go('/home/my-jobs');
@@ -186,7 +187,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: _buildStatCard(
                 title: 'Saved',
                 value: dashboard.savedCount.toString(),
-                icon: Icons.bookmark,
+                icon: 'assets/svgs/save.svg',
                 color: Colors.purple,
                 onTap: () {
                   context.go('/home/my-jobs',extra: {
@@ -282,7 +283,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildStatCard({
     required String title,
     required String value,
-    required IconData icon,
+    required String icon,
     required Color color,
     VoidCallback? onTap,
   }) {
@@ -300,7 +301,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Row(
               children: [
-                Icon(icon, color: color, size: 30),
+                SvgPicture.asset(
+                  icon,
+                  width: 30,
+                  height: 30,
+                  colorFilter: ColorFilter.mode(
+                    color,
+                    BlendMode.srcIn,
+                  ),
+                ),
                 const Spacer(),
                 Text(
                   value,

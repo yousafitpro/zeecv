@@ -170,7 +170,7 @@ class _JobCardState extends State<JobCard> {
         : [];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 5),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color(0xFFE5E5E5), width: 1),
@@ -184,7 +184,7 @@ class _JobCardState extends State<JobCard> {
             extra: {'back_url': widget.back_url},
           ),
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(11),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
