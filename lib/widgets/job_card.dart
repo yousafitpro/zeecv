@@ -243,7 +243,7 @@ class _JobCardState extends State<JobCard> {
                   ],
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 5),
 
                 // Meta info row
                 Wrap(
@@ -269,10 +269,10 @@ class _JobCardState extends State<JobCard> {
                 ),
 
                 if (tagList.isNotEmpty) ...[
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 6),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 5,
+                    runSpacing: 5,
                     children: tagList.map((tag) {
                       return Container(
                         decoration: BoxDecoration(
@@ -298,9 +298,9 @@ class _JobCardState extends State<JobCard> {
                   ),
                 ],
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 5),
                 Container(height: 1, color: const Color(0xFFEDEDED)),
-                const SizedBox(height: 14),
+                const SizedBox(height: 5),
 
                 // Footer CTA
                 Row(
