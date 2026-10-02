@@ -403,7 +403,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
         _searchQuery,
       ),
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
         itemCount: filteredJobs.length,
         itemBuilder: (context, index) {
           return JobCard(
