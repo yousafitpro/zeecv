@@ -24,8 +24,8 @@ android {
         applicationId = "com.glassever.app"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.0.3"
+        versionCode = 4
+        versionName = "0.0.4"
     }
 
     signingConfigs {
