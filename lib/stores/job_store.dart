@@ -21,6 +21,7 @@ class JobStore extends ChangeNotifier {
   
   List<Job> _jobs = [];
   Dashboard? _dashboard;
+  List<String> _locations = ['New York', 'London', 'Remote', 'San Francisco'];
   bool _isLoading = false;
   bool _isFirstLoad = true;
   String? _errorMessage;
@@ -34,18 +35,18 @@ class JobStore extends ChangeNotifier {
   bool _isFullTime = false;
   bool _isInternship = false;
   bool _thisWeek = false;
-
+  String? selectedLocation;
   // ============================================================
   // GETTERS
   // ============================================================
   
   List<Job> get jobs => _jobs;
   Dashboard? get dashboard => _dashboard;
+  List<String>? get locations => _locations;
   bool get isLoading => _isLoading;
   bool get isFirstLoad => _isFirstLoad;
   String? get errorMessage => _errorMessage;
   String? get currentSearchQuery => _currentSearchQuery;
-  
   bool get isRemote => _isRemote;
   bool get isPermanent => _isPermanent;
   bool get isContract => _isContract;
@@ -55,7 +56,7 @@ class JobStore extends ChangeNotifier {
   bool get thisWeek => _thisWeek;
   
   bool get hasActiveFilters => _isRemote || _isPermanent || _isContract || 
-                               _isPartTime || _isFullTime || _isInternship || _thisWeek;
+                               _isPartTime || _isFullTime || _isInternship || _thisWeek || (selectedLocation?.isNotEmpty ?? false);
   
   bool get hasLoadedOnce => _jobs.isNotEmpty || !_isFirstLoad;
 
@@ -105,8 +106,14 @@ class JobStore extends ChangeNotifier {
       if (result['success']) {
         final data = result['data'];
        final Map<String, dynamic> dashboardData = data['data'] ?? {};
-        
         _dashboard = Dashboard.fromJson(dashboardData);
+        var locData = dashboardData['locations'];
+        if (locData is List) {
+          // Convert dynamic list to List<String> safely
+          _locations = locData.map((e) => e.toString()).toList();
+        } else {
+          _locations = []; // Fallback to empty list if null or wrong format
+        }
         notifyListeners();
       } else {
         _errorMessage = result['message'];
@@ -237,6 +244,7 @@ class JobStore extends ChangeNotifier {
     bool? isFullTime,
     bool? isInternship,
     bool? thisWeek,
+    String? location,
   }) {
     _isRemote = isRemote ?? _isRemote;
     _isPermanent = isPermanent ?? _isPermanent;
@@ -245,6 +253,11 @@ class JobStore extends ChangeNotifier {
     _isFullTime = isFullTime ?? _isFullTime;
     _isInternship = isInternship ?? _isInternship;
     _thisWeek = thisWeek ?? _thisWeek;
+     if (location != null) {
+    selectedLocation = location;
+  } else {
+    selectedLocation = null; // Handle "Any Location"
+  }
     notifyListeners();
   }
 
@@ -280,6 +293,9 @@ class JobStore extends ChangeNotifier {
     if (_isFullTime) filters['is_full_time'] = 1;
     if (_isInternship) filters['is_internship'] = 1;
     if (_thisWeek) filters['this_week'] = 1;
+    if (selectedLocation != null && selectedLocation!.isNotEmpty) {
+      filters['location'] = selectedLocation; 
+    }
     
     return filters;
   }

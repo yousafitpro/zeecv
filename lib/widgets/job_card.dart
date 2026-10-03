@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 👈 Added for Clipboard
 import 'package:zeecv/models/job_model.dart';
 import 'package:zeecv/stores/job_store.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +25,7 @@ class _JobCardState extends State<JobCard> {
   late bool _isSaved;
   bool _isSaving = false;
   bool _isApplying = false;
-
+  bool _shareBlink = false;
   @override
   void initState() {
     super.initState();
@@ -139,6 +140,28 @@ class _JobCardState extends State<JobCard> {
     }
   }
 
+  // ============================================================
+  // HANDLE SHARE
+  // ============================================================
+  
+  Future<void> _handleShare() async {
+    // Note: Replace 'https://glassever.com/job/' with your actual web link format
+    final String jobUrl = 'https://glassever.com/jobs/${widget.job.slug}'; 
+    final String shareText = 'Check out this job: ${widget.job.title} at ${widget.job.companyName}\n\n$jobUrl';
+
+    await Clipboard.setData(ClipboardData(text: shareText));
+
+    // if (mounted) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('🔗 Job link copied to clipboard!'),
+    //       backgroundColor: Colors.blueGrey,
+    //       duration: Duration(seconds: 2),
+    //     ),
+    //   );
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
@@ -147,7 +170,7 @@ class _JobCardState extends State<JobCard> {
         : [];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 5),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color(0xFFE5E5E5), width: 1),
@@ -157,11 +180,11 @@ class _JobCardState extends State<JobCard> {
         color: Colors.transparent,
         child: GestureDetector(
           onTap: () => context.push(
-  '/job-detail/${widget.job.slug}',
-  extra: {'back_url': widget.back_url},
-),
+            '/job-detail/${widget.job.slug}',
+            extra: {'back_url': widget.back_url},
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(11),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -220,7 +243,7 @@ class _JobCardState extends State<JobCard> {
                   ],
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 5),
 
                 // Meta info row
                 Wrap(
@@ -246,26 +269,26 @@ class _JobCardState extends State<JobCard> {
                 ),
 
                 if (tagList.isNotEmpty) ...[
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 6),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 5,
+                    runSpacing: 5,
                     children: tagList.map((tag) {
                       return Container(
                         decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5), // Fixed: removed 'all' and used circular()
-                        border: Border.all(
-                          color: Colors.grey.shade300, // Add border if needed
-                          width: 1,
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
                         ),
-                      ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                            horizontal: 6, vertical: 3),
                         
                         child: Text(
                           tag,
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 9,
                             color: Color(0xFF4A4A4A),
                             fontWeight: FontWeight.w600,
                           ),
@@ -275,9 +298,9 @@ class _JobCardState extends State<JobCard> {
                   ),
                 ],
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 5),
                 Container(height: 1, color: const Color(0xFFEDEDED)),
-                const SizedBox(height: 14),
+                const SizedBox(height: 5),
 
                 // Footer CTA
                 Row(
@@ -285,13 +308,13 @@ class _JobCardState extends State<JobCard> {
                   children: [
                     Row(
                       children: [
-                        // Applied Badge
+                        // Applied Badge 
                         if (_isApplied)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
                               color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(color: Colors.green.shade300, width: 0.5),
                             ),
                             child: Row(
@@ -321,10 +344,10 @@ class _JobCardState extends State<JobCard> {
                         GestureDetector(
                           onTap: _isSaving ? null : _handleSave,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                             decoration: BoxDecoration(
                               color: _isSaved ? Colors.blue.shade50 : Colors.grey.shade50,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: _isSaved ? Colors.blue.shade300 : Colors.grey.shade300,
                                 width: 0.5,
@@ -360,6 +383,65 @@ class _JobCardState extends State<JobCard> {
                                   ),
                           ),
                         ),
+
+                        const SizedBox(width: 8), // Space between Save and Share
+
+                        // 👇 Share Button 👇
+                      GestureDetector(
+                        onTap: () async {
+                          setState(() {
+                            _shareBlink = true;
+                          });
+
+                          _handleShare();
+
+                          await Future.delayed(const Duration(milliseconds: 150));
+
+                          if (mounted) {
+                            setState(() {
+                              _shareBlink = false;
+                            });
+                          }
+                        },
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 100),
+                          opacity: _shareBlink ? 0.4 : 1.0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.copy_outlined,
+                                  size: 14,
+                                  color: Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Share',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // 👆 END SHARE BUTTON 👆
                       ],
                     ),
                     

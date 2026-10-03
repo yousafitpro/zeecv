@@ -237,7 +237,7 @@ Future<void> _handleDownload() async {
     if (_showInAppBrowser && _inAppBrowserUrl != null && _inAppBrowserUrl!.isNotEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text("Edit Resume"),
+          title: const Text("Edit Profile"),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
