@@ -72,7 +72,7 @@ class _DefaultInappState extends State<DefaultInapp> {
   Widget build(BuildContext context) {
     final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
     final backUrl = extra?['back_url'] as String? ?? '/home/find-jobs';
-    final title = extra?['title'] as String? ?? 'Zeecv';
+    final title = extra?['title'] as String? ?? 'GlassEver Pro';
 
     if (_showInAppBrowser && _url != null && _url!.isNotEmpty) {
       return Scaffold(

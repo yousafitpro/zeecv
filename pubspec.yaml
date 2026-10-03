@@ -63,6 +63,6 @@ flutter_launcher_icons:
   adaptive_icon_background: "#ffffff"
 
 flutter_app_config:
-  app_name: "ZeeCV"
+  app_name: "GlassEver Pro"
   package_id: "com.zeecv"
   custom_icon_path: "assets/icon/icon.png"
