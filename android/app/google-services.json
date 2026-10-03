@@ -12,7 +12,28 @@
           "package_name": "com.glassever.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "688675359880-milqbmcm0luqtnto1pq1m9ntpoc6a08o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.glassever.app",
+            "certificate_hash": "c8b5724856349da61ba8188b0809813c96a1b628"
+          }
+        },
+        {
+          "client_id": "688675359880-rtgad8fjmqqqfujvjsnhn3ll5j4mlcs0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.glassever.app",
+            "certificate_hash": "8c451ecebc6335819df05b3d856150a823fd6e91"
+          }
+        },
+        {
+          "client_id": "688675359880-23tt4ranb8pfblal7fp2061lol0fos9t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCD0x7NhugOA__qO_O2sRbzaNRcBn8bKzs"
@@ -20,7 +41,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "688675359880-23tt4ranb8pfblal7fp2061lol0fos9t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
