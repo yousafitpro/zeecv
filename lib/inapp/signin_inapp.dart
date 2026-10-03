@@ -186,7 +186,7 @@ class _SinginInappState extends State<SinginInapp> {
         extra?['back_url'] as String? ?? '/home/find-jobs';
 
     final title =
-        extra?['title'] as String? ?? 'Zeecv';
+        extra?['title'] as String? ?? 'GlassEver';
 
     if (_url == null || _url!.isEmpty) {
       return const Scaffold(

@@ -24,7 +24,7 @@ class ZeeCVApp extends StatelessWidget {
     }
 
     return MaterialApp.router(
-      title: 'ZeeCV',
+      title: 'GlassEver',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       routerConfig: AppRouter.router,
